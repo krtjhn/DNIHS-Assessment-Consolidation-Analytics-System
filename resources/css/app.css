@@ -1,9 +1,23 @@
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+/* + I-scan ang Blade at React JSX files para sa Tailwind classes */
+@source '../views/**/*.blade.php';
+@source '../js/**/*.{jsx,js}';
 
+/* + Apple HIG System Font Stack & Semantic Tokens */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --color-apple-blue: #0071e3;
+    --color-apple-blue-hover: #0077ed;
+    --color-apple-gray: #f5f5f7;
+    --color-apple-card: #ffffff;
+    --color-apple-border: rgba(0, 0, 0, 0.08);
+}
+
+body {
+    background-color: #f5f5f7;
+    color: #1d1d1f;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }

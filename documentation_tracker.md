@@ -37,8 +37,8 @@ gantt
     Phase 5 Core Entity 1: Section CRUD    :done, p5, 2026-10-07, 1d
     Phase 6 Core Entity 2: Stats & Scoring :done, p6, 2026-10-07, 1d
     section Frontend & Testing
-    Phase 7 React SPA Views (Vite)         :active, p7, 2026-10-07, 1d
-    Phase 8 Defense Verification & Test    :p8, 2026-10-07, 1d
+    Phase 7 React SPA Views (Vite)         :done, p7, 2026-10-07, 1d
+    Phase 8 Defense Verification & Test    :active, p8, 2026-10-07, 1d
 ```
 
 ---
@@ -144,23 +144,28 @@ gantt
 
 ---
 
-### 🟡 PHASE 7: React Frontend Views (Vite SPA)
-- **Ano ang gagawin**:
-  - Decoupled modern frontend (walang Blade):
-    - `Login.jsx` & `Register.jsx`
-    - `AdminSections.jsx` (UI para sa Entity 1 CRUD)
-    - `TeacherAssessments.jsx` (UI para sa Entity 2 CRUD + Live Stats preview)
-    - `Navbar.jsx` (may role badge at logout button)
+### ✅ PHASE 7: Apple HIG React Frontend (Vite SPA)
+- **Ano ang ginawa**:
+  - Decoupled modern Single Page Application (SPA) gamit ang **Apple Human Interface Guidelines (HIG)**:
+    - **`app.css` & `welcome.blade.php`**: In-enable ang Apple system fonts, `#F5F5F7` calm canvas, at `@viteReactRefresh`.
+    - **`api.js`**: Reusable HTTP client na may automatic Sanctum Bearer token headers at session handling.
+    - **Apple HIG UI Primitives** (`Button.jsx`, `Badge.jsx`, `Modal.jsx`, `StatCard.jsx`): Semantic HTML, accessible focus-visible rings, pill status badges para sa 7-level DepEd mastery, at backdrop blur sheets.
+    - **`Navbar.jsx`**: Translucent frosted-glass sticky navigation (`backdrop-blur-md bg-white/80`) na may segmented pill navigation, role chips, at logout button.
+    - **`AuthView.jsx`**: Focused sign-in card na may **1-Click Midterm Defense Quick Fill buttons** para sa Admin (`admin@dayapnhs.edu.ph`) at Teacher (`maria.santos@dayapnhs.edu.ph`).
+    - **`SectionsView.jsx`**: Core Entity 1 CRUD table, Add/Edit modal dialog, at Delete confirmation modal para sa Admin.
+    - **`AssessmentsView.jsx`**: Core Entity 2 scoresheet para sa Teacher na may **LIVE DepEd Analytics Dashboard** (Mean, Pop. SD, MPS, at 7-Mastery Bracket pills) habang nag-e-encode ng scores bago i-save.
+  - **Vite Build Verification**: Matagumpay na na-compile ang bundle sa `public/build/` via `npm run build` nang walang anumang error (`✓ built in 6.51s`).
 - **Bakit ito ginawa**:
-  - Para sa makinis at propesyonal na presentasyon sa panel kung saan live na maipapakita ang bawat feature.
+  - Para sa makinis, propesyonal, at modernong presentasyon sa panel kung saan live na maipapakita ang bawat requirement nang walang kaba.
 
 ---
 
-### ⏳ PHASE 8: Defense Dry-Run & Verification
+### 🟡 PHASE 8: Defense Dry-Run & Verification
 - **Ano ang gagawin**:
-  - Pagpapatakbo ng automated feature tests (`php artisan test`).
-  - Paghahanda ng cheat-sheet para sa posibleng mga tanong ng panel ukol sa MVC, Normalization (3NF), at Sanctum security.
+  - Pagsasagawa ng actual dry-run (`php artisan serve` + `npm run dev`).
+  - Paghahanda ng kumpletong Q&A script at cheat-sheet para sa 5 Non-Negotiables: MVC flow, 3NF Normalization, Mass Assignment `$fillable`, Sanctum authentication, at DepEd statistical formulas.
 
 ---
 
-*Huling Na-update: 2026-10-07 | Status: Handa na para sa Phase 5 execution.*
+*Huling Na-update: 2026-10-07 | Status: Phase 7 Completed 100%! Ready para sa Phase 8 Defense Dry-Run.*
+
