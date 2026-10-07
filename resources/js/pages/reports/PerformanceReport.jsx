@@ -264,7 +264,6 @@ export default function PerformanceReport() {
         let lowestScore = Infinity;
         let hasLowestScore = false;
         let passingCount = 0;
-        const competenciesMap = {};
 
         const totalsMastery = { mastered: 0, closelyApproximating: 0, movingTowards: 0, average: 0, low: 0, veryLow: 0, noMastery: 0 };
 
@@ -286,9 +285,6 @@ export default function PerformanceReport() {
             }
             if (mpsVal >= 75) passingCount++;
 
-            const comp = record.least_learned_competency?.trim();
-            if (comp) competenciesMap[comp] = (competenciesMap[comp] || 0) + 1;
-
             const dist = getMasteryDistribution(record.raw_scores, record.total_items || 50);
             totalsMastery.mastered += dist.mastered;
             totalsMastery.closelyApproximating += dist.closelyApproximating;
@@ -298,10 +294,6 @@ export default function PerformanceReport() {
             totalsMastery.veryLow += dist.veryLow;
             totalsMastery.noMastery += dist.noMastery;
         }
-
-        const topCompetencies = Object.entries(competenciesMap)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3);
 
         return {
             recordCount,
@@ -313,7 +305,6 @@ export default function PerformanceReport() {
             lowestScore: !hasLowestScore || lowestScore === Infinity ? 0 : lowestScore,
             totalsMastery,
             passingCount,
-            topCompetencies,
         };
     }, [filteredRecords]);
 
@@ -355,7 +346,7 @@ export default function PerformanceReport() {
                         Consolidated Performance Reports
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">
-                        Multi-section DepEd statistical aggregation, MPS benchmarks, and cohort item analysis.
+                        Multi-section DepEd statistical aggregation, MPS benchmarks, and summary analysis.
                     </p>
                 </div>
 
@@ -534,7 +525,7 @@ export default function PerformanceReport() {
                 <MetricCard
                     title="Std. Deviation"
                     value={summary.recordCount === 0 ? '—' : summary.overallSd.toFixed(2)}
-                    subtitle={summary.recordCount === 0 ? 'No records' : 'Cohort dispersion'}
+                    subtitle={summary.recordCount === 0 ? 'No records' : 'Overall dispersion'}
                 />
                 <MetricCard
                     title="Passing Sections"
@@ -583,7 +574,7 @@ export default function PerformanceReport() {
                                     <td colSpan="18" className="px-4 py-16 text-center text-slate-500 font-medium">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="size-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
-                                            <span>Loading consolidated cohort records…</span>
+                                            <span>Loading consolidated records…</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -659,7 +650,7 @@ export default function PerformanceReport() {
                             <tfoot className="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300">
                                 <tr>
                                     <td colSpan="3" className="border border-slate-300 px-3 py-3 text-right uppercase text-[11px] tracking-wider text-slate-700">
-                                        Consolidated Cohort Average:
+                                        Consolidated Overall Average:
                                     </td>
                                     <td className="border border-slate-300 px-2.5 py-3 text-center text-blue-900 font-bold">{summary.totalExaminees}</td>
                                     <td className="border border-slate-300 px-2.5 py-3 text-center text-slate-800">{summary.highestScore.toFixed(2)}</td>
@@ -682,7 +673,7 @@ export default function PerformanceReport() {
 
                                     <td className="border border-slate-300 px-3 py-3 text-slate-500 font-medium">—</td>
                                     <td className="border border-slate-300 px-3 py-3 text-center text-emerald-800 font-bold bg-emerald-100 whitespace-nowrap">
-                                        Cohort Verified
+                                        Verified
                                     </td>
                                 </tr>
                             </tfoot>
@@ -690,32 +681,6 @@ export default function PerformanceReport() {
                     </table>
                 </div>
             </div>
-
-            {/* Qualitative Item Analysis Card (Least Learned Competencies) */}
-            {summary.topCompetencies.length > 0 && (
-                <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-                        Priority Academic Intervention &bull; Top Least Learned Competencies
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {summary.topCompetencies.map(([comp, count], idx) => (
-                            <div key={idx} className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-3.5 flex items-start gap-3">
-                                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-200 text-amber-900 font-bold text-xs">
-                                    {idx + 1}
-                                </span>
-                                <div className="min-w-0">
-                                    <div className="font-bold text-xs text-slate-900 truncate" title={comp}>
-                                        {comp}
-                                    </div>
-                                    <div className="text-[11px] text-amber-800 font-semibold mt-0.5">
-                                        Reported in {count} section{count > 1 ? 's' : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

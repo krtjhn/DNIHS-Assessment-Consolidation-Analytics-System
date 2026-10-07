@@ -1,23 +1,6 @@
 import React, { useState } from 'react';
 import schoolLogo from '../../../logo.png';
 
-/** User avatar icon inside email input */
-const UserIcon = () => (
-    <svg aria-hidden="true" className="size-5 shrink-0" viewBox="0 0 24 24" fill="none">
-        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" fill="currentColor" />
-        <path d="M4.5 20a7.5 7.5 0 0 1 15 0H4.5Z" fill="currentColor" />
-    </svg>
-);
-
-/** Padlock security icon inside password input */
-const LockIcon = () => (
-    <svg aria-hidden="true" className="size-5 shrink-0" viewBox="0 0 24 24" fill="none">
-        <path d="M7 10V8a5 5 0 0 1 10 0v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <rect x="5" y="10" width="14" height="11" rx="3" fill="currentColor" />
-        <circle cx="12" cy="15" r="1.25" fill="#2388e8" />
-        <path d="M12 16v2" stroke="#2388e8" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-);
 
 /** Eye toggle icon for show/hide password */
 const EyeIcon = ({ hidden }) => (
