@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreAssessmentRequest;
-use App\Http\Requests\UpdateAssessmentRequest;
+// + Assessment Requests mula sa subfolder
+use App\Http\Requests\Assessments\StoreAssessmentRequest;
+use App\Http\Requests\Assessments\UpdateAssessmentRequest;
 use App\Http\Resources\AssessmentRecordResource;
 use App\Models\AssessmentRecord;
 use App\Models\TeachingAssignment;
@@ -74,31 +75,31 @@ class AssessmentController extends Controller
             return AssessmentRecord::updateOrCreate(
                 [
                     'school_year_id' => $validated['school_year_id'],
-                    'term_id'        => $validated['term_id'],
-                    'section_id'     => $validated['section_id'],
-                    'subject_id'     => $validated['subject_id'],
-                    'type'           => $validated['type'],
+                    'term_id' => $validated['term_id'],
+                    'section_id' => $validated['section_id'],
+                    'subject_id' => $validated['subject_id'],
+                    'type' => $validated['type'],
                 ],
                 [
-                    'grade_level_id'           => $validated['grade_level_id'],
-                    'teacher_id'               => $request->user()->id,
-                    'total_items'              => $validated['total_items'],
-                    'raw_scores'               => array_values($validated['raw_scores']),
-                    'no_of_entries'            => $stats['no_of_entries'],
-                    'mean'                     => $stats['mean'],
-                    'mps'                      => $stats['mps'],
-                    'sd'                       => $stats['sd'],
-                    'highest_score'            => $stats['highest_score'],
-                    'lowest_score'             => $stats['lowest_score'],
+                    'grade_level_id' => $validated['grade_level_id'],
+                    'teacher_id' => $request->user()->id,
+                    'total_items' => $validated['total_items'],
+                    'raw_scores' => array_values($validated['raw_scores']),
+                    'no_of_entries' => $stats['no_of_entries'],
+                    'mean' => $stats['mean'],
+                    'mps' => $stats['mps'],
+                    'sd' => $stats['sd'],
+                    'highest_score' => $stats['highest_score'],
+                    'lowest_score' => $stats['lowest_score'],
                     'least_learned_competency' => $validated['least_learned_competency'] ?? null,
-                    'remarks'                  => $validated['remarks'] ?? 'Complete',
+                    'remarks' => $validated['remarks'] ?? 'Complete',
                 ]
             );
         });
 
         return response()->json([
             'message' => 'Assessment scores encoded and calculated successfully.',
-            'data'    => new AssessmentRecordResource($record->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
+            'data' => new AssessmentRecordResource($record->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
         ], 201);
     }
 
@@ -128,16 +129,16 @@ class AssessmentController extends Controller
             );
 
             $assessment->update([
-                'total_items'              => $validated['total_items'],
-                'raw_scores'               => array_values($validated['raw_scores']),
-                'no_of_entries'            => $stats['no_of_entries'],
-                'mean'                     => $stats['mean'],
-                'mps'                      => $stats['mps'],
-                'sd'                       => $stats['sd'],
-                'highest_score'            => $stats['highest_score'],
-                'lowest_score'             => $stats['lowest_score'],
+                'total_items' => $validated['total_items'],
+                'raw_scores' => array_values($validated['raw_scores']),
+                'no_of_entries' => $stats['no_of_entries'],
+                'mean' => $stats['mean'],
+                'mps' => $stats['mps'],
+                'sd' => $stats['sd'],
+                'highest_score' => $stats['highest_score'],
+                'lowest_score' => $stats['lowest_score'],
                 'least_learned_competency' => $validated['least_learned_competency'] ?? null,
-                'remarks'                  => $validated['remarks'] ?? 'Complete',
+                'remarks' => $validated['remarks'] ?? 'Complete',
             ]);
 
             return $assessment;
@@ -145,7 +146,7 @@ class AssessmentController extends Controller
 
         return response()->json([
             'message' => 'Assessment scores updated and recalculated successfully.',
-            'data'    => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
+            'data' => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
         ]);
     }
 

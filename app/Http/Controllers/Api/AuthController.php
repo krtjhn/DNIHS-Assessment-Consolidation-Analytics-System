@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
+// + Auth Requests mula sa subfolder
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -24,9 +25,9 @@ class AuthController extends Controller
 
         // 1. Create the user
         $user = User::create([
-            'name'      => $validated['name'],
-            'email'     => $validated['email'],
-            'password'  => Hash::make($validated['password']),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
             'is_active' => true,
         ]);
 
@@ -41,10 +42,10 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message'      => 'Registration successful.',
+            'message' => 'Registration successful.',
             'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'user'         => $user->load('roles'),
+            'token_type' => 'Bearer',
+            'user' => $user->load('roles'),
         ], 201);
     }
 
@@ -75,10 +76,10 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message'      => 'Login successful.',
+            'message' => 'Login successful.',
             'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'user'         => $user->load('roles'),
+            'token_type' => 'Bearer',
+            'user' => $user->load('roles'),
         ]);
     }
 

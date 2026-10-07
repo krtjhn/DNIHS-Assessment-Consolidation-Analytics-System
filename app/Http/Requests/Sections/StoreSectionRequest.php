@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Requests;
+// + Section Form Request
+
+namespace App\Http\Requests\Sections;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -17,7 +19,7 @@ class StoreSectionRequest extends FormRequest
         return [
             'school_year_id' => ['required', 'exists:school_years,id'],
             'grade_level_id' => ['required', 'exists:grade_levels,id'],
-            'name'           => [
+            'name' => [
                 'required',
                 'string',
                 'max:50',
@@ -26,7 +28,7 @@ class StoreSectionRequest extends FormRequest
                     ->where('grade_level_id', $this->grade_level_id)
                 ),
             ],
-            'is_active'      => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ];
     }
 }

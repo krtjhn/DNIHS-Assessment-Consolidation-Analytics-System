@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Requests;
+// + Section Form Request
+
+namespace App\Http\Requests\Sections;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -14,7 +16,7 @@ class UpdateSectionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'      => ['required', 'string', 'max:50'],
+            'name' => ['required', 'string', 'max:50'],
             'is_active' => ['nullable', 'boolean'],
         ];
     }

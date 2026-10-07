@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreSectionRequest;
-use App\Http\Requests\UpdateSectionRequest;
+// + Section Requests mula sa subfolder
+use App\Http\Requests\Sections\StoreSectionRequest;
+use App\Http\Requests\Sections\UpdateSectionRequest;
 use App\Http\Resources\SectionResource;
 use App\Models\Section;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +40,7 @@ class SectionController extends Controller
 
         return response()->json([
             'message' => 'Section created successfully.',
-            'data'    => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
+            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
         ], 201);
     }
 
@@ -64,7 +65,7 @@ class SectionController extends Controller
 
         return response()->json([
             'message' => 'Section updated successfully.',
-            'data'    => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
+            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
         ]);
     }
 

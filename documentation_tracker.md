@@ -34,10 +34,10 @@ gantt
     Phase 2 Migrations & Seeders           :done, p2, 2026-10-07, 1d
     Phase 3 Eloquent Models & Relational   :done, p3, 2026-10-07, 1d
     Phase 4 Auth (Register/Login) & RBAC  :done, p4, 2026-10-07, 1d
-    Phase 5 Core Entity 1: Section CRUD    :active, p5, 2026-10-07, 1d
-    Phase 6 Core Entity 2: Stats & Scoring :p6, 2026-10-07, 1d
+    Phase 5 Core Entity 1: Section CRUD    :done, p5, 2026-10-07, 1d
+    Phase 6 Core Entity 2: Stats & Scoring :done, p6, 2026-10-07, 1d
     section Frontend & Testing
-    Phase 7 React SPA Views (Vite)         :p7, 2026-10-07, 1d
+    Phase 7 React SPA Views (Vite)         :active, p7, 2026-10-07, 1d
     Phase 8 Defense Verification & Test    :p8, 2026-10-07, 1d
 ```
 
@@ -94,8 +94,8 @@ gantt
 
 ### ✅ PHASE 4: Authentication & Role-Based Access Control (RBAC)
 - **Ano ang ginawa**:
-  - `RegisterRequest.php`: Tinitiyak na valid ang email, unique, at may confirmed password (minimum 8 characters).
-  - `LoginRequest.php`: Vina-validate ang credentials.
+  - `app/Http/Requests/Auth/RegisterRequest.php`: Tinitiyak na valid ang email, unique, at may confirmed password (minimum 8 characters).
+  - `app/Http/Requests/Auth/LoginRequest.php`: Vina-validate ang credentials.
   - `AuthController.php`:
     - `register()`: Gumagawa ng user, kinakabitan ng `teacher` role, at nagbabalik ng Sanctum Bearer token.
     - `login()`: Sinusuri ang password hash gamit ang `Hash::check()`, tinitingnan kung `is_active`, at nag-i-issue ng token.
@@ -107,9 +107,9 @@ gantt
 
 ---
 
-### 🟡 PHASE 5: Core Entity 1 CRUD — Sections Management (Admin)
-- **Ano ang ginagawa**:
-  - `StoreSectionRequest.php` & `UpdateSectionRequest.php`: Strict validation na bawal magkaroon ng duplicate section name sa parehong grade level at school year.
+### ✅ PHASE 5: Core Entity 1 CRUD — Sections Management (Admin)
+- **Ano ang ginawa**:
+  - `app/Http/Requests/Sections/StoreSectionRequest.php` & `UpdateSectionRequest.php`: Strict validation na bawal magkaroon ng duplicate section name sa parehong grade level at school year.
   - `SectionResource.php`: Ini-standardize ang JSON output format.
   - `SectionController.php`: Kumpletong CRUD operations:
     - `GET /api/sections` (Read: list with grade levels and school year).
@@ -123,25 +123,28 @@ gantt
 
 ---
 
-### ⏳ PHASE 6: Core Entity 2 CRUD — Assessment Scoring & DepEd Stats Engine (Teacher)
-- **Ano ang gagawin**:
+### ✅ PHASE 6: Core Entity 2 CRUD — Assessment Scoring & DepEd Stats Engine (Teacher)
+- **Ano ang ginawa**:
   - `StatsCalculatorService.php`: Pure PHP statistical computation engine:
     - **Mean**: $\bar{X} = \frac{\sum X}{N}$
     - **Mean Percentage Score (MPS)**: $MPS = \left(\frac{\bar{X}}{\text{Total Items}}\right) \times 100$
     - **Population Standard Deviation (SD)**: $SD = \sqrt{\frac{\sum (X - \bar{X})^2}{N}}$
     - **7-Level DepEd Mastery Classification**: Automatic tag (Mastered, Moving Towards, Average, etc.)
-  - `StoreAssessmentRequest.php`: Strict validation sa array ng scores ($0 \le score \le total\_items$).
+  - `app/Http/Requests/Assessments/StoreAssessmentRequest.php` & `UpdateAssessmentRequest.php`: Strict validation sa array ng scores ($0 \le score \le total\_items$).
+  - `AssessmentRecordResource.php`: Clean JSON API transformation kasama ang calculated stats.
   - `AssessmentController.php`:
+    - `GET /api/my-classes` (Teacher's assigned sections at subjects).
     - `GET /api/assessments` (List scores filtered by section/subject).
     - `POST /api/assessments` (Encode scores, auto-compute stats, at i-save).
     - `PUT /api/assessments/{id}` (Edit scores, auto-recompute stats).
     - `DELETE /api/assessments/{id}` (Delete score sheet).
+  - **Automated Feature Tests**: 6 out of 6 tests passed (17 assertions passed)!
 - **Bakit ito ginawa**:
   - Ito ang **Core Entity 2** at ang **mismong essence ng iyong capstone** na nagpapakita ng automated statistical capability ng system.
 
 ---
 
-### ⏳ PHASE 7: React Frontend Views (Vite SPA)
+### 🟡 PHASE 7: React Frontend Views (Vite SPA)
 - **Ano ang gagawin**:
   - Decoupled modern frontend (walang Blade):
     - `Login.jsx` & `Register.jsx`
