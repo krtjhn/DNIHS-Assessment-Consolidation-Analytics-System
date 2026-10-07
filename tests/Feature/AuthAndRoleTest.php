@@ -3,28 +3,36 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class AuthAndRoleTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
      * + Test registration creates a user with 'teacher' role.
      */
     public function test_user_can_register_as_teacher(): void
     {
-        $uniqueEmail = 'bagong.guro_' . uniqid() . '@dayapnhs.edu.ph';
+        $uniqueEmail = 'bagong.guro_'.uniqid().'@dayapnhs.edu.ph';
 
         $response = $this->postJson('/api/auth/register', [
-            'name'                  => 'Bagong Guro',
-            'email'                 => $uniqueEmail,
-            'password'              => 'Password@123',
+            'name' => 'Bagong Guro',
+            'email' => $uniqueEmail,
+            'password' => 'Password@123',
             'password_confirmation' => 'Password@123',
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['access_token', 'user' => ['id', 'name', 'email']]);
+            ->assertJsonPath('requires_approval', true)
+            ->assertJsonStructure(['message', 'user' => ['id', 'name', 'email', 'approval_status']]);
 
-        $this->assertDatabaseHas('users', ['email' => $uniqueEmail]);
+        $this->assertDatabaseHas('users', [
+            'email' => $uniqueEmail,
+            'approval_status' => 'pending',
+            'is_active' => false,
+        ]);
     }
 
     /**
@@ -33,7 +41,7 @@ class AuthAndRoleTest extends TestCase
     public function test_user_can_login_with_correct_credentials(): void
     {
         $response = $this->postJson('/api/auth/login', [
-            'email'    => 'admin@dayapnhs.edu.ph',
+            'email' => 'admin@dayapnhs.edu.ph',
             'password' => 'Admin@2024!',
         ]);
 
@@ -52,7 +60,7 @@ class AuthAndRoleTest extends TestCase
             ->postJson('/api/sections', [
                 'school_year_id' => 1,
                 'grade_level_id' => 1,
-                'name'           => 'Section Mabini',
+                'name' => 'Section Mabini',
             ]);
 
         $response->assertStatus(403); // Forbidden para sa teacher

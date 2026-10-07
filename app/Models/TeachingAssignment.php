@@ -33,8 +33,23 @@ class TeachingAssignment extends Model
         return $this->belongsTo(Subject::class);
     }
 
+    public function schoolYear(): BelongsTo
+    {
+        return $this->belongsTo(SchoolYear::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->whereNull('effective_until');
+    }
+
+    public function scopeForTeacher(Builder $query, int $userId): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopeForSchoolYear(Builder $query, int $schoolYearId): Builder
+    {
+        return $query->where('school_year_id', $schoolYearId);
     }
 }

@@ -14,11 +14,9 @@ class AcademicReferenceController extends Controller
     {
         return response()->json([
             'grade_levels' => GradeLevel::orderBy('level')->get(),
-            'subjects'     => Subject::where('is_active', true)->orderBy('name')->get(),
+            'subjects' => Subject::where('is_active', true)->orderBy('name')->get(['id', 'name', 'grade_level_id', 'is_active']),
             'school_years' => SchoolYear::with('terms')->orderBy('id', 'desc')->get(),
-            'active_sy'    => SchoolYear::active()->first(),
+            'active_sy' => SchoolYear::active()->with('terms')->first(),
         ]);
     }
 }
-
-//This is for Grade Level & Subject dropdowns sa React Frontend 

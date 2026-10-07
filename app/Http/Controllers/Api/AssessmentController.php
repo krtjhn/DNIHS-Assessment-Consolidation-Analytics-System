@@ -47,7 +47,15 @@ class AssessmentController extends Controller
             ->when($request->filled('term_id'), fn ($q) => $q->where('term_id', $request->term_id))
             ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->section_id))
             ->when($request->filled('subject_id'), fn ($q) => $q->where('subject_id', $request->subject_id))
-            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type));
+            ->when($request->filled('type'), function ($q) use ($request) {
+                $type = $request->type === 'term_exam' ? 'quarterly' : $request->type;
+                $q->where('type', $type);
+            });
+
+        // Restrict teachers to their own records only
+        if ($request->user()->hasRole('teacher') && ! $request->user()->hasRole('system_admin')) {
+            $query->where('teacher_id', $request->user()->id);
+        }
 
         $records = $query->orderBy('created_at', 'desc')->get();
 
@@ -63,6 +71,23 @@ class AssessmentController extends Controller
     public function store(StoreAssessmentRequest $request): JsonResponse
     {
         $validated = $request->validated();
+
+        // Check if an assessment already exists for this exact class and term
+        $existing = AssessmentRecord::where([
+            'school_year_id' => $validated['school_year_id'],
+            'term_id' => $validated['term_id'],
+            'section_id' => $validated['section_id'],
+            'subject_id' => $validated['subject_id'],
+            'type' => $validated['type'],
+        ])->first();
+
+        if ($existing && ! $request->user()->hasRole('system_admin') && $existing->teacher_id !== $request->user()->id) {
+            $existingTeacher = $existing->teacher?->name ?? 'another faculty member';
+
+            return response()->json([
+                'message' => "This assessment was already recorded by {$existingTeacher}. You cannot overwrite another teacher's score sheet.",
+            ], 403);
+        }
 
         $record = DB::transaction(function () use ($validated, $request) {
             // 1. Run DepEd automated calculation
@@ -107,8 +132,14 @@ class AssessmentController extends Controller
      * READ: Show single assessment score sheet details.
      * GET /api/assessments/{assessment}
      */
-    public function show(AssessmentRecord $assessment): JsonResponse
+    public function show(Request $request, AssessmentRecord $assessment): JsonResponse
     {
+        if ($request->user()->hasRole('teacher') && ! $request->user()->hasRole('system_admin') && $assessment->teacher_id !== $request->user()->id) {
+            return response()->json([
+                'message' => "You are not authorized to view another teacher's assessment record.",
+            ], 403);
+        }
+
         return response()->json([
             'data' => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
         ]);
@@ -120,6 +151,12 @@ class AssessmentController extends Controller
      */
     public function update(UpdateAssessmentRequest $request, AssessmentRecord $assessment): JsonResponse
     {
+        if (! $request->user()->hasRole('system_admin') && $assessment->teacher_id !== $request->user()->id) {
+            return response()->json([
+                'message' => "You are not authorized to update another teacher's assessment record.",
+            ], 403);
+        }
+
         $validated = $request->validated();
 
         $assessment = DB::transaction(function () use ($validated, $assessment) {
@@ -154,12 +191,50 @@ class AssessmentController extends Controller
      * DELETE: Delete assessment record.
      * DELETE /api/assessments/{assessment}
      */
-    public function destroy(AssessmentRecord $assessment): JsonResponse
+    public function destroy(Request $request, AssessmentRecord $assessment): JsonResponse
     {
+        if (! $request->user()->hasRole('system_admin') && $assessment->teacher_id !== $request->user()->id) {
+            return response()->json([
+                'message' => "You are not authorized to delete another teacher's assessment record.",
+            ], 403);
+        }
+
         $assessment->delete();
 
         return response()->json([
             'message' => 'Assessment record deleted successfully.',
+        ]);
+    }
+
+    /**
+     * CONSOLIDATION: Get consolidated assessment cohort metrics across sections.
+     * GET /api/assessments/consolidation
+     */
+    public function consolidation(Request $request): JsonResponse
+    {
+        $request->validate([
+            'school_year_id' => ['required', 'exists:school_years,id'],
+            'term_id' => ['required', 'exists:terms,id'],
+            'type' => ['nullable', 'string', 'in:diagnostic,term_exam,quarterly'],
+            'grade_level_id' => ['nullable', 'exists:grade_levels,id'],
+        ]);
+
+        $type = $request->type;
+        if ($type === 'term_exam') {
+            $type = 'quarterly';
+        }
+
+        $query = AssessmentRecord::with(['gradeLevel', 'section', 'subject', 'teacher'])
+            ->where('school_year_id', $request->school_year_id)
+            ->where('term_id', $request->term_id)
+            ->when($type, fn ($q) => $q->where('type', $type))
+            ->when($request->filled('grade_level_id'), fn ($q) => $q->where('grade_level_id', $request->grade_level_id));
+
+        $records = $query->get();
+
+        return response()->json([
+            'summary' => $this->statsCalculator->summarizeConsolidation($records),
+            'records' => AssessmentRecordResource::collection($records),
         ]);
     }
 }

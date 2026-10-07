@@ -21,12 +21,17 @@ class SchoolYear extends Model
 
     public function terms(): HasMany
     {
-        return $this->hasMany(Term::class);
+        return $this->hasMany(Term::class)->orderBy('term_number', 'asc');
     }
 
     public function sections(): HasMany
     {
         return $this->hasMany(Section::class);
+    }
+
+    public function assessmentRecords(): HasMany
+    {
+        return $this->hasMany(AssessmentRecord::class);
     }
 
     public function scopeActive(Builder $query): Builder

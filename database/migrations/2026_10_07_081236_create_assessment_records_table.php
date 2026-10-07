@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete();
             $table->foreignId('teacher_id')->constrained('users')->cascadeOnDelete();
 
-            $table->string('type')->default('diagnostic'); 
+            $table->string('type')->default('diagnostic');
             $table->unsignedInteger('total_items')->default(50);
             $table->json('raw_scores');
             $table->unsignedInteger('no_of_entries')->default(0);

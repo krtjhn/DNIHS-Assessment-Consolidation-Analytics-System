@@ -1,23 +1,221 @@
 @import 'tailwindcss';
 
-/* + I-scan ang Blade at React JSX files para sa Tailwind classes */
-@source '../views/**/*.blade.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
 @source '../js/**/*.{jsx,js}';
 
-/* + Apple HIG System Font Stack & Semantic Tokens */
 @theme {
-    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol", "Noto Color Emoji";
+    --color-surface: #ffffff;
+    --color-surface-subtle: #f8fafc;
+    --color-surface-ground: #f4f6f9;
+    --color-hairline: #e2e8f0;
     --color-apple-blue: #0071e3;
     --color-apple-blue-hover: #0077ed;
-    --color-apple-gray: #f5f5f7;
-    --color-apple-card: #ffffff;
-    --color-apple-border: rgba(0, 0, 0, 0.08);
 }
 
-body {
-    background-color: #f5f5f7;
-    color: #1d1d1f;
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
+
+    * {
+        scrollbar-color: #cbd5e1 transparent;
+        scrollbar-width: thin;
+    }
+
+    /* Webkit scrollbar polish */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+    }
+
+    /* System accessible focus */
+    :focus-visible {
+        outline: 2px solid #0071e3;
+        outline-offset: 2px;
+    }
+}
+
+@layer components {
+    @keyframes page-panel-enter {
+        from {
+            opacity: 0;
+            transform: translateY(2px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .page-panel-enter {
+        animation: page-panel-enter 140ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .page-panel-enter {
+            animation: none;
+        }
+    }
+
+    .workflow-screen {
+        color: #1e293b;
+    }
+
+    /* Refined Apple-style card & surface tokens */
+    .workflow-toolbar,
+    .workflow-card,
+    .workflow-stat-grid,
+    .workflow-table-card,
+    .workflow-action-dock {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.875rem;
+        background-color: #ffffff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02);
+    }
+
+    .workflow-toolbar {
+        min-height: 4rem;
+    }
+
+    .workflow-screen button {
+        border-radius: 0.625rem;
+    }
+
+    .workflow-screen button:focus-visible,
+    .workflow-screen input:focus-visible,
+    .workflow-screen select:focus-visible,
+    .workflow-screen textarea:focus-visible {
+        outline: 2px solid #0071e3 !important;
+        outline-offset: 1px;
+    }
+
+    .workflow-screen input,
+    .workflow-screen select,
+    .workflow-screen textarea {
+        border-color: #cbd5e1;
+        border-radius: 0.625rem;
+        background-color: #ffffff;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .workflow-screen input:hover,
+    .workflow-screen select:hover,
+    .workflow-screen textarea:hover {
+        border-color: #94a3b8;
+    }
+
+    .workflow-screen input:focus,
+    .workflow-screen select:focus,
+    .workflow-screen textarea:focus {
+        border-color: #0071e3;
+        box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+    }
+
+    .workflow-table-card {
+        overflow: hidden;
+    }
+
+    .workflow-table-card table {
+        width: 100%;
+    }
+
+    .workflow-table-card thead tr {
+        border-bottom: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        color: #334155;
+    }
+
+    .workflow-table-card tbody tr {
+        transition: background-color 120ms ease;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .workflow-table-card tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Modal dialogs */
+    .workflow-modal-backdrop {
+        background-color: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    .workflow-modal {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.18), 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .assessment-term-card {
+        border-radius: 0.875rem;
+        border: 1px solid #e2e8f0;
+        transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .assessment-term-card:hover {
+        border-color: #0071e3;
+        box-shadow: 0 8px 20px -4px rgba(0, 113, 227, 0.12);
+    }
+
+    .assessment-selector {
+        padding: 1.25rem;
+    }
+
+    .workflow-action-dock {
+        position: sticky;
+        bottom: 0.75rem;
+        z-index: 10;
+        box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .gradebook-score-grid .workflow-stat-grid > div {
+        border-right: 1px solid #f1f5f9;
+    }
+
+    .consolidation-summary thead {
+        background-color: #0f172a;
+        color: #ffffff;
+    }
+
+    @media (max-width: 767px) {
+        .workflow-toolbar,
+        .workflow-card,
+        .workflow-stat-grid,
+        .workflow-action-dock {
+            padding: 1rem;
+        }
+
+        .workflow-action-dock {
+            position: static;
+        }
+
+        .workflow-table-card {
+            overflow-x: auto;
+        }
+    }
 }

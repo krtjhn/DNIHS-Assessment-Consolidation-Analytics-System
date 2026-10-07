@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Collection;
+
 class StatsCalculatorService
 {
     /**
@@ -18,14 +20,14 @@ class StatsCalculatorService
 
         if ($n === 0) {
             return [
-                'no_of_entries'  => 0,
-                'mean'           => 0.0,
-                'mps'            => 0.0,
-                'sd'             => 0.0,
-                'highest_score'  => 0.0,
-                'lowest_score'   => 0.0,
-                'total_items'    => (int) $totalItems,
-                'mastery_level'  => 'No Mastery',
+                'no_of_entries' => 0,
+                'mean' => 0.0,
+                'mps' => 0.0,
+                'sd' => 0.0,
+                'highest_score' => 0.0,
+                'lowest_score' => 0.0,
+                'total_items' => (int) $totalItems,
+                'mastery_level' => 'No Mastery',
             ];
         }
 
@@ -49,14 +51,14 @@ class StatsCalculatorService
         $masteryLevel = $this->classifyMasteryLevel($mps);
 
         return [
-            'no_of_entries'  => $n,
-            'mean'           => round($mean, 2),
-            'mps'            => round($mps, 2),
-            'sd'             => round($sd, 2),
-            'highest_score'  => round(max($validScores), 2),
-            'lowest_score'   => round(min($validScores), 2),
-            'total_items'    => (int) $totalItems,
-            'mastery_level'  => $masteryLevel,
+            'no_of_entries' => $n,
+            'mean' => round($mean, 2),
+            'mps' => round($mps, 2),
+            'sd' => round($sd, 2),
+            'highest_score' => round(max($validScores), 2),
+            'lowest_score' => round(min($validScores), 2),
+            'total_items' => (int) $totalItems,
+            'mastery_level' => $masteryLevel,
         ];
     }
 
@@ -71,8 +73,32 @@ class StatsCalculatorService
             $mps >= 66.0 => 'Moving Towards Mastery',
             $mps >= 35.0 => 'Average',
             $mps >= 15.0 => 'Low',
-            $mps >= 5.0  => 'Very Low',
-            default      => 'Absolutely No Mastery',
+            $mps >= 5.0 => 'Very Low',
+            default => 'Absolutely No Mastery',
         };
+    }
+
+    /**
+     * Compute consolidated summary metrics across multiple assessment records.
+     *
+     * @param  Collection<int, mixed>  $records
+     * @return array{total_sections_encoded: int, total_examinees: int, overall_mean: float, overall_mps: float, overall_sd: float, overall_mastery: string}
+     */
+    public function summarizeConsolidation(Collection $records): array
+    {
+        $count = $records->count();
+        $totalExaminees = (int) $records->sum('no_of_entries');
+        $overallMean = $count > 0 ? round((float) $records->avg('mean'), 2) : 0.00;
+        $overallMps = $count > 0 ? round((float) $records->avg('mps'), 2) : 0.00;
+        $overallSd = $count > 0 ? round((float) $records->avg('sd'), 2) : 0.00;
+
+        return [
+            'total_sections_encoded' => $count,
+            'total_examinees' => $totalExaminees,
+            'overall_mean' => $overallMean,
+            'overall_mps' => $overallMps,
+            'overall_sd' => $overallSd,
+            'overall_mastery' => $this->classifyMasteryLevel($overallMps),
+        ];
     }
 }

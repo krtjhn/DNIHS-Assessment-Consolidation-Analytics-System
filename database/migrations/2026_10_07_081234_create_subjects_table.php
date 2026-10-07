@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); 
+            $table->string('name');
             $table->foreignId('grade_level_id')->constrained()->restrictOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

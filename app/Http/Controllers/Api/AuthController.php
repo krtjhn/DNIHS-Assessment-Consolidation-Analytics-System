@@ -16,36 +16,37 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * User Registration (Teacher or Admin).
+     * User Registration (Public portal - Faculty).
      * POST /api/auth/register
      */
     public function register(RegisterRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        // 1. Create the user
+        // 1. Create the user with pending approval
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'is_active' => true,
+            'is_active' => false,
+            'approval_status' => 'pending',
         ]);
 
-        // 2. Attach Role (defaults to 'teacher')
-        $roleName = $validated['role'] ?? 'teacher';
-        $role = Role::where('name', $roleName)->first();
+        // 2. Attach Teacher Role
+        $role = Role::where('name', 'teacher')->first();
         if ($role) {
             $user->roles()->attach($role->id);
         }
 
-        // 3. Issue Sanctum token immediately
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
-            'message' => 'Registration successful.',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user->load('roles'),
+            'message' => 'Registration submitted successfully. Your account is pending administrator approval before you can sign in.',
+            'requires_approval' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'approval_status' => 'pending',
+            ],
         ], 201);
     }
 
@@ -65,10 +66,23 @@ class AuthController extends Controller
             ]);
         }
 
+        // Check approval status
+        if ($user->approval_status === 'pending') {
+            return response()->json([
+                'message' => 'Your account registration is currently pending administrator approval. Please wait for an administrator to activate your account.',
+            ], 403);
+        }
+
+        if ($user->approval_status === 'rejected') {
+            return response()->json([
+                'message' => 'Your account registration was not approved. Please contact the school administrator.',
+            ], 403);
+        }
+
         // Check if account is active
         if (! $user->is_active) {
             return response()->json([
-                'message' => 'Your account is deactivated. Please contact the administrator.',
+                'message' => 'Your account has been deactivated. Please contact the administrator.',
             ], 403);
         }
 

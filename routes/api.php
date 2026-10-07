@@ -3,7 +3,11 @@
 use App\Http\Controllers\Api\AcademicReferenceController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SchoolYearController;
 use App\Http\Controllers\Api\SectionController;
+use App\Http\Controllers\Api\TeacherAssignmentController;
+use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\TermController;
 use Illuminate\Support\Facades\Route;
 
 // Health Check
@@ -11,38 +15,63 @@ Route::get('/health', fn () => response()->json(['message' => 'API is active and
 
 // Public Authentication
 Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login',    [AuthController::class, 'login']);
+Route::post('/auth/login', [AuthController::class, 'login']);
 
 // Authenticated Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/me',      [AuthController::class, 'me']);
+    Route::get('/auth/me', [AuthController::class, 'me']);
 
     // Academic Reference Data (Dropdowns)
     Route::get('/reference-data', [AcademicReferenceController::class, 'referenceData']);
 
-    // Section CRUD: Viewable by all authenticated staff
-    Route::get('/sections',           [SectionController::class, 'index']);
-    Route::get('/sections/{section}',  [SectionController::class, 'show']);
+    // School Calendar: Viewable by all authenticated staff
+    Route::get('/school-years', [SchoolYearController::class, 'index']);
+    Route::get('/school-years/{school_year}', [SchoolYearController::class, 'show']);
+    Route::get('/terms', [TermController::class, 'index']);
+    Route::get('/terms/{term}', [TermController::class, 'show']);
 
-    // Section CRUD: Write operations restricted to System Admin only!
+    // Section CRUD: Viewable by all authenticated staff
+    Route::get('/sections', [SectionController::class, 'index']);
+    Route::get('/sections/{section}', [SectionController::class, 'show']);
+
+    // Admin-restricted academic calendar & sections management
     Route::middleware('role:system_admin')->group(function () {
-        Route::post('/sections',          [SectionController::class, 'store']);
+        Route::post('/school-years', [SchoolYearController::class, 'store']);
+        Route::put('/school-years/{school_year}', [SchoolYearController::class, 'update']);
+        Route::delete('/school-years/{school_year}', [SchoolYearController::class, 'destroy']);
+        Route::patch('/terms/{term}/status', [TermController::class, 'updateStatus']);
+
+        Route::post('/sections', [SectionController::class, 'store']);
         Route::put('/sections/{section}', [SectionController::class, 'update']);
         Route::delete('/sections/{section}', [SectionController::class, 'destroy']);
+
+        // Faculty accounts & teaching loads
+        Route::get('/teachers', [TeacherController::class, 'index']);
+        Route::post('/teachers', [TeacherController::class, 'store']);
+        Route::patch('/teachers/{teacher}/approve', [TeacherController::class, 'approve']);
+        Route::patch('/teachers/{teacher}/reject', [TeacherController::class, 'reject']);
+        Route::patch('/teachers/{teacher}/reactivate', [TeacherController::class, 'reactivate']);
+        Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']);
+        Route::get('/teaching-assignments', [TeacherAssignmentController::class, 'index']);
+        Route::post('/teaching-assignments', [TeacherAssignmentController::class, 'store']);
+        Route::post('/teaching-assignments/sync', [TeacherAssignmentController::class, 'syncTeacher']);
+        Route::delete('/teaching-assignments/{teaching_assignment}', [TeacherAssignmentController::class, 'destroy']);
     });
 
-    // Teacher's Assigned Classes
+    // Teacher's Assigned Classes & Loads
     Route::get('/my-classes', [AssessmentController::class, 'myClasses']);
+    Route::get('/my-assignments', [TeacherAssignmentController::class, 'myAssignments']);
 
     // Assessment Scoring: Viewable by authenticated staff
-    Route::get('/assessments',             [AssessmentController::class, 'index']);
+    Route::get('/assessments/consolidation', [AssessmentController::class, 'consolidation']);
+    Route::get('/assessments', [AssessmentController::class, 'index']);
     Route::get('/assessments/{assessment}', [AssessmentController::class, 'show']);
 
     // Assessment Scoring: Write operations restricted to Teachers only!
     Route::middleware('role:teacher')->group(function () {
-        Route::post('/assessments',             [AssessmentController::class, 'store']);
-        Route::put('/assessments/{assessment}',  [AssessmentController::class, 'update']);
+        Route::post('/assessments', [AssessmentController::class, 'store']);
+        Route::put('/assessments/{assessment}', [AssessmentController::class, 'update']);
         Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destroy']);
     });
 });

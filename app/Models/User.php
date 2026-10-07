@@ -21,6 +21,8 @@ class User extends Authenticatable
         'email',
         'password',
         'is_active',
+        'approval_status',
+        'approved_at',
     ];
 
     /**
@@ -40,6 +42,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'approved_at' => 'datetime',
         ];
     }
 
@@ -65,5 +68,29 @@ class User extends Authenticatable
     public function hasRole(string $roleName): bool
     {
         return $this->roles->contains('name', $roleName);
+    }
+
+    /**
+     * Scope approved accounts.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    /**
+     * Scope accounts awaiting administrator approval.
+     */
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', 'pending');
+    }
+
+    /**
+     * Check if user account is approved.
+     */
+    public function isApproved(): bool
+    {
+        return $this->approval_status === 'approved';
     }
 }
