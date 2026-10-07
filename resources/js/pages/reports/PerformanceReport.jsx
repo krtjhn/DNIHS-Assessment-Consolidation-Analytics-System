@@ -339,47 +339,35 @@ export default function PerformanceReport() {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            {/* Header: Title & Assessment Type Switcher */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
-                <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                        Consolidated Performance Reports
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                        Multi-section DepEd statistical aggregation, MPS benchmarks, and summary analysis.
-                    </p>
-                </div>
-
-                {/* Assessment Type Switcher */}
-                <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80">
-                    <button
-                        type="button"
-                        onClick={() => setAssessmentType('term_exam')}
-                        className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                            assessmentType === 'term_exam'
-                                ? 'bg-white text-[#0071e3] shadow-2xs'
-                                : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                    >
-                        Term Exam
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setAssessmentType('diagnostic')}
-                        className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                            assessmentType === 'diagnostic'
-                                ? 'bg-white text-[#0071e3] shadow-2xs'
-                                : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                    >
-                        Diagnostic Test
-                    </button>
-                </div>
-            </div>
-
-            {/* Filter Toolbar: SY, Term, Section, Subject */}
+            {/* Filter Toolbar: Assessment Type + SY, Term, Section, Subject */}
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-2xs">
                 <div className="flex flex-wrap items-center gap-2">
+                    {/* Assessment Type Switcher */}
+                    <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200/80 mr-1">
+                        <button
+                            type="button"
+                            onClick={() => setAssessmentType('term_exam')}
+                            className={`rounded-lg px-3 py-1 text-xs font-bold transition-all ${
+                                assessmentType === 'term_exam'
+                                    ? 'bg-white text-[#0071e3] shadow-2xs'
+                                    : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                        >
+                            Term Exam
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setAssessmentType('diagnostic')}
+                            className={`rounded-lg px-3 py-1 text-xs font-bold transition-all ${
+                                assessmentType === 'diagnostic'
+                                    ? 'bg-white text-[#0071e3] shadow-2xs'
+                                    : 'text-slate-600 hover:text-slate-900'
+                            }`}
+                        >
+                            Diagnostic Test
+                        </button>
+                    </div>
+
                     <FilterPill
                         icon={
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

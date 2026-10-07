@@ -382,29 +382,6 @@ export default function SchoolCalendar() {
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Page Header Card */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
-                <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                        Academic Calendar & Term Lifecycle
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                        Manage school years, active grading terms, and term opening/closing transitions.
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setModalError('');
-                        setIsAddSYOpen(true);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
-                >
-                    <span className="text-sm leading-none">+</span>
-                    <span>Add School Year</span>
-                </button>
-            </div>
-
             {/* Flash Notice */}
             {notice && (
                 <div
@@ -468,6 +445,16 @@ export default function SchoolCalendar() {
                     <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
                         All School Years ({sortedSchoolYears.length})
                     </h3>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setModalError('');
+                            setIsAddSYOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                        <span>+ Add School Year</span>
+                    </button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-xs">

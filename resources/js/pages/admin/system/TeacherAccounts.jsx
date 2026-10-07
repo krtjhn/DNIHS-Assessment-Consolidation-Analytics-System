@@ -428,41 +428,9 @@ export default function TeacherAccounts() {
                 </div>
             )}
 
-            {/* Top Institutional Header Card */}
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs">
-                <div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-[#0071e3]">
-                        User Administration
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
-                        Faculty Accounts & Access Control
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-500 max-w-2xl leading-relaxed">
-                        Manage faculty accounts, review public registration requests, and control system access while safeguarding historical grade entries.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={() => {
-                        setModalError('');
-                        setIsAddOpen(true);
-                    }}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[#0071e3] px-4 py-2.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#0077ed] active:bg-[#0062c4] active:scale-[0.98] cursor-pointer"
-                >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <line x1="19" y1="8" x2="19" y2="14" />
-                        <line x1="22" y1="11" x2="16" y2="11" />
-                    </svg>
-                    <span>+ Add Faculty Member</span>
-                </button>
-            </div>
-
             {/* Main Content Card: Filter Bar + Faculty Roster Table */}
             <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
-                {/* Control Bar: Status Segments + Live Search */}
+                {/* Control Bar: Status Segments + Live Search + Add Button */}
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 p-4">
                     {/* Status Segments */}
                     <div role="tablist" aria-label="Faculty status filter" className="inline-flex rounded-xl bg-slate-200/60 p-1 text-xs">
@@ -520,15 +488,34 @@ export default function TeacherAccounts() {
                         </button>
                     </div>
 
-                    {/* Live Search Input */}
-                    <div className="relative w-full sm:w-64">
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search faculty name or email…"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
-                        />
+                    {/* Live Search Input & Add Action */}
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-64">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search faculty name or email…"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
+                            />
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setModalError('');
+                                setIsAddOpen(true);
+                            }}
+                            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#0071e3] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-[#0077ed] active:bg-[#0062c4] active:scale-[0.98] transition cursor-pointer"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <line x1="19" y1="8" x2="19" y2="14" />
+                                <line x1="22" y1="11" x2="16" y2="11" />
+                            </svg>
+                            <span>+ Add Faculty</span>
+                        </button>
                     </div>
                 </div>
 

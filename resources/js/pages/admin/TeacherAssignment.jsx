@@ -491,15 +491,10 @@ export default function TeacherAssignment() {
 
     return (
         <div className="flex flex-col gap-4 w-full">
-            {/* Page Header & SY Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
-                <div>
-                    <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                        Teacher Class Assignment Matrix
-                    </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                        Allocate and manage teaching loads across Grade 7–10 sections and subjects for Dayap NIHS.
-                    </p>
+            {/* Top Toolbar: SY Selector & Refresh */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-2xs">
+                <div className="text-xs font-semibold text-slate-500">
+                    Teaching load allocation across grade levels and sections
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -526,7 +521,7 @@ export default function TeacherAssignment() {
                         type="button"
                         onClick={() => fetchAssignments(selectedSYId)}
                         disabled={loading}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] cursor-pointer"
                     >
                         <span>↻ Refresh</span>
                     </button>

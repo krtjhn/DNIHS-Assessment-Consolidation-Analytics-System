@@ -10,11 +10,11 @@ export default function TopBar({
 }) {
     const pageDetails = {
         records: { title: 'Record Entry', eyebrow: 'Academic Records' },
-        consolidation: { title: 'Consolidated Performance Reports', eyebrow: 'Analytics & Reporting' },
+        consolidation: { title: 'Consolidated Reports', eyebrow: 'Analytics & Reporting' },
         sections: { title: 'Section Management', eyebrow: 'Administration' },
-        assignments: { title: 'Teacher Class Assignments', eyebrow: 'Faculty Workload' },
-        calendar: { title: 'School Calendar & Terms', eyebrow: 'Academic Settings' },
-        teachers: { title: 'Faculty Accounts Management', eyebrow: 'User Administration' },
+        assignments: { title: 'Class Assignments', eyebrow: 'Faculty Workload' },
+        calendar: { title: 'School Calendar', eyebrow: 'Academic Settings' },
+        teachers: { title: 'Teacher Accounts', eyebrow: 'User Administration' },
     };
 
     const currentPage = pageDetails[activeTab] || pageDetails.records;

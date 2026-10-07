@@ -195,7 +195,7 @@ export default function App() {
                             <TeacherAssignment />
                         ) : (
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Teaching Class Assignments are restricted to System Administrators.
+                                Class Assignments are restricted to System Administrators.
                             </div>
                         )
                     )}
@@ -204,7 +204,7 @@ export default function App() {
                             <SchoolCalendar />
                         ) : (
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Academic Calendar Management is restricted to System Administrators.
+                                School Calendar is restricted to System Administrators.
                             </div>
                         )
                     )}
@@ -213,7 +213,7 @@ export default function App() {
                             <TeacherAccounts />
                         ) : (
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Faculty Accounts Management is restricted to System Administrators.
+                                Teacher Accounts are restricted to System Administrators.
                             </div>
                         )
                     )}

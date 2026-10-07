@@ -262,47 +262,43 @@ export default function SectionList() {
 
     return (
         <div className="space-y-6">
-            {/* Header Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs">
-                <div>
-                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">Section Management</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                        Manage and register classroom sections for Dayap National Integrated High School.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="sy-filter" className="text-xs font-semibold text-slate-600">SY:</label>
-                        <select
-                            id="sy-filter"
-                            value={selectedSYId}
-                            onChange={(e) => setSelectedSYId(e.target.value)}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
-                        >
-                            {schoolYears.map((sy) => (
-                                <option key={sy.id} value={sy.id}>
-                                    SY {sy.year || sy.name} {sy.is_active ? '(Active)' : ''}
-                                </option>
-                            ))}
-                        </select>
+            {/* Sections Table Card with integrated controls */}
+            <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 p-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        All Sections ({filteredSections.length})
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setModalError('');
-                            setIsAddModalOpen(true);
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] px-3.5 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#0077ed] transition-all active:scale-[0.98]"
-                    >
-                        <span>+ Add Section</span>
-                    </button>
-                </div>
-            </div>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="sy-filter" className="text-xs font-semibold text-slate-600">SY:</label>
+                            <select
+                                id="sy-filter"
+                                value={selectedSYId}
+                                onChange={(e) => setSelectedSYId(e.target.value)}
+                                className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
+                            >
+                                {schoolYears.map((sy) => (
+                                    <option key={sy.id} value={sy.id}>
+                                        SY {sy.year || sy.name} {sy.is_active ? '(Active)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-            {/* Sections Table Card */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setModalError('');
+                                setIsAddModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-[#0077ed] transition-all active:scale-[0.98] cursor-pointer"
+                        >
+                            <span>+ Add Section</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                         <thead>

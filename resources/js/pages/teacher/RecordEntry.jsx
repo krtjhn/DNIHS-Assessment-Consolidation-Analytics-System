@@ -219,14 +219,6 @@ export default function RecordEntry({ user }) {
 
     return (
         <div className="space-y-6">
-            {/* Header Description */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs">
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight">Record Entry Portal</h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                    Select your academic term, assessment type, and teaching load to encode scores.
-                </p>
-            </div>
-
             {/* Class Selector Card */}
             <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-5">
                 <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
