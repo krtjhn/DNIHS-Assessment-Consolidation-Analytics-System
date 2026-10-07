@@ -72,24 +72,29 @@ class TeacherAssignmentController extends Controller
         $validated = $request->validated();
         $effectiveFrom = $validated['effective_from'] ?? now()->toDateString();
 
-        $assignment = DB::transaction(function () use ($validated, $request, $effectiveFrom) {
-            // End an existing active assignment for the same subject, section, and school year.
-            TeachingAssignment::where('school_year_id', $validated['school_year_id'])
-                ->where('section_id', $validated['section_id'])
-                ->where('subject_id', $validated['subject_id'])
-                ->active()
-                ->update(['effective_until' => now()->toDateString()]);
+        $existing = TeachingAssignment::where('school_year_id', $validated['school_year_id'])
+            ->where('section_id', $validated['section_id'])
+            ->where('subject_id', $validated['subject_id'])
+            ->active()
+            ->with('teacher')
+            ->first();
 
-            // Create the assignment.
-            return TeachingAssignment::create([
-                'user_id' => $validated['user_id'],
-                'school_year_id' => $validated['school_year_id'],
-                'section_id' => $validated['section_id'],
-                'subject_id' => $validated['subject_id'],
-                'effective_from' => $effectiveFrom,
-                'assigned_by' => $request->user()->id,
-            ]);
-        });
+        if ($existing) {
+            $teacherName = $existing->teacher?->name ?? 'another faculty member';
+
+            return response()->json([
+                'message' => "This class is already assigned to {$teacherName}. It cannot be reassigned while taken.",
+            ], 422);
+        }
+
+        $assignment = TeachingAssignment::create([
+            'user_id' => $validated['user_id'],
+            'school_year_id' => $validated['school_year_id'],
+            'section_id' => $validated['section_id'],
+            'subject_id' => $validated['subject_id'],
+            'effective_from' => $effectiveFrom,
+            'assigned_by' => $request->user()->id,
+        ]);
 
         return response()->json([
             'message' => 'Teaching assignment created successfully.',

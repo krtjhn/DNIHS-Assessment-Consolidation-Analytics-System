@@ -34,7 +34,7 @@ class TeacherAssignmentTest extends TestCase
             ->assertJsonStructure(['data']);
     }
 
-    public function test_admin_can_assign_teacher_to_class_and_ends_previous_assignment(): void
+    public function test_admin_cannot_assign_class_that_is_already_taken(): void
     {
         $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
         $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
@@ -54,9 +54,7 @@ class TeacherAssignmentTest extends TestCase
         $response1->assertStatus(201)
             ->assertJsonPath('data.user_id', $teacher->id);
 
-        $assignment1Id = $response1->json('data.id');
-
-        // 2. Re-assigning to another user transfers/ends the previous assignment
+        // 2. Re-assigning to another user is strictly blocked (422)
         $anotherTeacher = User::create([
             'name' => 'Test Teacher',
             'email' => 'test.teacher_'.uniqid().'@dayapnhs.edu.ph',
@@ -72,9 +70,8 @@ class TeacherAssignmentTest extends TestCase
             'effective_from' => '2025-06-16',
         ]);
 
-        $response2->assertStatus(201);
-
-        $this->assertNotNull(TeachingAssignment::find($assignment1Id)->effective_until);
+        $response2->assertStatus(422)
+            ->assertJsonPath('message', "This class is already assigned to {$teacher->name}. It cannot be reassigned while taken.");
     }
 
     public function test_admin_can_bulk_sync_teacher_loads(): void

@@ -119,7 +119,20 @@ function AddClassForm({
     currentConflict,
     actionLoading,
     onSubmit,
+    assignments = [],
+    selectedSYId,
 }) {
+    // Helper to find if a subject is already taken for the currently selected section in this school year
+    const getSubjectConflict = (subjectId) => {
+        if (!addSectionId) return null;
+        return assignments.find(
+            (a) =>
+                String(a.section_id) === String(addSectionId) &&
+                String(a.subject_id) === String(subjectId) &&
+                String(a.school_year_id) === String(selectedSYId)
+        );
+    };
+
     return (
         <div className="p-4 border-b border-slate-100 bg-white">
             <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2.5">
@@ -188,29 +201,40 @@ function AddClassForm({
                             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] disabled:bg-slate-50 disabled:text-slate-400"
                         >
                             <option value="">{addGradeId ? 'Select Subject' : 'Select Grade First'}</option>
-                            {availableSubjects.map((subj) => (
-                                <option key={subj.id} value={subj.id}>
-                                    {subj.name}
-                                </option>
-                            ))}
+                            {availableSubjects.map((subj) => {
+                                const conflict = getSubjectConflict(subj.id);
+                                const isTaken = Boolean(conflict);
+                                const label = isTaken
+                                    ? `${subj.name} (Taken - ${conflict.teacher?.name || 'Assigned'})`
+                                    : subj.name;
+
+                                return (
+                                    <option key={subj.id} value={subj.id} disabled={isTaken}>
+                                        {label}
+                                    </option>
+                                );
+                            })}
                         </select>
                     </div>
                 </div>
 
-                {/* Conflict / Re-assignment Banner */}
-                {currentConflict && currentConflict.user_id !== teacher.id && (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 font-medium">
-                        ⚠️ <strong>Notice:</strong> This class is currently handled by{' '}
-                        <span className="font-bold underline">{currentConflict.teacher?.name || 'another teacher'}</span>.
-                        Assigning it to {teacher.name} will transfer the class load.
+                {/* Class Already Taken Banner */}
+                {currentConflict && (
+                    <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900 font-medium flex items-center gap-2.5">
+                        <span className="text-sm leading-none shrink-0 font-bold text-rose-700">⛔</span>
+                        <div>
+                            <strong>Bawal: Nakuha na ang klaseng ito.</strong> Kasalukuyan itong hawak ni{' '}
+                            <span className="font-bold underline">{currentConflict.teacher?.name || 'ibang guro'}</span>.
+                            Hindi na maaaring i-assign ang klaseng may nakatalaga na. Paki-remove muna ang existing assignment sa ibaba kung nais itong ilipat.
+                        </div>
                     </div>
                 )}
 
                 <div className="flex justify-end pt-1">
                     <button
                         type="submit"
-                        disabled={actionLoading || !addSectionId || !addSubjectId}
-                        className="rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
+                        disabled={actionLoading || !addSectionId || !addSubjectId || Boolean(currentConflict)}
+                        className="rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
                     >
                         {actionLoading ? 'Assigning…' : '+ Assign Class'}
                     </button>
@@ -598,6 +622,8 @@ export default function TeacherAssignment() {
                                 availableSections={availableSections}
                                 availableSubjects={availableSubjects}
                                 currentConflict={currentConflict}
+                                assignments={assignments}
+                                selectedSYId={selectedSYId}
                                 actionLoading={actionLoading}
                                 onSubmit={handleAssignClass}
                             />
