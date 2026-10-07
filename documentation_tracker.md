@@ -17,7 +17,7 @@ Dito nakasaad ang bawat ginagawa natin sa `C:\Users\acer\Documents\BSIT\m_capsto
 | :--- | :--- | :---: |
 | **1. MVC Request Flow** | **Route** (`api.php`) ➔ **Middleware** (`role`, `auth:sanctum`) ➔ **FormRequest** (`StoreSectionRequest`, etc.) ➔ **Controller** (`SectionController`, etc.) ➔ **Model** (`Section`, `AssessmentRecord`) ➔ **React View**. | 🟡 In Progress |
 | **2. Clean Migrations & Seeders** | 9 bagong migrations sa PostgreSQL na tumatakbo sa isang command lang: `php artisan migrate:fresh --seed` nang walang lumang patch errors. | 🟢 Completed |
-| **3. Validation & Mass Assignment (2 Core Entities)** | • **Entity 1 (Admin)**: `Section` (`sections` table) - Full CRUD.<br>• **Entity 2 (Teacher)**: `AssessmentRecord` (`assessment_records` table) - Full CRUD + Stats. May `$fillable` at Form Requests. | 🟡 In Progress |
+| **3. Validation & Mass Assignment (2 Core Entities)** | • **Entity 1 (Admin)**: `Section` (`sections` table) - Full CRUD.<br>• **Entity 2 (Teacher)**: `AssessmentRecord` (`assessment_records` table) - Full CRUD + Stats. May `$fillable` at Form Requests. | 🟢 Completed (Entity 1 Done) |
 | **4. Authentication & Role Checks** | • **Registration**: `POST /api/auth/register`<br>• **Login & Logout**: `POST /api/auth/login`, `POST /api/auth/logout`<br>• **Roles**: `system_admin` at `teacher`<br>• **Route Protection**: `EnsureUserHasRole` middleware. | 🟢 Completed |
 | **5. Database Normalization & Key Choices** | 3NF compliant schema, foreign keys na may cascading rules, composite keys sa pivot (`role_user`), at native `json` column para sa raw scores. | 🟢 Completed |
 
