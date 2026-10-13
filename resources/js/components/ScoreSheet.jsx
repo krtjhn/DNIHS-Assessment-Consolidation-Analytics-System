@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { api } from '../api';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 export default function ScoreSheet({
     selectedTerm,
@@ -234,7 +235,14 @@ export default function ScoreSheet({
                         onClick={handleSaveRecord}
                         className="rounded-xl bg-[#0071e3] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98] shadow-2xs disabled:opacity-50"
                     >
-                        {saving ? 'Saving…' : 'Save Score Sheet'}
+                        {saving ? (
+                            <span className="inline-flex items-center gap-1.5">
+                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                <span>Saving…</span>
+                            </span>
+                        ) : (
+                            'Save Score Sheet'
+                        )}
                     </button>
                 </div>
             </div>

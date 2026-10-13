@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 /**
  * Subcomponent: Teacher List Sidebar
@@ -25,7 +26,7 @@ function TeacherListSidebar({
     }, [assignments, selectedSYId]);
 
     return (
-        <div className="lg:col-span-4 rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
+        <div className="lg:col-span-4 xl:col-span-3 rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
             <div className="p-3.5 border-b border-slate-100 bg-slate-50/70">
                 <input
                     type="text"
@@ -236,7 +237,14 @@ function AddClassForm({
                         disabled={actionLoading || !addSectionId || !addSubjectId || Boolean(currentConflict)}
                         className="rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-4 py-2 text-xs font-semibold text-white shadow-2xs transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
                     >
-                        {actionLoading ? 'Assigning…' : '+ Assign Class'}
+                        {actionLoading ? (
+                            <span className="inline-flex items-center gap-1.5">
+                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                <span>Assigning…</span>
+                            </span>
+                        ) : (
+                            '+ Assign Class'
+                        )}
                     </button>
                 </div>
             </form>
@@ -506,9 +514,8 @@ export default function TeacherAssignment() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-400">
-                <div className="size-6 animate-spin rounded-full border-2 border-[#0071e3] border-t-transparent mb-2" />
-                <span className="text-xs font-medium">Loading faculty matrix…</span>
+            <div className="flex flex-col items-center justify-center p-12">
+                <LoadingIndicator type="dot-circle" size="md" label="Loading faculty matrix…" />
             </div>
         );
     }
@@ -586,7 +593,7 @@ export default function TeacherAssignment() {
                 />
 
                 {/* Right Pane: Selected Teacher's Workload Sheet */}
-                <div className="lg:col-span-8 rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
+                <div className="lg:col-span-8 xl:col-span-9 rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
                     {selectedTeacher ? (
                         <>
                             {/* Teacher Profile Banner */}

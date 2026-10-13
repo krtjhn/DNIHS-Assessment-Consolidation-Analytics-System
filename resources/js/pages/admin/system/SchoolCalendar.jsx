@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../api';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 /**
  * 1. Term Card Component
@@ -230,7 +231,14 @@ function AddSchoolYearModal({ isOpen, onClose, form, onFormChange, onSubmit, sav
                             disabled={saving}
                             className="rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-4 py-2 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
                         >
-                            {saving ? 'Creating...' : 'Create School Year'}
+                            {saving ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                    <span>Creating…</span>
+                                </span>
+                            ) : (
+                                'Create School Year'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -373,9 +381,8 @@ export default function SchoolCalendar() {
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-400">
-                <div className="size-6 animate-spin rounded-full border-2 border-[#0071e3] border-t-transparent mb-2" />
-                <span className="text-xs font-medium">Loading school calendar…</span>
+            <div className="flex flex-col items-center justify-center p-12">
+                <LoadingIndicator type="dot-circle" size="md" label="Loading school calendar…" />
             </div>
         );
     }

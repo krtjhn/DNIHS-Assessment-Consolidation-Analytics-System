@@ -9,6 +9,7 @@ import PerformanceReport from './pages/reports/PerformanceReport';
 import SchoolCalendar from './pages/admin/system/SchoolCalendar';
 import TeacherAssignment from './pages/admin/TeacherAssignment';
 import TeacherAccounts from './pages/admin/system/TeacherAccounts';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 /**
  * @file App.jsx
@@ -21,8 +22,21 @@ export default function App() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 2. Navigation & Layout State
-    const [activeTab, setActiveTab] = useState('records');
+    // 2. Navigation & Layout State (Persisted in localStorage and URL hash)
+    const [activeTab, setActiveTabState] = useState(() => {
+        const hash = window.location.hash?.replace('#', '');
+        const saved = localStorage.getItem('activeTab');
+        return hash || saved || 'consolidation';
+    });
+
+    const setActiveTab = (tab) => {
+        setActiveTabState(tab);
+        localStorage.setItem('activeTab', tab);
+        if (window.location.hash !== `#${tab}`) {
+            window.location.hash = tab;
+        }
+    };
+
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -42,12 +56,22 @@ export default function App() {
             loadAcademicPeriod();
         }
 
+        function handleHashChange() {
+            const hash = window.location.hash?.replace('#', '');
+            if (hash) {
+                setActiveTabState(hash);
+                localStorage.setItem('activeTab', hash);
+            }
+        }
+
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         window.addEventListener('academic-period:updated', handlePeriodUpdated);
+        window.addEventListener('hashchange', handleHashChange);
 
         return () => {
             window.removeEventListener('auth:unauthorized', handleUnauthorized);
             window.removeEventListener('academic-period:updated', handlePeriodUpdated);
+            window.removeEventListener('hashchange', handleHashChange);
         };
     }, []);
 
@@ -64,7 +88,19 @@ export default function App() {
             setToken(storedToken);
 
             const isAdmin = res.user?.roles?.some((r) => r.name === 'system_admin');
-            setActiveTab(isAdmin ? 'sections' : 'records');
+            const hash = window.location.hash?.replace('#', '');
+            const saved = localStorage.getItem('activeTab');
+            let targetTab = hash || saved;
+
+            if (!targetTab) {
+                targetTab = isAdmin ? 'consolidation' : 'records';
+            } else if (!isAdmin && targetTab !== 'records' && targetTab !== 'consolidation') {
+                targetTab = 'records';
+            } else if (isAdmin && targetTab === 'records') {
+                targetTab = 'consolidation';
+            }
+
+            setActiveTab(targetTab);
 
             // Load reference data for TopBar active SY badge
             loadAcademicPeriod();
@@ -95,7 +131,10 @@ export default function App() {
         setToken(newToken);
         setUser(loggedInUser);
         const isAdmin = loggedInUser?.roles?.some((r) => r.name === 'system_admin');
-        setActiveTab(isAdmin ? 'sections' : 'records');
+        const hash = window.location.hash?.replace('#', '');
+        const saved = localStorage.getItem('activeTab');
+        const targetTab = hash || saved || (isAdmin ? 'consolidation' : 'records');
+        setActiveTab(targetTab);
         loadAcademicPeriod();
     }
 
@@ -117,15 +156,7 @@ export default function App() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
-                <div className="flex flex-col items-center gap-3">
-                    <svg className="animate-spin h-8 w-8 text-[#0071e3]" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                    </svg>
-                    <span className="text-xs font-semibold text-slate-500 tracking-wider uppercase">
-                        Loading portal…
-                    </span>
-                </div>
+                <LoadingIndicator type="dot-circle" size="lg" label="Loading portal…" />
             </div>
         );
     }
@@ -169,8 +200,8 @@ export default function App() {
                     onOpenMobileSidebar={() => setIsMobileOpen(true)}
                 />
 
-                {/* Main Dynamic Workspace Area */}
-                <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1520px] w-full mx-auto">
+                {/* Main Dynamic Workspace Area - Wide layout with high information density */}
+                <main className="flex-1 w-full px-3 sm:px-5 md:px-6 py-4">
                     {activeTab === 'records' && (
                         !isAdmin ? (
                             <RecordEntry user={user} />

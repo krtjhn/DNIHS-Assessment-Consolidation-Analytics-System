@@ -9,6 +9,7 @@ use App\Http\Requests\Assessments\UpdateAssessmentRequest;
 use App\Http\Resources\AssessmentRecordResource;
 use App\Models\AssessmentRecord;
 use App\Models\TeachingAssignment;
+use App\Models\Term;
 use App\Services\StatsCalculatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -71,6 +72,31 @@ class AssessmentController extends Controller
     public function store(StoreAssessmentRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $isAdmin = $request->user()->hasRole('system_admin');
+
+        // Academic Calendar Lock: verify term is active
+        $term = Term::find($validated['term_id']);
+        if (! $isAdmin && (! $term || ! $term->isOpen())) {
+            return response()->json([
+                'message' => 'The academic calendar term is closed or inactive. Scores cannot be recorded for this term.',
+            ], 422);
+        }
+
+        // Strict Teaching Assignment Enforcement: verify teacher is assigned to this class
+        if (! $isAdmin) {
+            $isAssigned = TeachingAssignment::where([
+                'user_id' => $request->user()->id,
+                'school_year_id' => $validated['school_year_id'],
+                'section_id' => $validated['section_id'],
+                'subject_id' => $validated['subject_id'],
+            ])->active()->exists();
+
+            if (! $isAssigned) {
+                return response()->json([
+                    'message' => 'You are not assigned to teach this class. Only assigned teachers or administrators can record scores.',
+                ], 403);
+            }
+        }
 
         // Check if an assessment already exists for this exact class and term
         $existing = AssessmentRecord::where([
@@ -81,7 +107,7 @@ class AssessmentController extends Controller
             'type' => $validated['type'],
         ])->first();
 
-        if ($existing && ! $request->user()->hasRole('system_admin') && $existing->teacher_id !== $request->user()->id) {
+        if ($existing && ! $isAdmin && $existing->teacher_id !== $request->user()->id) {
             $existingTeacher = $existing->teacher?->name ?? 'another faculty member';
 
             return response()->json([
@@ -151,10 +177,20 @@ class AssessmentController extends Controller
      */
     public function update(UpdateAssessmentRequest $request, AssessmentRecord $assessment): JsonResponse
     {
-        if (! $request->user()->hasRole('system_admin') && $assessment->teacher_id !== $request->user()->id) {
-            return response()->json([
-                'message' => "You are not authorized to update another teacher's assessment record.",
-            ], 403);
+        $isAdmin = $request->user()->hasRole('system_admin');
+
+        if (! $isAdmin) {
+            if ($assessment->teacher_id !== $request->user()->id) {
+                return response()->json([
+                    'message' => "You are not authorized to update another teacher's assessment record.",
+                ], 403);
+            }
+
+            if (! $assessment->term || ! $assessment->term->isOpen()) {
+                return response()->json([
+                    'message' => 'The academic calendar term is closed. Historical score sheets cannot be modified.',
+                ], 422);
+            }
         }
 
         $validated = $request->validated();
@@ -193,10 +229,20 @@ class AssessmentController extends Controller
      */
     public function destroy(Request $request, AssessmentRecord $assessment): JsonResponse
     {
-        if (! $request->user()->hasRole('system_admin') && $assessment->teacher_id !== $request->user()->id) {
-            return response()->json([
-                'message' => "You are not authorized to delete another teacher's assessment record.",
-            ], 403);
+        $isAdmin = $request->user()->hasRole('system_admin');
+
+        if (! $isAdmin) {
+            if ($assessment->teacher_id !== $request->user()->id) {
+                return response()->json([
+                    'message' => "You are not authorized to delete another teacher's assessment record.",
+                ], 403);
+            }
+
+            if (! $assessment->term || ! $assessment->term->isOpen()) {
+                return response()->json([
+                    'message' => 'The academic calendar term is closed. Historical records cannot be deleted.',
+                ], 422);
+            }
         }
 
         $assessment->delete();

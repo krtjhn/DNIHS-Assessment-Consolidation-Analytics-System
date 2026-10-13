@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../api';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 /**
  * Helper: Generate 2-letter uppercase initials from full name
@@ -122,7 +123,14 @@ function AddTeacherModal({ isOpen, onClose, form, onFormChange, onSubmit, saving
                             disabled={saving}
                             className="rounded-xl bg-[#0071e3] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98] shadow-2xs disabled:opacity-50"
                         >
-                            {saving ? 'Provisioning…' : 'Create Account'}
+                            {saving ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                    <span>Provisioning…</span>
+                                </span>
+                            ) : (
+                                'Create Account'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -173,7 +181,14 @@ function RevokeAccessModal({ teacher, isOpen, onClose, onConfirm, saving }) {
                         onClick={onConfirm}
                         className="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-1.5 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
                     >
-                        {saving ? 'Revoking…' : 'Revoke Access'}
+                        {saving ? (
+                            <span className="inline-flex items-center gap-1.5">
+                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                <span>Revoking…</span>
+                            </span>
+                        ) : (
+                            'Revoke Access'
+                        )}
                     </button>
                 </div>
             </div>
@@ -223,7 +238,14 @@ function RejectApplicantModal({ teacher, isOpen, onClose, onConfirm, saving }) {
                         onClick={onConfirm}
                         className="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-1.5 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
                     >
-                        {saving ? 'Rejecting…' : 'Reject Request'}
+                        {saving ? (
+                            <span className="inline-flex items-center gap-1.5">
+                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                <span>Rejecting…</span>
+                            </span>
+                        ) : (
+                            'Reject Request'
+                        )}
                     </button>
                 </div>
             </div>
@@ -522,12 +544,8 @@ export default function TeacherAccounts() {
                 {/* Faculty Table */}
                 <div className="overflow-x-auto">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center p-12 text-slate-400 gap-2">
-                            <svg className="animate-spin h-6 w-6 text-[#0071e3]" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                            <span className="text-xs">Loading faculty accounts…</span>
+                        <div className="flex flex-col items-center justify-center p-12">
+                            <LoadingIndicator type="dot-circle" size="md" label="Loading faculty accounts…" />
                         </div>
                     ) : (
                         <table className="w-full border-collapse text-left text-xs">

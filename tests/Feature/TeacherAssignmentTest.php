@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Subject;
@@ -60,7 +61,10 @@ class TeacherAssignmentTest extends TestCase
             'email' => 'test.teacher_'.uniqid().'@dayapnhs.edu.ph',
             'password' => bcrypt('Password@123'),
             'is_active' => true,
+            'approval_status' => 'approved',
         ]);
+        $teacherRole = Role::firstOrCreate(['name' => 'teacher'], ['description' => 'Teacher']);
+        $anotherTeacher->roles()->attach($teacherRole->id);
 
         $response2 = $this->actingAs($admin)->postJson('/api/teaching-assignments', [
             'user_id' => $anotherTeacher->id,

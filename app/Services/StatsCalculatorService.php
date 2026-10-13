@@ -27,7 +27,7 @@ class StatsCalculatorService
                 'highest_score' => 0.0,
                 'lowest_score' => 0.0,
                 'total_items' => (int) $totalItems,
-                'mastery_level' => 'No Mastery',
+                'mastery_level' => 'Pending',
             ];
         }
 
@@ -80,6 +80,7 @@ class StatsCalculatorService
 
     /**
      * Compute consolidated summary metrics across multiple assessment records.
+     * Uses exact raw score pooling when available or true pooled population variance and weighted mean.
      *
      * @param  Collection<int, mixed>  $records
      * @return array{total_sections_encoded: int, total_examinees: int, overall_mean: float, overall_mps: float, overall_sd: float, overall_mastery: string}
@@ -88,16 +89,84 @@ class StatsCalculatorService
     {
         $count = $records->count();
         $totalExaminees = (int) $records->sum('no_of_entries');
-        $overallMean = $count > 0 ? round((float) $records->avg('mean'), 2) : 0.00;
-        $overallMps = $count > 0 ? round((float) $records->avg('mps'), 2) : 0.00;
-        $overallSd = $count > 0 ? round((float) $records->avg('sd'), 2) : 0.00;
+
+        if ($count === 0 || $totalExaminees === 0) {
+            return [
+                'total_sections_encoded' => $count,
+                'total_examinees' => 0,
+                'overall_mean' => 0.00,
+                'overall_mps' => 0.00,
+                'overall_sd' => 0.00,
+                'overall_mastery' => 'Absolutely No Mastery',
+            ];
+        }
+
+        // Collect all available raw scores from records
+        $allRawScores = [];
+        foreach ($records as $record) {
+            $raw = is_array($record->raw_scores)
+                ? $record->raw_scores
+                : json_decode($record->raw_scores ?? '[]', true);
+
+            if (is_array($raw)) {
+                foreach ($raw as $score) {
+                    if (is_numeric($score)) {
+                        $allRawScores[] = (float) $score;
+                    }
+                }
+            }
+        }
+
+        // 1. If raw scores match total examinees, compute exact population mean and SD
+        if (count($allRawScores) === $totalExaminees && $totalExaminees > 0) {
+            $overallMean = array_sum($allRawScores) / $totalExaminees;
+            $variance = array_reduce(
+                $allRawScores,
+                fn ($carry, $score) => $carry + ($score - $overallMean) ** 2,
+                0.0
+            ) / $totalExaminees;
+            $overallSd = sqrt($variance);
+        } else {
+            // 2. Otherwise calculate exact pooled weighted mean and pooled population variance
+            // Pooled Mean: sum(n_i * mean_i) / sum(n_i)
+            $sumWeightedMean = 0.0;
+            foreach ($records as $r) {
+                $n = (int) ($r->no_of_entries ?? 0);
+                $meanVal = (float) ($r->mean ?? 0.0);
+                $sumWeightedMean += $meanVal * ($n > 0 ? $n : 1);
+            }
+            $overallMean = $totalExaminees > 0 ? ($sumWeightedMean / $totalExaminees) : 0.0;
+
+            // Pooled Population Variance: sum(n_i * (sd_i^2 + (mean_i - mean_pooled)^2)) / sum(n_i)
+            $sumVarianceComponents = 0.0;
+            foreach ($records as $r) {
+                $n = (int) ($r->no_of_entries ?? 0);
+                $meanVal = (float) ($r->mean ?? 0.0);
+                $sdVal = (float) ($r->sd ?? 0.0);
+                $weight = $n > 0 ? $n : 1;
+                $varianceI = $sdVal ** 2;
+                $betweenGroupI = ($meanVal - $overallMean) ** 2;
+                $sumVarianceComponents += $weight * ($varianceI + $betweenGroupI);
+            }
+            $pooledVariance = $totalExaminees > 0 ? ($sumVarianceComponents / $totalExaminees) : 0.0;
+            $overallSd = sqrt($pooledVariance);
+        }
+
+        // Weighted MPS: sum(n_i * mps_i) / sum(n_i)
+        $sumWeightedMps = 0.0;
+        foreach ($records as $r) {
+            $n = (int) ($r->no_of_entries ?? 0);
+            $mpsVal = (float) ($r->mps ?? 0.0);
+            $sumWeightedMps += $mpsVal * ($n > 0 ? $n : 1);
+        }
+        $overallMps = $totalExaminees > 0 ? ($sumWeightedMps / $totalExaminees) : 0.0;
 
         return [
             'total_sections_encoded' => $count,
             'total_examinees' => $totalExaminees,
-            'overall_mean' => $overallMean,
-            'overall_mps' => $overallMps,
-            'overall_sd' => $overallSd,
+            'overall_mean' => round($overallMean, 2),
+            'overall_mps' => round($overallMps, 2),
+            'overall_sd' => round($overallSd, 2),
             'overall_mastery' => $this->classifyMasteryLevel($overallMps),
         ];
     }

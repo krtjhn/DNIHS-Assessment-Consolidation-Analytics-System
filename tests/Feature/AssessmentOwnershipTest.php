@@ -3,6 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\AssessmentRecord;
+use App\Models\SchoolYear;
+use App\Models\Section;
+use App\Models\Subject;
+use App\Models\TeachingAssignment;
+use App\Models\Term;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -11,6 +16,19 @@ class AssessmentOwnershipTest extends TestCase
 {
     use DatabaseTransactions;
 
+    protected function createTestRecord(array $attrs): AssessmentRecord
+    {
+        AssessmentRecord::where([
+            'school_year_id' => $attrs['school_year_id'],
+            'term_id' => $attrs['term_id'],
+            'section_id' => $attrs['section_id'],
+            'subject_id' => $attrs['subject_id'],
+            'type' => $attrs['type'],
+        ])->delete();
+
+        return AssessmentRecord::create($attrs);
+    }
+
     /**
      * Test a teacher only receives their own recorded score sheets in the assessments index.
      */
@@ -18,14 +36,18 @@ class AssessmentOwnershipTest extends TestCase
     {
         $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
         $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+        $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
+        $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
+        $subject = Subject::first();
 
         // Create an assessment record for Teacher 2
-        $record2 = AssessmentRecord::create([
-            'school_year_id' => 1,
-            'term_id' => 1,
-            'grade_level_id' => 1,
-            'section_id' => 2,
-            'subject_id' => 2,
+        $record2 = $this->createTestRecord([
+            'school_year_id' => $sy->id,
+            'term_id' => $term->id,
+            'grade_level_id' => $section->grade_level_id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
             'teacher_id' => $teacher2->id,
             'type' => 'diagnostic',
             'total_items' => 50,
@@ -56,13 +78,17 @@ class AssessmentOwnershipTest extends TestCase
     {
         $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
         $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+        $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
+        $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
+        $subject = Subject::first();
 
-        $record2 = AssessmentRecord::create([
-            'school_year_id' => 1,
-            'term_id' => 1,
-            'grade_level_id' => 1,
-            'section_id' => 2,
-            'subject_id' => 2,
+        $record2 = $this->createTestRecord([
+            'school_year_id' => $sy->id,
+            'term_id' => $term->id,
+            'grade_level_id' => $section->grade_level_id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
             'teacher_id' => $teacher2->id,
             'type' => 'diagnostic',
             'total_items' => 50,
@@ -93,13 +119,17 @@ class AssessmentOwnershipTest extends TestCase
     {
         $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
         $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+        $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
+        $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
+        $subject = Subject::first();
 
-        $record2 = AssessmentRecord::create([
-            'school_year_id' => 1,
-            'term_id' => 1,
-            'grade_level_id' => 1,
-            'section_id' => 2,
-            'subject_id' => 2,
+        $record2 = $this->createTestRecord([
+            'school_year_id' => $sy->id,
+            'term_id' => $term->id,
+            'grade_level_id' => $section->grade_level_id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
             'teacher_id' => $teacher2->id,
             'type' => 'diagnostic',
             'total_items' => 50,
@@ -127,13 +157,35 @@ class AssessmentOwnershipTest extends TestCase
     {
         $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
         $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+        $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
+        $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
+        $subject = Subject::first();
+
+        // Ensure teacher1 is assigned to class so teaching assignment check passes
+        TeachingAssignment::firstOrCreate([
+            'user_id' => $teacher1->id,
+            'school_year_id' => $sy->id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
+        ], [
+            'effective_from' => now()->toDateString(),
+        ]);
+
+        AssessmentRecord::where([
+            'school_year_id' => $sy->id,
+            'term_id' => $term->id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
+            'type' => 'diagnostic',
+        ])->delete();
 
         AssessmentRecord::create([
-            'school_year_id' => 1,
-            'term_id' => 1,
-            'grade_level_id' => 1,
-            'section_id' => 2,
-            'subject_id' => 2,
+            'school_year_id' => $sy->id,
+            'term_id' => $term->id,
+            'grade_level_id' => $section->grade_level_id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
             'teacher_id' => $teacher2->id,
             'type' => 'diagnostic',
             'total_items' => 50,
@@ -150,11 +202,11 @@ class AssessmentOwnershipTest extends TestCase
 
         // Teacher 1 tries to POST to the same exact slot
         $response = $this->actingAs($teacher1)->postJson('/api/assessments', [
-            'school_year_id' => 1,
-            'term_id' => 1,
-            'grade_level_id' => 1,
-            'section_id' => 2,
-            'subject_id' => 2,
+            'school_year_id' => $sy->id,
+            'term_id' => $term->id,
+            'grade_level_id' => $section->grade_level_id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
             'type' => 'diagnostic',
             'total_items' => 50,
             'raw_scores' => [50, 50],
@@ -167,13 +219,35 @@ class AssessmentOwnershipTest extends TestCase
     }
 
     /**
+     * Test admin can update any teacher's assessment record (Issue 9 resolved).
+     */
+    public function test_admin_can_update_any_teachers_record(): void
+    {
+        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $record = AssessmentRecord::first();
+        $this->assertNotNull($record, 'Assessment record fixture required');
+
+        $response = $this->actingAs($admin)->putJson("/api/assessments/{$record->id}", [
+            'total_items' => 50,
+            'raw_scores' => [48, 49, 50],
+            'least_learned_competency' => 'Admin updated competency',
+            'remarks' => 'Admin verification',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Assessment scores updated and recalculated successfully.');
+    }
+
+    /**
      * Test admin can view all assessments in consolidation report regardless of teacher.
      */
     public function test_admin_can_view_all_assessments_in_consolidation(): void
     {
         $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+        $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
 
-        $response = $this->actingAs($admin)->getJson('/api/assessments/consolidation?school_year_id=1&term_id=1');
+        $response = $this->actingAs($admin)->getJson("/api/assessments/consolidation?school_year_id={$sy->id}&term_id={$term->id}");
 
         $response->assertStatus(200)
             ->assertJsonStructure([

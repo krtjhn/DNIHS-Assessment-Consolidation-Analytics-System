@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../../api';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 function SectionTableRow({ section, grade, saving, onToggleArchive, onDelete }) {
     return (
@@ -147,7 +148,14 @@ function AddSectionModal({ isOpen, onClose, form, onFormChange, onSubmit, school
                             disabled={saving}
                             className="rounded-xl bg-[#0071e3] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98] shadow-2xs disabled:opacity-50"
                         >
-                            {saving ? 'Creating…' : 'Create Section'}
+                            {saving ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                    <span>Creating…</span>
+                                </span>
+                            ) : (
+                                'Create Section'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -326,8 +334,12 @@ export default function SectionList() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="py-12 text-center text-slate-400">
-                                        {loading ? 'Loading sections…' : 'No sections found for this school year.'}
+                                    <td colSpan="4" className="py-12 text-center">
+                                        {loading ? (
+                                            <LoadingIndicator type="dot-circle" size="md" label="Loading sections…" />
+                                        ) : (
+                                            <span className="text-xs text-slate-400">No sections found for this school year.</span>
+                                        )}
                                     </td>
                                 </tr>
                             )}

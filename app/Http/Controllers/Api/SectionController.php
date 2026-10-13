@@ -75,6 +75,12 @@ class SectionController extends Controller
      */
     public function destroy(Section $section): JsonResponse
     {
+        if ($section->assessmentRecords()->exists()) {
+            return response()->json([
+                'message' => 'Cannot delete section because it contains recorded assessment scores. Archive or deactivate the section instead to preserve historical records.',
+            ], 422);
+        }
+
         $section->delete();
 
         return response()->json([

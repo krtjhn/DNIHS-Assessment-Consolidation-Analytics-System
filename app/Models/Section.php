@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Section extends Model
 {
@@ -30,6 +31,16 @@ class Section extends Model
     public function gradeLevel(): BelongsTo
     {
         return $this->belongsTo(GradeLevel::class);
+    }
+
+    public function assessmentRecords(): HasMany
+    {
+        return $this->hasMany(AssessmentRecord::class);
+    }
+
+    public function teachingAssignments(): HasMany
+    {
+        return $this->hasMany(TeachingAssignment::class);
     }
 
     public function scopeActive(Builder $query): Builder

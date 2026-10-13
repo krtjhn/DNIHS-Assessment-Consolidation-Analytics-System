@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api';
 import ScoreSheet from '../../components/ScoreSheet';
+import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
 
 export default function RecordEntry({ user }) {
     const isTeacher = user?.roles?.some((r) => r.name === 'teacher');
@@ -220,15 +221,15 @@ export default function RecordEntry({ user }) {
     return (
         <div className="space-y-6">
             {/* Class Selector Card */}
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs space-y-5">
-                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Class & Exam Parameters</h3>
                     <div className="text-xs font-semibold text-slate-500">
                         SY {activeSY?.year || '2025-2026'}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
                     {/* Term Selector */}
                     <div>
                         <label htmlFor="term-select" className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -342,12 +343,12 @@ export default function RecordEntry({ user }) {
                     <table className="w-full text-left text-xs">
                         <thead>
                             <tr className="border-b border-slate-200/80 bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                                <th className="py-3 px-4">Class & Subject</th>
+                                <th className="py-3 px-4">Subject</th>
                                 <th className="py-3 px-4">Type</th>
-                                <th className="py-3 px-4">Takers (N)</th>
-                                <th className="py-3 px-4">Mean (X̄)</th>
-                                <th className="py-3 px-4">MPS (%)</th>
-                                <th className="py-3 px-4">Mastery Bracket</th>
+                                <th className="py-3 px-4">No. of Cases</th>
+                                <th className="py-3 px-4">Mean</th>
+                                <th className="py-3 px-4">MPS</th>
+                                <th className="py-3 px-4">Mastery</th>
                                 <th className="py-3 px-4 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -399,8 +400,12 @@ export default function RecordEntry({ user }) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="py-12 text-center text-slate-400">
-                                        {loading ? 'Loading assessments…' : 'No recorded score sheets found yet.'}
+                                    <td colSpan="7" className="py-12 text-center">
+                                        {loading ? (
+                                            <LoadingIndicator type="dot-circle" size="md" label="Loading assessments…" />
+                                        ) : (
+                                            <span className="text-xs text-slate-400">No recorded score sheets found yet.</span>
+                                        )}
                                     </td>
                                 </tr>
                             )}

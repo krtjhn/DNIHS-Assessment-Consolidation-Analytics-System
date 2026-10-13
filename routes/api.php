@@ -46,8 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/assessments/consolidation', [AssessmentController::class, 'consolidation']);
     Route::get('/assessments/{assessment}', [AssessmentController::class, 'show']);
 
-    // Teacher Only - Score Recording
-    Route::middleware('role:teacher')->group(function () {
+    // Assessment Score Recording (Teachers & Administrators)
+    Route::middleware('role:teacher,system_admin')->group(function () {
         Route::post('/assessments', [AssessmentController::class, 'store']);
         Route::put('/assessments/{assessment}', [AssessmentController::class, 'update']);
         Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destroy']);
