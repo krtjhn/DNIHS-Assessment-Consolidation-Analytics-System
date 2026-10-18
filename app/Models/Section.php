@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 // Eloquent Model representing a class section within a specific grade level and academic school year
 class Section extends Model
 {
+    use SoftDeletes;
     // Mass-assignable attributes permitted for section creation and updates
     protected $fillable = [
         // Foreign key linking section to academic school year

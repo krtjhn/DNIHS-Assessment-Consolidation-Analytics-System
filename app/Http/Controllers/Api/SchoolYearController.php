@@ -7,6 +7,7 @@ use App\Http\Requests\SchoolYears\StoreSchoolYearRequest;
 use App\Http\Requests\SchoolYears\UpdateSchoolYearRequest;
 use App\Models\SchoolYear;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 // School Year Controller managing academic calendar years, single-active calendar invariants, and automatic term initialization
@@ -53,6 +54,8 @@ class SchoolYearController extends Controller
             return $sy;
         });
 
+        Cache::store('file')->forget('academic_reference_data');
+
         // Return 201 Created response containing newly created school year and initialized terms
         return response()->json([
             'message' => 'School year and terms created successfully.',
@@ -88,6 +91,8 @@ class SchoolYearController extends Controller
             $school_year->update($validated);
         });
 
+        Cache::store('file')->forget('academic_reference_data');
+
         // Return success response with updated school year model
         return response()->json([
             'message' => 'School year updated successfully.',
@@ -119,6 +124,8 @@ class SchoolYearController extends Controller
             // Delete the school year
             $school_year->delete();
         });
+
+        Cache::store('file')->forget('academic_reference_data');
 
         // Return confirmation that school year was removed
         return response()->json([

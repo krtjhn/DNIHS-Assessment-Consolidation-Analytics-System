@@ -23,6 +23,11 @@
     <!-- Enforce HTTPS for all embedded assets (prevents Mixed Content on reverse proxies like Render) -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
+    <!-- Google Classroom Typography: Google Sans, Google Sans Text & Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Google+Sans+Text:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <!-- + Vite React Hot Reload & Bundled Assets -->
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])

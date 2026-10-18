@@ -37,7 +37,7 @@ class AssessmentOwnershipTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         // Create an assessment record for Teacher 2
         $record2 = $this->createTestRecord([
@@ -77,7 +77,7 @@ class AssessmentOwnershipTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         $record2 = $this->createTestRecord([
             'school_year_id' => $sy->id,
@@ -116,7 +116,7 @@ class AssessmentOwnershipTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         $record2 = $this->createTestRecord([
             'school_year_id' => $sy->id,
@@ -152,7 +152,7 @@ class AssessmentOwnershipTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         // Ensure teacher1 is assigned to class so teaching assignment check passes
         TeachingAssignment::firstOrCreate([
@@ -219,7 +219,7 @@ class AssessmentOwnershipTest extends TestCase
             $sy = SchoolYear::active()->first() ?? SchoolYear::first();
             $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
             $section = Section::first();
-            $subject = Subject::first();
+            $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
             $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
             $record = $this->createTestRecord([

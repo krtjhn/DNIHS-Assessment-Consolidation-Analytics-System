@@ -25,7 +25,7 @@ class AssessmentAndSectionTest extends TestCase
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first()
             ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         // Ensure active teaching assignment exists
         TeachingAssignment::firstOrCreate([
@@ -75,7 +75,7 @@ class AssessmentAndSectionTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         TeachingAssignment::firstOrCreate([
             'user_id' => $teacher->id,
@@ -109,7 +109,7 @@ class AssessmentAndSectionTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         // Ensure teacher is NOT assigned to this section/subject
         TeachingAssignment::where([
@@ -144,7 +144,7 @@ class AssessmentAndSectionTest extends TestCase
             $sy = SchoolYear::active()->first() ?? SchoolYear::first();
             $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
             $section = Section::first();
-            $subject = Subject::first();
+            $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
             $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
             $record = AssessmentRecord::create([
@@ -187,7 +187,7 @@ class AssessmentAndSectionTest extends TestCase
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
         $otherGrade = GradeLevel::where('id', '!=', $section->grade_level_id)->first();
-        $subject = Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         $response = $this->actingAs($admin)
             ->postJson('/api/assessments', [

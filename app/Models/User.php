@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -12,8 +13,8 @@ use Laravel\Sanctum\HasApiTokens;
 // Eloquent Authenticatable Model representing system users (administrators and teachers)
 class User extends Authenticatable
 {
-    // Traits: Sanctum token issuance, factory generation, and notification delivery
-    use HasApiTokens, HasFactory, Notifiable;
+    // Traits: Sanctum token issuance, factory generation, notification delivery, and soft deletes
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     // Mass-assignable attributes permitted for create and update operations
     protected $fillable = [

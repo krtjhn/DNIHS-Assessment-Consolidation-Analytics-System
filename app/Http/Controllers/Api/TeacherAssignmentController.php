@@ -10,6 +10,7 @@ use App\Models\SchoolYear;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 // Teacher Assignment Controller managing faculty class assignments, workload collision detection, and batch matrix synchronization
@@ -106,6 +107,8 @@ class TeacherAssignmentController extends Controller
             'assigned_by' => $request->user()->id,
         ]);
 
+        Cache::store('file')->forget("teacher_classes_{$assignment->user_id}_{$assignment->school_year_id}");
+
         // Return 201 Created response containing the newly created teaching assignment resource
         return response()->json([
             'message' => 'Teaching assignment created successfully.',
@@ -120,6 +123,8 @@ class TeacherAssignmentController extends Controller
         $teaching_assignment->update([
             'effective_until' => now()->toDateString(),
         ]);
+
+        Cache::store('file')->forget("teacher_classes_{$teaching_assignment->user_id}_{$teaching_assignment->school_year_id}");
 
         // Return confirmation that workload assignment was closed
         return response()->json([
@@ -208,6 +213,8 @@ class TeacherAssignmentController extends Controller
             // Perform batch insert of new teaching loads
             TeachingAssignment::insert($inserts);
         });
+
+        Cache::store('file')->forget("teacher_classes_{$userId}_{$schoolYearId}");
 
         // Return confirmation that teacher assignments matrix was synchronized
         return response()->json([

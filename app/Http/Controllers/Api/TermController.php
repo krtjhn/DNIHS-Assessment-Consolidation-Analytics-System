@@ -7,6 +7,7 @@ use App\Http\Requests\Terms\UpdateTermStatusRequest;
 use App\Models\Term;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 // Term Controller managing academic terms (1st, 2nd, 3rd), active term transitions, and calendar lockout states
@@ -57,6 +58,8 @@ class TermController extends Controller
             // Update the term's status attribute
             $term->update($validated);
         });
+
+        Cache::store('file')->forget('academic_reference_data');
 
         // Return confirmation of status update along with reloaded relationship data
         return response()->json([

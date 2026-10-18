@@ -5,9 +5,8 @@
 @source '../js/**/*.{jsx,js}';
 
 @theme {
-    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-        ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-        "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: "Google Sans", "Google Sans Text", Roboto, Arial, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --color-surface: #ffffff;
     --color-surface-subtle: #f8fafc;
     --color-surface-ground: #f4f6f9;
@@ -17,6 +16,10 @@
 }
 
 @layer base {
+    body {
+        font-family: var(--font-sans);
+    }
+
     html {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;

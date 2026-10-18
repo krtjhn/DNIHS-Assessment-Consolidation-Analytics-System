@@ -63,8 +63,9 @@ class AssessmentRecordResource extends JsonResource
             'grade_level' => $this->whenLoaded('gradeLevel'),
             // Conditionally include term relation data if eagerly loaded
             'term' => $this->whenLoaded('term'),
-            // Format record creation timestamp to standard ISO datetime string
+            // Format record creation and update timestamps to standard ISO datetime strings
             'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
     }
 }

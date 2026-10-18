@@ -13,7 +13,9 @@ export default function ScoreSheet({
     existingRecord,
     onBack,
     onRecordSaved,
+    onRecordDeleted,
 }) {
+    const isEditing = Boolean(existingRecord?.id);
     const [totalItems, setTotalItems] = useState(existingRecord?.total_items || 50);
 
     // Initialize students: load existing record rows or start with exactly 1 single student row
@@ -35,6 +37,7 @@ export default function ScoreSheet({
     });
 
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [feedback, setFeedback] = useState(null);
 
     const inputRefs = useRef([]);
@@ -173,15 +176,41 @@ export default function ScoreSheet({
         try {
             if (existingRecord?.id) {
                 await api.put(`/assessments/${existingRecord.id}`, payload);
+                setFeedback({ type: 'success', message: 'Assessment record updated successfully.' });
             } else {
                 await api.post('/assessments', payload);
+                setFeedback({ type: 'success', message: 'Assessment record submitted successfully.' });
             }
-            setFeedback({ type: 'success', message: 'Assessment record submitted successfully.' });
             onRecordSaved?.();
         } catch (err) {
-            setFeedback({ type: 'error', message: err.message || 'Failed to submit record.' });
+            setFeedback({ type: 'error', message: err.message || (isEditing ? 'Failed to update record.' : 'Failed to submit record.') });
         } finally {
             setSaving(false);
+        }
+    }
+
+    // Delete record from backend
+    async function handleDeleteRecord() {
+        if (!existingRecord?.id || isLocked) return;
+
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this assessment record? The assessment will be moved back to your Assigned list.'
+        );
+        if (!confirmed) return;
+
+        setDeleting(true);
+        setFeedback(null);
+
+        try {
+            await api.delete(`/assessments/${existingRecord.id}`);
+            if (onRecordDeleted) {
+                onRecordDeleted();
+            } else {
+                onRecordSaved?.();
+            }
+        } catch (err) {
+            setFeedback({ type: 'error', message: err.message || 'Failed to delete record.' });
+            setDeleting(false);
         }
     }
 
@@ -219,23 +248,46 @@ export default function ScoreSheet({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    {isEditing && !isLocked && (
+                        <button
+                            type="button"
+                            disabled={deleting || saving}
+                            onClick={handleDeleteRecord}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/70 px-3.5 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                            {deleting ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <LoadingIndicator type="dot-circle" size="xs" className="text-rose-600" />
+                                    <span>Deleting...</span>
+                                </span>
+                            ) : (
+                                <>
+                                    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <span>Delete</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+
                     {!isLocked ? (
                         <motion.button
                             type="button"
                             whileHover={canSubmit ? { scale: 1.02 } : {}}
                             whileTap={canSubmit ? { scale: 0.98 } : {}}
-                            disabled={!canSubmit}
+                            disabled={!canSubmit || deleting}
                             onClick={handleSubmitRecord}
                             className="rounded-xl bg-[#0071e3] px-5 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed] transition-colors shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {saving ? (
                                 <span className="inline-flex items-center gap-1.5">
                                     <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
-                                    <span>Submitting...</span>
+                                    <span>{isEditing ? 'Updating...' : 'Submitting...'}</span>
                                 </span>
                             ) : (
-                                'Submit'
+                                isEditing ? 'Update' : 'Submit'
                             )}
                         </motion.button>
                     ) : (

@@ -4,6 +4,9 @@ const API_BASE = '/api';
 // In-memory response cache for idempotent reference endpoints
 const memoryCache = new Map();
 
+// Active GET promises in-flight to deduplicate concurrent identical requests
+const inFlightRequests = new Map();
+
 // Active abort controllers to cancel in-flight requests on logout or session reset
 const activeControllers = new Set();
 
@@ -11,6 +14,7 @@ const activeControllers = new Set();
 export function clearApiCache(pattern) {
     if (!pattern) {
         memoryCache.clear();
+        inFlightRequests.clear();
         return;
     }
     for (const key of memoryCache.keys()) {
@@ -49,6 +53,7 @@ export const api = {
         }
         activeControllers.clear();
         memoryCache.clear();
+        inFlightRequests.clear();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     },
@@ -118,7 +123,13 @@ export const api = {
 
         // Auto-invalidate reference cache on academic mutations
         if (options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
-            if (endpoint.includes('/school-years') || endpoint.includes('/terms') || endpoint.includes('/sections')) {
+            if (
+                endpoint.includes('/school-years') ||
+                endpoint.includes('/terms') ||
+                endpoint.includes('/sections') ||
+                endpoint.includes('/assignments') ||
+                endpoint.includes('/teacher-assignments')
+            ) {
                 clearApiCache();
             }
         }
@@ -126,9 +137,12 @@ export const api = {
         return data;
     },
 
-    // HTTP GET helper with smart in-memory reference caching
+    // HTTP GET helper with smart in-memory reference caching and in-flight deduplication
     async get(endpoint, options = {}) {
-        const isCacheable = endpoint.startsWith('/reference-data');
+        const isCacheable =
+            endpoint.startsWith('/reference-data') ||
+            endpoint.startsWith('/my-classes');
+
         if (isCacheable && !options.noCache && memoryCache.has(endpoint)) {
             const cached = memoryCache.get(endpoint);
             if (Date.now() - cached.timestamp < 5 * 60 * 1000) {
@@ -136,11 +150,28 @@ export const api = {
             }
         }
 
-        const data = await this.request(endpoint, { method: 'GET', ...options });
-        if (isCacheable) {
-            memoryCache.set(endpoint, { data, timestamp: Date.now() });
+        // Deduplicate concurrent in-flight requests for identical endpoints
+        if (isCacheable && !options.noCache && inFlightRequests.has(endpoint)) {
+            return inFlightRequests.get(endpoint);
         }
-        return data;
+
+        const requestPromise = (async () => {
+            try {
+                const data = await this.request(endpoint, { method: 'GET', ...options });
+                if (isCacheable) {
+                    memoryCache.set(endpoint, { data, timestamp: Date.now() });
+                }
+                return data;
+            } finally {
+                inFlightRequests.delete(endpoint);
+            }
+        })();
+
+        if (isCacheable && !options.noCache) {
+            inFlightRequests.set(endpoint, requestPromise);
+        }
+
+        return requestPromise;
     },
 
     // HTTP POST helper

@@ -14,6 +14,8 @@ class Subject extends Model
         'grade_level_id',
         // Official curriculum subject name
         'name',
+        // Curriculum code (e.g. MATH-7)
+        'code',
         // Active status flag: true if subject is currently offered
         'is_active',
     ];

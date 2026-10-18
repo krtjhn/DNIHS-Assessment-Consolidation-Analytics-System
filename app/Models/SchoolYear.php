@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 // Eloquent Model representing an academic school year (e.g. 2025-2026)
 class SchoolYear extends Model
 {
+    use SoftDeletes;
     // Mass-assignable attributes
     protected $fillable = [
         // Academic year designation string (e.g. 2025-2026)

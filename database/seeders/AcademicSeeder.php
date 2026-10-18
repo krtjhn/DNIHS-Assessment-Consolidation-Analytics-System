@@ -56,25 +56,40 @@ class AcademicSeeder extends Seeder
             $syId = $sy->id;
         }
 
-        // 4. Seed Standard DepEd Subjects per Grade Level
-        $subjectNames = [
-            'Filipino', 'English', 'Mathematics', 'Science',
-            'Araling Panlipunan', 'TLE', 'MAPEH', 'Values Education',
+        // 4. Seed Standard DepEd Subjects per Grade Level with Curriculum Codes
+        $subjectDefs = [
+            ['name' => 'Filipino', 'prefix' => 'FIL'],
+            ['name' => 'English', 'prefix' => 'ENG'],
+            ['name' => 'Mathematics', 'prefix' => 'MATH'],
+            ['name' => 'Science', 'prefix' => 'SCI'],
+            ['name' => 'Araling Panlipunan', 'prefix' => 'AP'],
+            ['name' => 'TLE', 'prefix' => 'TLE'],
+            ['name' => 'MAPEH', 'prefix' => 'MAPEH'],
+            ['name' => 'Values Education', 'prefix' => 'ESP'],
         ];
 
         foreach ($gradeIds as $level => $gId) {
-            foreach ($subjectNames as $sName) {
+            foreach ($subjectDefs as $def) {
+                $code = "{$def['prefix']}-{$level}";
+                $sName = $def['name'];
+
                 $exists = DB::table('subjects')
                     ->where('grade_level_id', $gId)
                     ->where('name', $sName)
-                    ->exists();
+                    ->first();
 
                 if (! $exists) {
                     DB::table('subjects')->insert([
                         'name' => $sName,
+                        'code' => $code,
                         'grade_level_id' => $gId,
                         'is_active' => true,
                         'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                } else {
+                    DB::table('subjects')->where('id', $exists->id)->update([
+                        'code' => $code,
                         'updated_at' => $now,
                     ]);
                 }

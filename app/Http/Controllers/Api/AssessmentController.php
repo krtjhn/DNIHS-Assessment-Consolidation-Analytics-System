@@ -7,11 +7,14 @@ use App\Http\Requests\Assessments\StoreAssessmentRequest;
 use App\Http\Requests\Assessments\UpdateAssessmentRequest;
 use App\Http\Resources\AssessmentRecordResource;
 use App\Models\AssessmentRecord;
+use App\Models\Section;
+use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\Term;
 use App\Services\StatsCalculatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 // Primary API Controller managing student assessment score encoding, recalculation, ownership validation, and cohort consolidation
@@ -31,16 +34,21 @@ class AssessmentController extends Controller
             $schoolYearId = $activeSY?->id;
         }
 
-        // Query active teaching assignments belonging to the logged-in user with eager-loaded academic relationships
-        $query = TeachingAssignment::with(['section.gradeLevel', 'subject', 'schoolYear'])
-            ->where('user_id', $request->user()->id)
-            ->active();
+        $userId = $request->user()->id;
+        $cacheKey = "teacher_classes_{$userId}_{$schoolYearId}";
 
-        if ($schoolYearId) {
-            $query->where('school_year_id', $schoolYearId);
-        }
+        // Fast disk cache for teaching assignments to avoid repeating 5 relational queries
+        $assignments = Cache::store('file')->remember($cacheKey, 300, function () use ($userId, $schoolYearId) {
+            $query = TeachingAssignment::with(['section.gradeLevel', 'subject', 'schoolYear'])
+                ->where('user_id', $userId)
+                ->active();
 
-        $assignments = $query->get();
+            if ($schoolYearId) {
+                $query->where('school_year_id', $schoolYearId);
+            }
+
+            return $query->get()->toArray();
+        });
 
         // Return the teacher's active teaching workload schedule as a JSON response
         return response()->json([
@@ -86,11 +94,20 @@ class AssessmentController extends Controller
         // Check if the current authenticated user has administrator privileges
         $isAdmin = $request->user()->hasRole('system_admin');
 
-        // Step 1: Academic calendar lockout safeguard - verify term is currently active and open
-        $term = Term::find($validated['term_id']);
-        if (! $isAdmin && (! $term || ! $term->isOpen())) {
+        // Step 1: Academic calendar lockout safeguard - verify term and school year are currently active and open
+        $term = Term::with('schoolYear')->find($validated['term_id']);
+        if (! $isAdmin && (! $term || ! $term->isOpen() || ($term->schoolYear && ! $term->schoolYear->is_active))) {
             return response()->json([
-                'message' => 'The academic calendar term is closed or inactive. Scores cannot be recorded for this term.',
+                'message' => 'The academic calendar term or school year is closed or inactive. Scores cannot be recorded.',
+            ], 422);
+        }
+
+        // Step 1.5: Relational integrity safeguard - ensure section and subject match the designated grade level
+        $section = Section::find($validated['section_id']);
+        $subject = Subject::find($validated['subject_id']);
+        if ($section && $subject && $section->grade_level_id !== $subject->grade_level_id) {
+            return response()->json([
+                'message' => 'Academic alignment error: The selected section and subject do not belong to the same grade level.',
             ], 422);
         }
 
@@ -141,6 +158,10 @@ class AssessmentController extends Controller
                 $validated['total_items']
             );
 
+            // Sanitize least learned competency text input
+            $leastLearned = isset($validated['least_learned_competency']) ? trim((string) $validated['least_learned_competency']) : null;
+            $leastLearned = ($leastLearned === '' || $leastLearned === '-' || $leastLearned === '—') ? null : $leastLearned;
+
             // Upsert the assessment record based on unique composite key
             return AssessmentRecord::updateOrCreate(
                 [
@@ -163,7 +184,7 @@ class AssessmentController extends Controller
                     'sd' => $stats['sd'],
                     'highest_score' => $stats['highest_score'],
                     'lowest_score' => $stats['lowest_score'],
-                    'least_learned_competency' => $validated['least_learned_competency'] ?? null,
+                    'least_learned_competency' => $leastLearned,
                     'remarks' => $validated['remarks'] ?? 'Complete',
                 ]
             );
@@ -207,10 +228,10 @@ class AssessmentController extends Controller
                 ], 403);
             }
 
-            // Block modification if the academic term has concluded and been locked
-            if (! $assessment->term || ! $assessment->term->isOpen()) {
+            // Block modification if the academic calendar term or school year is closed/locked
+            if (! $assessment->term || ! $assessment->term->isOpen() || ($assessment->schoolYear && ! $assessment->schoolYear->is_active)) {
                 return response()->json([
-                    'message' => 'The academic calendar term is closed. Historical score sheets cannot be modified.',
+                    'message' => 'The academic calendar term or school year is closed. Historical score sheets cannot be modified.',
                 ], 422);
             }
         }
@@ -226,6 +247,10 @@ class AssessmentController extends Controller
                 $validated['total_items']
             );
 
+            // Sanitize least learned competency text input
+            $leastLearned = isset($validated['least_learned_competency']) ? trim((string) $validated['least_learned_competency']) : null;
+            $leastLearned = ($leastLearned === '' || $leastLearned === '-' || $leastLearned === '—') ? null : $leastLearned;
+
             // Update database attributes with newly recalculated statistics
             $assessment->update([
                 'total_items' => $validated['total_items'],
@@ -236,7 +261,7 @@ class AssessmentController extends Controller
                 'sd' => $stats['sd'],
                 'highest_score' => $stats['highest_score'],
                 'lowest_score' => $stats['lowest_score'],
-                'least_learned_competency' => $validated['least_learned_competency'] ?? null,
+                'least_learned_competency' => $leastLearned,
                 'remarks' => $validated['remarks'] ?? 'Complete',
             ]);
 
@@ -265,10 +290,10 @@ class AssessmentController extends Controller
                 ], 403);
             }
 
-            // Reject deletion if the academic term is closed
-            if (! $assessment->term || ! $assessment->term->isOpen()) {
+            // Reject deletion if the academic calendar term or school year is closed
+            if (! $assessment->term || ! $assessment->term->isOpen() || ($assessment->schoolYear && ! $assessment->schoolYear->is_active)) {
                 return response()->json([
-                    'message' => 'The academic calendar term is closed. Historical records cannot be deleted.',
+                    'message' => 'The academic calendar term or school year is closed. Historical records cannot be deleted.',
                 ], 422);
             }
         }

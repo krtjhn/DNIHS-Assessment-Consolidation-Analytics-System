@@ -93,6 +93,6 @@ class SchoolYearAndTermTest extends TestCase
         $response = $this->actingAs($admin)->deleteJson("/api/school-years/{$sy->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseMissing('school_years', ['id' => $sy->id]);
+        $this->assertSoftDeleted('school_years', ['id' => $sy->id]);
     }
 }

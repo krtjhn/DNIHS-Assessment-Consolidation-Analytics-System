@@ -28,6 +28,8 @@ class UserSeeder extends Seeder
                     'email' => 'admin@gmail.com',
                     'password' => Hash::make('Admin@2024!'),
                     'is_active' => true,
+                    'approval_status' => 'approved',
+                    'approved_at' => $now,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);

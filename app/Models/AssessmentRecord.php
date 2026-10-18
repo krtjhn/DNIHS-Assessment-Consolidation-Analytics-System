@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 // Eloquent Model representing a completed examination score sheet and computed DepEd statistics
 class AssessmentRecord extends Model
 {
+    use SoftDeletes;
     // Mass-assignable attributes permitted for create and update operations
     protected $fillable = [
         // Foreign key to school_years table
