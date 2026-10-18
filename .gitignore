@@ -25,3 +25,12 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+desktop.ini
+*.tmp
+*.temp
+*.swp
+*.bak
+npm-debug.log*
+yarn-error.log*
+/coverage
+/test-results

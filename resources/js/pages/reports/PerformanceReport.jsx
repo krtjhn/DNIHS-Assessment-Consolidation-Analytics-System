@@ -101,7 +101,7 @@ export default function PerformanceReport() {
         setLoadingData(true);
         setErrorMessage('');
         try {
-            const mappedType = assessmentType === 'term_exam' ? 'quarterly' : 'diagnostic';
+            const mappedType = assessmentType === 'term_exam' ? 'term_exam' : 'diagnostic';
             const params = new URLSearchParams({
                 school_year_id: selectedSYId,
                 term_id: selectedTermId,
@@ -775,7 +775,7 @@ export default function PerformanceReport() {
                                 </div>
                             </div>
 
-                            {/* School Year & Term / Quarter */}
+                            {/* School Year & Term */}
                             <div className="mt-3 grid grid-cols-2 gap-2.5">
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">

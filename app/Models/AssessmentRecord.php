@@ -22,7 +22,7 @@ class AssessmentRecord extends Model
         'subject_id',
         // Foreign key to users table (faculty member who recorded the scores)
         'teacher_id',
-        // Assessment type: diagnostic or quarterly
+        // Assessment type: diagnostic or term_exam
         'type',
         // Total possible examination score items
         'total_items',
@@ -93,7 +93,7 @@ class AssessmentRecord extends Model
         return $this->belongsTo(GradeLevel::class);
     }
 
-    // Relationship: The academic term or quarter when this test was administered
+    // Relationship: The academic term when this test was administered
     public function term(): BelongsTo
     {
         return $this->belongsTo(Term::class);

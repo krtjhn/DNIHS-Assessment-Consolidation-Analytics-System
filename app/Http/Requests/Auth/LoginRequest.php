@@ -17,8 +17,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // User institutional email address must be provided and must end with @gmail.com
-            'email' => ['required', 'string', 'email', 'ends_with:@gmail.com'],
+            // User institutional email address must be provided
+            'email' => ['required', 'string', 'email'],
             // User plaintext password must be provided
             'password' => ['required', 'string'],
         ];
@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.ends_with' => 'Please sign in with a valid @gmail.com email address.',
+            'email.email' => 'Please provide a valid email address.',
         ];
     }
 }

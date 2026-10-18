@@ -36,7 +36,7 @@ class StoreAssessmentRequest extends FormRequest
             // Ensure subject exists in subjects table
             'subject_id' => ['required', 'exists:subjects,id'],
             // Restrict assessment type to official DepEd assessment classifications
-            'type' => ['required', 'in:diagnostic,quarterly'],
+            'type' => ['required', 'in:diagnostic,term_exam'],
             // Total test items must be a positive integer of at least 1
             'total_items' => ['required', 'integer', 'min:1'],
             // Raw scores must be provided as a non-empty array of examinee entries

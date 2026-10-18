@@ -5,7 +5,7 @@ export default function TopBar({
     user,
     activeTab,
     activeSYName = '2025-2026',
-    activeTermName = 'First Term',
+    activeTermName = '1st Term',
     onToggleSidebar,
     onOpenMobileSidebar,
 }) {
@@ -19,15 +19,6 @@ export default function TopBar({
     };
 
     const currentPage = pageDetails[activeTab] || pageDetails.records;
-    const roleName = user?.roles?.[0]?.display_name || (user?.roles?.[0]?.name === 'system_admin' ? 'System Administrator' : 'Faculty / Teacher');
-
-    const initials = (user?.name || 'User')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0])
-        .join('')
-        .toUpperCase();
 
     return (
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xs md:px-6">
@@ -94,22 +85,12 @@ export default function TopBar({
                 </motion.div>
             </div>
 
-            {/* Right: Authenticated User Chip */}
-            <div className="flex shrink-0 items-center gap-3">
-                <div className="hidden text-right sm:block">
-                    <div className="text-xs font-bold text-slate-900">{user?.name}</div>
-                    <div className="text-[10px] font-medium text-slate-500">{roleName}</div>
-                </div>
-
-                <motion.div
-                    title={user?.name}
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.94 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-[#0071e3] to-blue-600 text-xs font-bold text-white shadow-2xs"
-                >
-                    {initials}
-                </motion.div>
+            {/* Right: Authenticated User Greeting */}
+            <div className="flex shrink-0 items-center text-xs sm:text-sm text-slate-600">
+                <span>Welcome,&nbsp;</span>
+                <span className="font-bold text-slate-900 truncate max-w-[220px] sm:max-w-none">
+                    {user?.name || 'User'}
+                </span>
             </div>
         </header>
     );

@@ -22,14 +22,25 @@ class AssessmentController extends Controller
         protected StatsCalculatorService $statsCalculator
     ) {}
 
-    // Retrieve all active teaching assignments and classes allocated to the authenticated teacher
+    // Retrieve all active teaching assignments and classes allocated to the authenticated teacher for active school year
     public function myClasses(Request $request): JsonResponse
     {
+        $schoolYearId = $request->input('school_year_id');
+        if (! $schoolYearId) {
+            $activeSY = \App\Models\SchoolYear::active()->first();
+            $schoolYearId = $activeSY?->id;
+        }
+
         // Query active teaching assignments belonging to the logged-in user with eager-loaded academic relationships
-        $assignments = TeachingAssignment::with(['section.gradeLevel', 'subject', 'schoolYear'])
+        $query = TeachingAssignment::with(['section.gradeLevel', 'subject', 'schoolYear'])
             ->where('user_id', $request->user()->id)
-            ->active()
-            ->get();
+            ->active();
+
+        if ($schoolYearId) {
+            $query->where('school_year_id', $schoolYearId);
+        }
+
+        $assignments = $query->get();
 
         // Return the teacher's active teaching workload schedule as a JSON response
         return response()->json([
@@ -44,17 +55,14 @@ class AssessmentController extends Controller
         $query = AssessmentRecord::with(['teacher', 'section', 'subject', 'gradeLevel', 'term', 'schoolYear'])
             // Filter by school year if present in request parameters
             ->when($request->filled('school_year_id'), fn ($q) => $q->where('school_year_id', $request->school_year_id))
-            // Filter by academic term or quarter if specified
+            // Filter by academic term if specified
             ->when($request->filled('term_id'), fn ($q) => $q->where('term_id', $request->term_id))
             // Filter by section if specified
             ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->section_id))
             // Filter by subject curriculum area if specified
             ->when($request->filled('subject_id'), fn ($q) => $q->where('subject_id', $request->subject_id))
-            // Normalize legacy term_exam query parameter to standard DepEd quarterly type
-            ->when($request->filled('type'), function ($q) use ($request) {
-                $type = $request->type === 'term_exam' ? 'quarterly' : $request->type;
-                $q->where('type', $type);
-            });
+            // Filter by assessment type (diagnostic or term_exam)
+            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type));
 
         // Role-based data access: Regular teachers only see their own score sheets; administrators see all school-wide records
         if ($request->user()->hasRole('teacher') && ! $request->user()->hasRole('system_admin')) {
@@ -103,13 +111,17 @@ class AssessmentController extends Controller
             }
         }
 
+        // Step 2.5: Normalize assessment type (diagnostic or term_exam)
+        $type = $validated['type'] === 'diagnostic' ? 'diagnostic' : 'term_exam';
+        $validated['type'] = $type;
+
         // Step 3: Anti-overwrite protection - check if another faculty member has already recorded this exact score sheet
         $existing = AssessmentRecord::where([
             'school_year_id' => $validated['school_year_id'],
             'term_id' => $validated['term_id'],
             'section_id' => $validated['section_id'],
             'subject_id' => $validated['subject_id'],
-            'type' => $validated['type'],
+            'type' => $type,
         ])->first();
 
         // Prevent a teacher from modifying another teacher's existing score sheet
@@ -122,7 +134,7 @@ class AssessmentController extends Controller
         }
 
         // Step 4: Perform statistical computations and persist assessment record inside a database transaction
-        $record = DB::transaction(function () use ($validated, $request) {
+        $record = DB::transaction(function () use ($validated, $request, $type) {
             // Compute arithmetic mean, Mean Percentage Score (MPS), standard deviation, and mastery level via StatsCalculatorService
             $stats = $this->statsCalculator->calculate(
                 $validated['raw_scores'],
@@ -137,7 +149,7 @@ class AssessmentController extends Controller
                     'term_id' => $validated['term_id'],
                     'section_id' => $validated['section_id'],
                     'subject_id' => $validated['subject_id'],
-                    'type' => $validated['type'],
+                    'type' => $type,
                 ],
                 [
                     // Associated academic details and computed statistics
@@ -195,7 +207,7 @@ class AssessmentController extends Controller
                 ], 403);
             }
 
-            // Block modification if the academic quarter has concluded and been locked
+            // Block modification if the academic term has concluded and been locked
             if (! $assessment->term || ! $assessment->term->isOpen()) {
                 return response()->json([
                     'message' => 'The academic calendar term is closed. Historical score sheets cannot be modified.',
@@ -277,15 +289,12 @@ class AssessmentController extends Controller
         $request->validate([
             'school_year_id' => ['required', 'exists:school_years,id'],
             'term_id' => ['required', 'exists:terms,id'],
-            'type' => ['nullable', 'string', 'in:diagnostic,term_exam,quarterly'],
+            'type' => ['nullable', 'string', 'in:diagnostic,term_exam'],
             'grade_level_id' => ['nullable', 'exists:grade_levels,id'],
         ]);
 
-        // Normalize assessment type from term_exam to quarterly
+        // Filter by assessment type
         $type = $request->type;
-        if ($type === 'term_exam') {
-            $type = 'quarterly';
-        }
 
         // Build query matching the selected school year, term, assessment type, and grade level
         $query = AssessmentRecord::with(['gradeLevel', 'section', 'subject', 'teacher'])

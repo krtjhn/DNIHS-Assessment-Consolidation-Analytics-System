@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-// Term Controller managing academic quarters/terms, active term transitions, and calendar lockout states
+// Term Controller managing academic terms (1st, 2nd, 3rd), active term transitions, and calendar lockout states
 class TermController extends Controller
 {
     // List terms filtered optionally by school year ID
@@ -65,7 +65,7 @@ class TermController extends Controller
         ]);
     }
 
-    // Mark other active terms in the same school year as completed to preserve single-active quarter invariant
+    // Mark other active terms in the same school year as completed to preserve single-active term invariant
     protected function completeOtherActiveTerms(Term $term): void
     {
         // Query other terms within the same school year that are currently marked active

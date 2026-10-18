@@ -40,8 +40,8 @@ class AcademicSeeder extends Seeder
                 'updated_at' => $now,
             ]);
 
-            // 3. Seed 3 Terms (Term 1 is Active)
-            $termNames = [1 => 'First Term', 2 => 'Second Term', 3 => 'Third Term'];
+            // 3. Seed 3 Terms (1st Term is Active)
+            $termNames = [1 => '1st Term', 2 => '2nd Term', 3 => '3rd Term'];
             foreach ($termNames as $num => $name) {
                 DB::table('terms')->insert([
                     'school_year_id' => $syId,

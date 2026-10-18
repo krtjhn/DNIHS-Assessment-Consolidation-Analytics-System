@@ -60,12 +60,12 @@ class AuthAndRoleTest extends TestCase
         $response->assertStatus(403);
     }
 
-    // Test registration rejects non-@gmail.com email addresses
-    public function test_registration_requires_gmail_extension(): void
+    // Test registration rejects invalid format email addresses
+    public function test_registration_requires_valid_email_format(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'name' => 'Invalid Extension Teacher',
-            'email' => 'teacher@dayapnhs.edu.ph',
+            'name' => 'Invalid Email Teacher',
+            'email' => 'not-a-valid-email',
             'password' => 'Password@123',
             'password_confirmation' => 'Password@123',
         ]);
@@ -74,11 +74,11 @@ class AuthAndRoleTest extends TestCase
             ->assertJsonValidationErrors(['email']);
     }
 
-    // Test login rejects non-@gmail.com email addresses
-    public function test_login_requires_gmail_extension(): void
+    // Test login rejects invalid format email addresses
+    public function test_login_requires_valid_email_format(): void
     {
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'admin@dayapnhs.edu.ph',
+            'email' => 'not-a-valid-email',
             'password' => 'Admin@2024!',
         ]);
 

@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// Eloquent Model representing an academic term or quarter within a school year
+// Eloquent Model representing an academic term within a school year (1st, 2nd, 3rd Term)
 class Term extends Model
 {
     // Mass-assignable attributes
     protected $fillable = [
         // Foreign key linking term to parent school year
         'school_year_id',
-        // Sequential term number (e.g. 1 for First Term, 2 for Second Term)
+        // Sequential term number (e.g. 1 for 1st Term, 2 for 2nd Term)
         'term_number',
-        // Official title of the term (e.g. First Term, Second Term, Third Term)
+        // Official title of the term (e.g. 1st Term, 2nd Term, 3rd Term)
         'name',
         // Calendar status: pending (locked), active (open for encoding), or completed (locked)
         'status',

@@ -54,18 +54,13 @@ function AddTeacherModal({ isOpen, onClose, form, onFormChange, onSubmit, saving
                 </div>
 
                 <div>
-                    <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-semibold text-slate-700">
-                            Email Address <span className="text-rose-500">*</span>
-                        </label>
-                        <span className="text-[11px] font-medium text-[#0071e3]">
-                            Requires @gmail.com
-                        </span>
-                    </div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Email Address <span className="text-rose-500">*</span>
+                    </label>
                     <input
                         type="email"
                         required
-                        placeholder="mariasantos@gmail.com"
+                        placeholder="e.g. mariasantos@gmail.com"
                         value={form.email}
                         onChange={(e) => onFormChange({ ...form, email: e.target.value })}
                         className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
@@ -364,11 +359,6 @@ export default function TeacherAccounts() {
     async function handleCreateTeacher(e) {
         e.preventDefault();
         setModalError('');
-
-        if (!addForm.email.trim().toLowerCase().endsWith('@gmail.com')) {
-            setModalError('Faculty accounts must use a valid @gmail.com address.');
-            return;
-        }
 
         setSaving(true);
 

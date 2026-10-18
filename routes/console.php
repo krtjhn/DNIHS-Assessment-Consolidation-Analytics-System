@@ -41,9 +41,9 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
 
     // 2. Ensure Term exists and is ACTIVE
     $termName = match ($termNumber) {
-        1 => 'First Term',
-        2 => 'Second Term',
-        3 => 'Third Term',
+        1 => '1st Term',
+        2 => '2nd Term',
+        3 => '3rd Term',
         default => "Term {$termNumber}",
     };
 
@@ -228,14 +228,14 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
                 $competencies = $competencyMap[$subject->name] ?? ['Curriculum foundational competencies'];
                 $competency = $competencies[array_rand($competencies)];
 
-                // Upsert Term Exam ('quarterly') record tagged with TEST_DATA
+                // Upsert Term Exam ('term_exam') record tagged with TEST_DATA
                 AssessmentRecord::updateOrCreate(
                     [
                         'school_year_id' => $schoolYear->id,
                         'term_id' => $term->id,
                         'section_id' => $section->id,
                         'subject_id' => $subject->id,
-                        'type' => 'quarterly',
+                        'type' => 'term_exam',
                     ],
                     [
                         'grade_level_id' => $grade->id,
@@ -296,7 +296,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
 
     $this->info('✓ Successfully seeded test data:');
     $this->line('  - Sections configured: '.implode(', ', array_unique($sectionsProcessed)));
-    $this->line("  - {$termExamsCreated} Term Exam records seeded (Type: 'quarterly', Remarks: 'Complete [TEST_DATA]')");
+    $this->line("  - {$termExamsCreated} Term Exam records seeded (Type: 'term_exam', Remarks: 'Complete [TEST_DATA]')");
     $this->line("  - {$diagTestsCreated} Diagnostic Test records seeded (Type: 'diagnostic', Remarks: 'Complete [TEST_DATA]')");
     $this->line('  - Total Assessment Records: '.($termExamsCreated + $diagTestsCreated));
     $this->info('✓ All 32 school-wide tables & per-grade views now have complete test data in m_capstone!');

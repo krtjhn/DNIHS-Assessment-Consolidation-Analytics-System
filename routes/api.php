@@ -35,9 +35,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/school-years', [SchoolYearController::class, 'index']);
     // Retrieve details for a specific school year by ID
     Route::get('/school-years/{school_year}', [SchoolYearController::class, 'show']);
-    // Retrieve academic terms/quarters with optional school year filter
+    // Retrieve academic terms with optional school year filter
     Route::get('/terms', [TermController::class, 'index']);
-    // Retrieve details for a specific term/quarter by ID
+    // Retrieve details for a specific term by ID
     Route::get('/terms/{term}', [TermController::class, 'show']);
 
     // Retrieve classroom sections with optional grade level and school year filters
@@ -69,13 +69,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Administrative configuration routes strictly restricted to system administrators
     Route::middleware('role:system_admin')->group(function () {
-        // Create a new academic school year and automatically generate its four quarters
+        // Create a new academic school year and automatically generate its 3 terms
         Route::post('/school-years', [SchoolYearController::class, 'store']);
         // Update school year details or activate/deactivate an academic year
         Route::put('/school-years/{school_year}', [SchoolYearController::class, 'update']);
         // Delete an inactive school year that has no associated assessment history
         Route::delete('/school-years/{school_year}', [SchoolYearController::class, 'destroy']);
-        // Lock or unlock an academic quarter to control teacher score entry permissions
+        // Lock or unlock an academic term to control teacher score entry permissions
         Route::patch('/terms/{term}/status', [TermController::class, 'updateStatus']);
 
         // Create a new classroom section within a grade level and school year

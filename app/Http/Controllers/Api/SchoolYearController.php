@@ -45,9 +45,9 @@ class SchoolYearController extends Controller
 
             // Automatically generate the three standard academic terms initialized with pending status
             $sy->terms()->createMany([
-                ['term_number' => 1, 'name' => 'First Term', 'status' => 'pending'],
-                ['term_number' => 2, 'name' => 'Second Term', 'status' => 'pending'],
-                ['term_number' => 3, 'name' => 'Third Term', 'status' => 'pending'],
+                ['term_number' => 1, 'name' => '1st Term', 'status' => 'pending'],
+                ['term_number' => 2, 'name' => '2nd Term', 'status' => 'pending'],
+                ['term_number' => 3, 'name' => '3rd Term', 'status' => 'pending'],
             ]);
 
             return $sy;

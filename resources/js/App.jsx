@@ -228,7 +228,7 @@ export default function App() {
 
     const isAdmin = Boolean(user.roles?.some((r) => r.name === 'system_admin'));
     const activeSYName = activeSY?.name || '2025–2026';
-    const activeTermName = activeTerm?.name || (activeSY?.terms?.find((t) => t.status === 'active')?.name) || 'First Term';
+    const activeTermName = activeTerm?.name || (activeSY?.terms?.find((t) => t.status === 'active')?.name) || '1st Term';
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] text-slate-900 font-sans antialiased selection:bg-[#0071e3] selection:text-white">
@@ -256,6 +256,7 @@ export default function App() {
                     activeTab={activeTab}
                     activeSYName={activeSYName}
                     activeTermName={activeTermName}
+                    isAdmin={isAdmin}
                     onToggleSidebar={() => setIsCollapsed((prev) => !prev)}
                     onOpenMobileSidebar={() => setIsMobileOpen(true)}
                 />
@@ -314,13 +315,6 @@ export default function App() {
                         </AnimatedTabPane>
                     )}
                 </main>
-
-                {/* Institutional DepEd Footer */}
-                <footer className="border-t border-slate-200/80 bg-white/60 py-4 px-6 text-center text-xs text-slate-500 backdrop-blur-xs">
-                    <p className="font-medium">
-                        Dayap National Integrated High School &bull; Assessment Monitoring System &bull; BSIT Capstone Midterm Defense
-                    </p>
-                </footer>
             </div>
         </div>
     );

@@ -34,7 +34,7 @@ class SchoolYear extends Model
         ];
     }
 
-    // Relationship: Academic terms or quarters established under this school year
+    // Relationship: Academic terms (1st, 2nd, 3rd) established under this school year
     public function terms(): HasMany
     {
         return $this->hasMany(Term::class)->orderBy('term_number', 'asc');

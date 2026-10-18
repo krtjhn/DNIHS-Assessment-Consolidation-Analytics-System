@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff } from 'lucide-react';
 import schoolLogo from '../../../logo.png';
@@ -17,20 +17,19 @@ export default function Login({ onLoginSuccess }) {
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
 
+    // Ensure absolutely no scrollbars are produced by the body/window while in auth screen
+    useEffect(() => {
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = originalOverflow;
+        };
+    }, []);
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
         setNotice('');
-
-        // Enforce @gmail.com extension on both sign in and registration
-        if (!email.trim().toLowerCase().endsWith('@gmail.com')) {
-            setError(
-                isRegistering
-                    ? 'Registration requires a valid @gmail.com address.'
-                    : 'Please enter a valid @gmail.com address to sign in.'
-            );
-            return;
-        }
 
         setLoading(true);
 
@@ -64,66 +63,66 @@ export default function Login({ onLoginSuccess }) {
     };
 
     return (
-        <main className="relative flex min-h-dvh flex-col items-center justify-center bg-[#f5f5f7] p-4 text-[#1d1d1f] antialiased sm:p-6 lg:p-8">
-            <div className="w-full max-w-md">
+        <main className="fixed inset-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex items-center justify-center bg-[#f5f5f7] p-3 sm:p-4 text-[#1d1d1f] antialiased">
+            <div className="w-full max-w-[380px] sm:max-w-[400px] my-auto flex flex-col items-center">
                 {/* School Seal & Branding */}
                 <motion.div
-                    initial={{ opacity: 0, y: -16, scale: 0.95 }}
+                    initial={{ opacity: 0, y: -10, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 280, damping: 22 }}
-                    className="flex flex-col items-center text-center mb-8"
+                    className="flex flex-col items-center text-center mb-2.5 sm:mb-3"
                 >
                     <motion.img
                         src={schoolLogo}
                         alt="Dayap National Integrated High School seal"
-                        className="size-20 sm:size-24 object-contain mb-4 drop-shadow-2xs"
+                        className="size-13 sm:size-14 object-contain mb-1 drop-shadow-2xs"
                         whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
                         transition={{ duration: 0.3 }}
                     />
-                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                    <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 leading-tight">
                         Dayap National Integrated High School
                     </h1>
-                    <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500">
-                        Assessment Monitoring System
+                    <p className="mt-0.5 text-[11px] sm:text-xs font-medium text-slate-500">
+                        Assessment Consolidation and Analytics System
                     </p>
                 </motion.div>
 
                 {/* Sign-In / Register Card */}
                 <motion.div
-                    initial={{ opacity: 0, y: 18 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-xs"
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs"
                 >
                     <motion.div
                         key={isRegistering ? 'reg-header' : 'login-header'}
-                        initial={{ opacity: 0, y: 6 }}
+                        initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="mb-6"
+                        className="mb-2.5 sm:mb-3"
                     >
-                        <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                        <h2 className="text-sm sm:text-base font-semibold tracking-tight text-slate-900">
                             {isRegistering ? 'Create Faculty Account' : 'Sign in with your account'}
                         </h2>
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-0.5 text-[11px] text-slate-500">
                             {isRegistering
                                 ? 'Register as a teacher to encode assessments and analytics'
                                 : 'Enter your credentials to access the academic workspace'}
                         </p>
                     </motion.div>
 
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:gap-2.5">
                         <AnimatePresence initial={false}>
                             {isRegistering && (
                                 <motion.div
                                     key="reg-name-field"
-                                    initial={{ opacity: 0, height: 0, y: -6 }}
+                                    initial={{ opacity: 0, height: 0, y: -4 }}
                                     animate={{ opacity: 1, height: 'auto', y: 0 }}
-                                    exit={{ opacity: 0, height: 0, y: -6 }}
-                                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                                    exit={{ opacity: 0, height: 0, y: -4 }}
+                                    transition={{ duration: 0.2, ease: 'easeOut' }}
                                     className="overflow-hidden"
                                 >
-                                    <label htmlFor="register-name" className="block text-xs font-medium text-slate-700 mb-1.5">
+                                    <label htmlFor="register-name" className="block text-[11px] font-medium text-slate-700 mb-1">
                                         Full Name
                                     </label>
                                     <div className="relative">
@@ -134,7 +133,7 @@ export default function Login({ onLoginSuccess }) {
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             placeholder="e.g. Maria C. Santos, LPT"
-                                            className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                         />
                                     </div>
                                 </motion.div>
@@ -143,16 +142,9 @@ export default function Login({ onLoginSuccess }) {
 
                         {/* Email Field */}
                         <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label htmlFor="login-email" className="block text-xs font-medium text-slate-700">
-                                    Email address
-                                </label>
-                                {isRegistering && (
-                                    <span className="text-[11px] font-medium text-[#0071e3]">
-                                        Requires @gmail.com
-                                    </span>
-                                )}
-                            </div>
+                            <label htmlFor="login-email" className="block text-[11px] font-medium text-slate-700 mb-1">
+                                Email address
+                            </label>
                             <div className="relative">
                                 <input
                                     id="login-email"
@@ -162,14 +154,14 @@ export default function Login({ onLoginSuccess }) {
                                     value={email}
                                     onChange={(event) => setEmail(event.target.value)}
                                     placeholder="juandelacruz@gmail.com"
-                                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                 />
                             </div>
                         </div>
 
                         {/* Password Field */}
                         <div>
-                            <label htmlFor="login-password" className="block text-xs font-medium text-slate-700 mb-1.5">
+                            <label htmlFor="login-password" className="block text-[11px] font-medium text-slate-700 mb-1">
                                 Password
                             </label>
                             <div className="relative flex items-center">
@@ -180,15 +172,15 @@ export default function Login({ onLoginSuccess }) {
                                     autoComplete={isRegistering ? 'new-password' : 'current-password'}
                                     value={password}
                                     onChange={(event) => setPassword(event.target.value)}
-                                    placeholder={isRegistering ? 'Create password (min. 8 characters)' : 'Enter your account password'}
-                                    className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                    placeholder={isRegistering ? 'Create password (min. 8 chars)' : 'Enter your account password'}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 pr-9 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                 />
                                 <motion.button
                                     type="button"
                                     whileHover={{ scale: 1.08 }}
                                     whileTap={{ scale: 0.92 }}
                                     onClick={() => setShowPassword((visible) => !visible)}
-                                    className="absolute right-2 flex size-7 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40"
+                                    className="absolute right-1.5 flex size-6.5 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     title={showPassword ? 'Hide password' : 'Show password'}
                                 >
@@ -202,9 +194,9 @@ export default function Login({ onLoginSuccess }) {
                                             className="flex items-center justify-center"
                                         >
                                             {showPassword ? (
-                                                <EyeOff className="size-4" strokeWidth={1.9} />
+                                                <EyeOff className="size-3.5 sm:size-4" strokeWidth={1.9} />
                                             ) : (
-                                                <Eye className="size-4" strokeWidth={1.9} />
+                                                <Eye className="size-3.5 sm:size-4" strokeWidth={1.9} />
                                             )}
                                         </motion.span>
                                     </AnimatePresence>
@@ -216,13 +208,13 @@ export default function Login({ onLoginSuccess }) {
                             {isRegistering && (
                                 <motion.div
                                     key="reg-confirm-field"
-                                    initial={{ opacity: 0, height: 0, y: -6 }}
+                                    initial={{ opacity: 0, height: 0, y: -4 }}
                                     animate={{ opacity: 1, height: 'auto', y: 0 }}
-                                    exit={{ opacity: 0, height: 0, y: -6 }}
-                                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                                    exit={{ opacity: 0, height: 0, y: -4 }}
+                                    transition={{ duration: 0.2, ease: 'easeOut' }}
                                     className="overflow-hidden"
                                 >
-                                    <label htmlFor="register-password-confirmation" className="block text-xs font-medium text-slate-700 mb-1.5">
+                                    <label htmlFor="register-password-confirmation" className="block text-[11px] font-medium text-slate-700 mb-1">
                                         Confirm Password
                                     </label>
                                     <div className="relative flex items-center">
@@ -233,14 +225,14 @@ export default function Login({ onLoginSuccess }) {
                                             value={passwordConfirmation}
                                             onChange={(e) => setPasswordConfirmation(e.target.value)}
                                             placeholder="Re-enter password to confirm"
-                                            className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 pr-9 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                         />
                                         <motion.button
                                             type="button"
                                             whileHover={{ scale: 1.08 }}
                                             whileTap={{ scale: 0.92 }}
                                             onClick={() => setShowConfirmPassword((visible) => !visible)}
-                                            className="absolute right-2 flex size-7 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40"
+                                            className="absolute right-1.5 flex size-6.5 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40"
                                             aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
                                             title={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
                                         >
@@ -254,9 +246,9 @@ export default function Login({ onLoginSuccess }) {
                                                     className="flex items-center justify-center"
                                                 >
                                                     {showConfirmPassword ? (
-                                                        <EyeOff className="size-4" strokeWidth={1.9} />
+                                                        <EyeOff className="size-3.5 sm:size-4" strokeWidth={1.9} />
                                                     ) : (
-                                                        <Eye className="size-4" strokeWidth={1.9} />
+                                                        <Eye className="size-3.5 sm:size-4" strokeWidth={1.9} />
                                                     )}
                                                 </motion.span>
                                             </AnimatePresence>
@@ -270,15 +262,15 @@ export default function Login({ onLoginSuccess }) {
                         <AnimatePresence>
                             {notice && (
                                 <motion.div
-                                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                                    transition={{ duration: 0.25 }}
+                                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                                    transition={{ duration: 0.2 }}
                                     role="status"
-                                    className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-xs font-medium text-emerald-800 leading-relaxed shadow-2xs"
+                                    className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-medium text-emerald-800 leading-snug shadow-2xs"
                                 >
                                     <div className="flex items-center gap-1.5 font-bold text-emerald-900 mb-0.5">
-                                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg className="size-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         Registration Queued for Approval
@@ -292,17 +284,17 @@ export default function Login({ onLoginSuccess }) {
                         <AnimatePresence>
                             {error && (
                                 <motion.div
-                                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
                                     animate={{
                                         opacity: 1,
                                         y: 0,
                                         scale: 1,
-                                        x: [0, -6, 6, -4, 4, -2, 2, 0],
+                                        x: [0, -5, 5, -3, 3, -1, 1, 0],
                                     }}
-                                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                                    transition={{ duration: 0.35 }}
+                                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                                    transition={{ duration: 0.3 }}
                                     role="alert"
-                                    className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs font-medium text-red-700"
+                                    className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-medium text-red-700"
                                 >
                                     {error}
                                 </motion.div>
@@ -316,7 +308,7 @@ export default function Login({ onLoginSuccess }) {
                             whileHover={{ scale: loading ? 1 : 1.01 }}
                             whileTap={{ scale: loading ? 1 : 0.98 }}
                             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                            className="mt-2 flex h-11 w-full items-center justify-center rounded-xl bg-[#0071e3] px-4 text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-[#0077ed] active:bg-[#0062c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="mt-1 flex h-9 sm:h-9.5 w-full items-center justify-center rounded-xl bg-[#0071e3] px-4 text-xs sm:text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-[#0077ed] active:bg-[#0062c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {loading ? (
                                 <span className="flex items-center gap-2">
@@ -330,14 +322,14 @@ export default function Login({ onLoginSuccess }) {
                     </form>
 
                     {/* Mode Toggle Link */}
-                    <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+                    <div className="mt-3 pt-2 border-t border-slate-100 text-center">
                         <button
                             type="button"
                             onClick={() => {
                                 setIsRegistering(!isRegistering);
                                 setError('');
                             }}
-                            className="text-xs font-medium text-[#0071e3] hover:underline focus-visible:outline-none transition-transform active:scale-98"
+                            className="text-[11px] font-medium text-[#0071e3] hover:underline focus-visible:outline-none transition-transform active:scale-98"
                         >
                             {isRegistering
                                 ? 'Already have an institutional account? Sign In'
@@ -346,7 +338,7 @@ export default function Login({ onLoginSuccess }) {
                     </div>
                 </motion.div>
 
-                <div className="mt-6 text-center text-xs text-slate-500">
+                <div className="mt-2 text-center text-[10px] sm:text-[11px] text-slate-400">
                     Department of Education • Division of Laguna
                 </div>
             </div>

@@ -19,8 +19,8 @@ class RegisterRequest extends FormRequest
         return [
             // Full legal name of the faculty applicant
             'name' => ['required', 'string', 'max:255'],
-            // Email address must be unique and have @gmail.com extension
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', 'ends_with:@gmail.com'],
+            // Email address must be unique and valid
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             // Password must have minimum 8 characters and match the confirmation field
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             // Optional role specification, restricted to teacher or system_admin
@@ -32,7 +32,7 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.ends_with' => 'Faculty accounts must use a valid @gmail.com email address.',
+            'email.email' => 'Please provide a valid email address.',
         ];
     }
 }

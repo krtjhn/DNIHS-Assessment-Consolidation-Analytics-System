@@ -20,8 +20,8 @@ class StoreTeacherRequest extends FormRequest
         return [
             // Full legal name of the faculty member
             'name' => ['required', 'string', 'max:255'],
-            // Email address must be unique and have @gmail.com extension
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email', 'ends_with:@gmail.com'],
+            // Email address must be unique and valid
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             // Initial password must meet minimum security length of 8 characters
             'password' => ['required', 'string', 'min:8'],
         ];
@@ -37,8 +37,6 @@ class StoreTeacherRequest extends FormRequest
             'email.required' => 'Email address is required.',
             // Message when email format is invalid
             'email.email' => 'Please provide a valid email address.',
-            // Message when email does not end with @gmail.com
-            'email.ends_with' => 'Faculty accounts must use a valid @gmail.com email address.',
             // Message when duplicate institutional email is detected
             'email.unique' => 'An account with this email address already exists.',
             // Message when password is omitted

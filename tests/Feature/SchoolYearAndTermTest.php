@@ -88,7 +88,7 @@ class SchoolYearAndTermTest extends TestCase
             'end_date' => '2100-03-31',
             'is_active' => false,
         ]);
-        $sy->terms()->create(['term_number' => 1, 'name' => 'First Term', 'status' => 'pending']);
+        $sy->terms()->create(['term_number' => 1, 'name' => '1st Term', 'status' => 'pending']);
 
         $response = $this->actingAs($admin)->deleteJson("/api/school-years/{$sy->id}");
 

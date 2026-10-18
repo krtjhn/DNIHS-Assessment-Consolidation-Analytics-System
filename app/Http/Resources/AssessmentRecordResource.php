@@ -21,7 +21,7 @@ class AssessmentRecordResource extends JsonResource
             'id' => $this->id,
             // Foreign key identifying the academic school year
             'school_year_id' => $this->school_year_id,
-            // Foreign key identifying the academic quarter or term
+            // Foreign key identifying the academic term
             'term_id' => $this->term_id,
             // Foreign key identifying the junior high grade level (7, 8, 9, or 10)
             'grade_level_id' => $this->grade_level_id,
@@ -31,7 +31,7 @@ class AssessmentRecordResource extends JsonResource
             'subject_id' => $this->subject_id,
             // Foreign key identifying the teacher who conducted the assessment
             'teacher_id' => $this->teacher_id,
-            // Examination milestone type (e.g., 'pre-test', 'post-test', 'quarterly-exam')
+            // Examination milestone type (e.g., 'diagnostic', 'term_exam')
             'type' => $this->type,
             // Maximum test items casting to integer to prevent string transmission
             'total_items' => (int) $this->total_items,
