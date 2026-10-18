@@ -9,6 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
+    <!-- Enforce HTTPS for all embedded assets (prevents Mixed Content on reverse proxies like Render) -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
     <!-- + Vite React Hot Reload & Bundled Assets -->
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])

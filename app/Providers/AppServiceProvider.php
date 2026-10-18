@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
     // Bootstrap application services, model event observers, and database schema configurations
     public function boot(): void
     {
-        // Global model event listeners, morph maps, and pagination defaults can be initialized here
+        if ($this->app->environment('production') || str_contains((string) config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }
