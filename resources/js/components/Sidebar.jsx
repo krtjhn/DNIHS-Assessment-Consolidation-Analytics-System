@@ -97,7 +97,7 @@ export default function Sidebar({
                                 DNIHS
                             </div>
                             <div className="text-[10px] font-medium text-slate-500 leading-tight mt-0.5">
-                                Consolidation & Analytics System
+                                Assessment Consolidation & Analytics System
                             </div>
                         </motion.div>
                     )}

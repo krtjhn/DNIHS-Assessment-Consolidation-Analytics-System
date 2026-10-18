@@ -83,7 +83,7 @@ export default function Login({ onLoginSuccess }) {
                         Dayap National Integrated High School
                     </h1>
                     <p className="mt-0.5 text-[11px] sm:text-xs font-medium text-slate-500">
-                        Assessment Consolidation and Analytics System
+                        Assessment Consolidation & Analytics System
                     </p>
                 </motion.div>
 

@@ -3,11 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Dayap NHS - Calauan Annex | Assessment Consolidation and Analytics System</title>
+    <title>DNIHS - Assessment Consolidation &amp; Analytics System</title>
 
-    <!-- + Apple HIG Meta Tags -->
+    <!-- + Apple HIG & PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="DNIHS - ACAS">
+
+    <!-- + Favicon & Web App Icons -->
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
 
     <!-- Enforce HTTPS for all embedded assets (prevents Mixed Content on reverse proxies like Render) -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
