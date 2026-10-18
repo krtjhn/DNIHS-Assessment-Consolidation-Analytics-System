@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import schoolLogo from '../../logo.png';
 
 function NavIcon({ name }) {
@@ -63,6 +64,18 @@ function NavIcon({ name }) {
     );
 }
 
+const teacherNavItems = [
+    { id: 'records', label: 'Record Entry', icon: 'records' },
+];
+
+const adminNavItems = [
+    { id: 'consolidation', label: 'Consolidated Reports', icon: 'consolidation' },
+    { id: 'sections', label: 'Section Management', icon: 'sections' },
+    { id: 'assignments', label: 'Class Assignments', icon: 'assignments' },
+    { id: 'calendar', label: 'School Calendar', icon: 'calendar' },
+    { id: 'teachers', label: 'Teacher Accounts', icon: 'teachers' },
+];
+
 export default function Sidebar({
     activeTab,
     setActiveTab,
@@ -73,38 +86,54 @@ export default function Sidebar({
     isMobileOpen,
     onCloseMobile,
 }) {
+    const navItems = isAdmin ? adminNavItems : teacherNavItems;
+
     return (
         <>
             {/* Mobile backdrop */}
-            {isMobileOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs md:hidden"
-                    onClick={onCloseMobile}
-                    aria-hidden="true"
-                />
-            )}
+            <AnimatePresence>
+                {isMobileOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs md:hidden"
+                        onClick={onCloseMobile}
+                        aria-hidden="true"
+                    />
+                )}
+            </AnimatePresence>
 
             <aside
-                className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 ${
+                className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 ease-in-out ${
                     isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
             >
                 {/* School Logo & Title */}
                 <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-100 px-4">
-                    <img
+                    <motion.img
                         src={schoolLogo}
                         alt="Dayap National Integrated High School seal"
                         className="size-9 shrink-0 object-contain"
+                        whileHover={{ rotate: 10, scale: 1.05 }}
+                        transition={{ type: 'spring', stiffness: 300 }}
                     />
                     {!isCollapsed && (
-                        <div className="min-w-0">
+                        <motion.div
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -6 }}
+                            transition={{ duration: 0.15 }}
+                            className="min-w-0"
+                        >
                             <div className="truncate text-xs font-bold tracking-tight text-slate-900 leading-tight">
                                 Dayap NIHS
                             </div>
                             <div className="truncate text-[10px] font-medium text-slate-500">
                                 Assessment Monitoring
                             </div>
-                        </div>
+                        </motion.div>
                     )}
                 </div>
 
@@ -114,131 +143,62 @@ export default function Sidebar({
                         {isCollapsed ? '•••' : 'Academic Modules'}
                     </div>
 
-                    {/* Teacher: Record Entry */}
-                    {!isAdmin && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setActiveTab('records');
-                                onCloseMobile?.();
-                            }}
-                            title="Record Entry"
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
-                                activeTab === 'records'
-                                    ? 'bg-[#0071e3] text-white shadow-2xs'
-                                    : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                            } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                        >
-                            <NavIcon name="records" />
-                            {!isCollapsed && <span>Record Entry</span>}
-                        </button>
-                    )}
-
-                    {/* Common / Staff: Consolidated Reports */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setActiveTab('consolidation');
-                            onCloseMobile?.();
-                        }}
-                        title="Consolidated Reports"
-                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
-                            activeTab === 'consolidation'
-                                ? 'bg-[#0071e3] text-white shadow-2xs'
-                                : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                        } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                    >
-                        <NavIcon name="consolidation" />
-                        {!isCollapsed && <span>Consolidated Reports</span>}
-                    </button>
-
-                    {/* Admin: Section Management */}
-                    {isAdmin && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setActiveTab('sections');
-                                onCloseMobile?.();
-                            }}
-                            title="Section Management"
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
-                                activeTab === 'sections'
-                                    ? 'bg-[#0071e3] text-white shadow-2xs'
-                                    : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                            } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                        >
-                            <NavIcon name="sections" />
-                            {!isCollapsed && <span>Section Management</span>}
-                        </button>
-                    )}
-
-                    {/* Admin: Class Assignments */}
-                    {isAdmin && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setActiveTab('assignments');
-                                onCloseMobile?.();
-                            }}
-                            title="Class Assignments"
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
-                                activeTab === 'assignments'
-                                    ? 'bg-[#0071e3] text-white shadow-2xs'
-                                    : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                            } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                        >
-                            <NavIcon name="assignments" />
-                            {!isCollapsed && <span>Class Assignments</span>}
-                        </button>
-                    )}
-
-                    {/* Admin: School Calendar */}
-                    {isAdmin && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setActiveTab('calendar');
-                                onCloseMobile?.();
-                            }}
-                            title="School Calendar"
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
-                                activeTab === 'calendar'
-                                    ? 'bg-[#0071e3] text-white shadow-2xs'
-                                    : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                            } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                        >
-                            <NavIcon name="calendar" />
-                            {!isCollapsed && <span>School Calendar</span>}
-                        </button>
-                    )}
-
-                    {/* Admin: Teacher Accounts */}
-                    {isAdmin && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setActiveTab('teachers');
-                                onCloseMobile?.();
-                            }}
-                            title="Teacher Accounts"
-                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
-                                activeTab === 'teachers'
-                                    ? 'bg-[#0071e3] text-white shadow-2xs'
-                                    : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
-                            } ${isCollapsed ? 'justify-center px-0' : ''}`}
-                        >
-                            <NavIcon name="teachers" />
-                            {!isCollapsed && <span>Teacher Accounts</span>}
-                        </button>
-                    )}
+                    {navItems.map((item) => {
+                        const isActive = activeTab === item.id;
+                        return (
+                            <motion.button
+                                key={item.id}
+                                type="button"
+                                onClick={() => {
+                                    setActiveTab(item.id);
+                                    onCloseMobile?.();
+                                }}
+                                title={item.label}
+                                whileHover={{ x: isCollapsed ? 0 : 3 }}
+                                whileTap={{ scale: 0.97 }}
+                                className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors duration-150 ${
+                                    isActive
+                                        ? 'text-white'
+                                        : 'text-slate-700 hover:bg-slate-100/70 hover:text-slate-900'
+                                } ${isCollapsed ? 'justify-center px-0' : ''}`}
+                            >
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="sidebar-active-indicator"
+                                        className="absolute inset-0 rounded-xl bg-[#0071e3] shadow-sm shadow-blue-500/25"
+                                        transition={{
+                                            type: 'spring',
+                                            stiffness: 450,
+                                            damping: 35,
+                                        }}
+                                    />
+                                )}
+                                <span className="relative z-10 flex items-center gap-3">
+                                    <NavIcon name={item.icon} />
+                                    {!isCollapsed && (
+                                        <motion.span
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.15 }}
+                                        >
+                                            {item.label}
+                                        </motion.span>
+                                    )}
+                                </span>
+                            </motion.button>
+                        );
+                    })}
                 </nav>
 
                 {/* Footer User Info & Sign Out */}
                 <div className="border-t border-slate-100 p-3">
                     <div className={`flex items-center gap-3 rounded-xl p-2 bg-slate-50/80 border border-slate-200/60 ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="size-8 shrink-0 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center font-bold text-xs">
+                        <motion.div
+                            whileHover={{ scale: 1.08 }}
+                            className="size-8 shrink-0 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center font-bold text-xs"
+                        >
                             {user?.name?.slice(0, 2).toUpperCase() || 'U'}
-                        </div>
+                        </motion.div>
                         {!isCollapsed && (
                             <div className="min-w-0 flex-1">
                                 <div className="truncate text-xs font-bold text-slate-800">{user?.name}</div>
@@ -247,15 +207,17 @@ export default function Sidebar({
                                 </div>
                             </div>
                         )}
-                        <button
+                        <motion.button
                             type="button"
                             onClick={onLogout}
                             title="Sign Out"
+                            whileHover={{ scale: 1.15, rotate: 6 }}
+                            whileTap={{ scale: 0.9 }}
                             className="text-slate-400 hover:text-rose-600 transition-colors p-1"
                             aria-label="Sign out"
                         >
                             <NavIcon name="logout" />
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
             </aside>

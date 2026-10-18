@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../../../api';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import Modal from '../../../components/Modal';
 
-/**
- * Helper: Generate 2-letter uppercase initials from full name
- */
+// Generate 2-letter uppercase initials from faculty member name
 function getTeacherInitials(name = '') {
     return name
         .split(' ')
@@ -14,248 +14,214 @@ function getTeacherInitials(name = '') {
         .join('') || 'TC';
 }
 
-/**
- * Modal: Add / Provision New Faculty Member Directly by Admin
- */
+// Modal dialog to add and provision a new faculty member
 function AddTeacherModal({ isOpen, onClose, form, onFormChange, onSubmit, saving, error }) {
-    if (!isOpen) return null;
-
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="add-teacher-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Add Faculty Member"
+            subtitle="Provision teacher credentials with immediate active status."
+            icon={
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <line x1="19" y1="8" x2="19" y2="14" />
+                    <line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
+            }
+            ariaLabelledBy="add-teacher-title"
         >
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                    <div className="flex items-center gap-2.5">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#0071e3]/10 text-[#0071e3]">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                <circle cx="9" cy="7" r="4" />
-                                <line x1="19" y1="8" x2="19" y2="14" />
-                                <line x1="22" y1="11" x2="16" y2="11" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 id="add-teacher-title" className="text-sm font-bold text-slate-900">
-                                Add Faculty Member
-                            </h3>
-                            <p className="text-[11px] text-slate-500">
-                                Provision teacher credentials with immediate active status.
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 transition"
-                    >
-                        ✕
-                    </button>
+            {error && (
+                <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-800">
+                    {error}
+                </div>
+            )}
+
+            <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Full Name <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        required
+                        placeholder="e.g. Maria Clara C. Santos, LPT"
+                        value={form.name}
+                        onChange={(e) => onFormChange({ ...form, name: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
+                    />
                 </div>
 
-                {error && (
-                    <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-800">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                            Full Name <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            required
-                            placeholder="e.g. Maria Clara Santos"
-                            value={form.name}
-                            onChange={(e) => onFormChange({ ...form, name: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <div>
+                    <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-semibold text-slate-700">
                             Email Address <span className="text-rose-500">*</span>
                         </label>
-                        <input
-                            type="email"
-                            required
-                            placeholder="e.g. maria.santos@dayapnhs.edu.ph"
-                            value={form.email}
-                            onChange={(e) => onFormChange({ ...form, email: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
-                        />
+                        <span className="text-[11px] font-medium text-[#0071e3]">
+                            Requires @gmail.com
+                        </span>
                     </div>
+                    <input
+                        type="email"
+                        required
+                        placeholder="mariasantos@gmail.com"
+                        value={form.email}
+                        onChange={(e) => onFormChange({ ...form, email: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
+                    />
+                </div>
 
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-700 mb-1">
-                            Initial Password <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                            type="password"
-                            required
-                            minLength={8}
-                            placeholder="Minimum 8 characters"
-                            value={form.password}
-                            onChange={(e) => onFormChange({ ...form, password: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
-                        />
-                    </div>
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Initial Password <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                        type="password"
+                        required
+                        minLength={8}
+                        placeholder="Minimum 8 characters (e.g. FacultySecret123)"
+                        value={form.password}
+                        onChange={(e) => onFormChange({ ...form, password: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] shadow-2xs"
+                    />
+                </div>
 
-                    <div className="rounded-xl border border-blue-200/80 bg-blue-50/70 p-3 text-[11px] text-blue-800 leading-relaxed">
-                        <strong>Institutional Note:</strong> This account will be automatically set to <strong>Approved</strong> and <strong>Active</strong>. The teacher can sign in immediately and be assigned classes in Class Assignments.
-                    </div>
+                <div className="rounded-xl border border-blue-200/80 bg-blue-50/70 p-3 text-[11px] text-blue-800 leading-relaxed">
+                    <strong>Institutional Note:</strong> This account will be automatically set to <strong>Approved</strong> and <strong>Active</strong>. The teacher can sign in immediately and be assigned classes in Class Assignments.
+                </div>
 
-                    <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all active:scale-[0.98]"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="rounded-xl bg-[#0071e3] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98] shadow-2xs disabled:opacity-50"
-                        >
-                            {saving ? (
-                                <span className="inline-flex items-center gap-1.5">
-                                    <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
-                                    <span>Provisioning…</span>
-                                </span>
-                            ) : (
-                                'Create Account'
-                            )}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all active:scale-[0.98]"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        className="rounded-xl bg-[#0071e3] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98] shadow-2xs disabled:opacity-50"
+                    >
+                        {saving ? (
+                            <span className="inline-flex items-center gap-1.5">
+                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                                <span>Provisioning…</span>
+                            </span>
+                        ) : (
+                            'Create Account'
+                        )}
+                    </button>
+                </div>
+            </form>
+        </Modal>
     );
 }
 
-/**
- * Modal: Revoke Teacher Access Safeguard Confirmation
- */
+// Confirmation modal to revoke access for an active teacher
 function RevokeAccessModal({ teacher, isOpen, onClose, onConfirm, saving }) {
-    if (!isOpen || !teacher) return null;
-
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="revoke-modal-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
+        <Modal
+            isOpen={isOpen && Boolean(teacher)}
+            onClose={onClose}
+            maxWidth="max-w-sm"
+            ariaLabelledBy="revoke-modal-title"
         >
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80 animate-in fade-in duration-150">
-                <div className="flex items-center gap-2.5 text-sm font-bold text-rose-700 mb-2">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
-                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <span id="revoke-modal-title">Revoke Teacher Access?</span>
+            <div className="flex items-center gap-2.5 text-sm font-bold text-rose-700 mb-2">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
                 </div>
-
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                    <strong>{teacher.name}</strong> ({teacher.email}) will lose access to the system immediately. All existing student assessment records entered by this teacher will remain strictly preserved.
-                </p>
-
-                <div className="flex justify-end gap-2.5">
-                    <button
-                        type="button"
-                        disabled={saving}
-                        onClick={onClose}
-                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98]"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        disabled={saving}
-                        onClick={onConfirm}
-                        className="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-1.5 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
-                    >
-                        {saving ? (
-                            <span className="inline-flex items-center gap-1.5">
-                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
-                                <span>Revoking…</span>
-                            </span>
-                        ) : (
-                            'Revoke Access'
-                        )}
-                    </button>
-                </div>
+                <span id="revoke-modal-title">Revoke Teacher Access?</span>
             </div>
-        </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                <strong>{teacher?.name}</strong> ({teacher?.email}) will lose access to the system immediately. All existing student assessment records entered by this teacher will remain strictly preserved.
+            </p>
+
+            <div className="flex justify-end gap-2.5">
+                <button
+                    type="button"
+                    disabled={saving}
+                    onClick={onClose}
+                    className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98]"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    disabled={saving}
+                    onClick={onConfirm}
+                    className="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-1.5 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                    {saving ? (
+                        <span className="inline-flex items-center gap-1.5">
+                            <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                            <span>Revoking…</span>
+                        </span>
+                    ) : (
+                        'Revoke Access'
+                    )}
+                </button>
+            </div>
+        </Modal>
     );
 }
 
-/**
- * Modal: Reject Registration Applicant Confirmation
- */
+// Confirmation modal to reject a pending teacher applicant
 function RejectApplicantModal({ teacher, isOpen, onClose, onConfirm, saving }) {
-    if (!isOpen || !teacher) return null;
-
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reject-modal-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
+        <Modal
+            isOpen={isOpen && Boolean(teacher)}
+            onClose={onClose}
+            maxWidth="max-w-sm"
+            ariaLabelledBy="reject-modal-title"
         >
-            <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80 animate-in fade-in duration-150">
-                <div className="flex items-center gap-2.5 text-sm font-bold text-rose-700 mb-2">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
-                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
-                    <span id="reject-modal-title">Reject Registration Request?</span>
+            <div className="flex items-center gap-2.5 text-sm font-bold text-rose-700 mb-2">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </div>
-
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                    Reject registration request for <strong>{teacher.name}</strong> ({teacher.email})? This user will not be permitted to sign into the system.
-                </p>
-
-                <div className="flex justify-end gap-2.5">
-                    <button
-                        type="button"
-                        disabled={saving}
-                        onClick={onClose}
-                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98]"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        disabled={saving}
-                        onClick={onConfirm}
-                        className="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-1.5 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
-                    >
-                        {saving ? (
-                            <span className="inline-flex items-center gap-1.5">
-                                <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
-                                <span>Rejecting…</span>
-                            </span>
-                        ) : (
-                            'Reject Request'
-                        )}
-                    </button>
-                </div>
+                <span id="reject-modal-title">Reject Registration Request?</span>
             </div>
-        </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Reject registration request for <strong>{teacher?.name}</strong> ({teacher?.email})? This user will not be permitted to sign into the system.
+            </p>
+
+            <div className="flex justify-end gap-2.5">
+                <button
+                    type="button"
+                    disabled={saving}
+                    onClick={onClose}
+                    className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98]"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    disabled={saving}
+                    onClick={onConfirm}
+                    className="rounded-xl bg-rose-600 hover:bg-rose-700 px-4 py-1.5 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                    {saving ? (
+                        <span className="inline-flex items-center gap-1.5">
+                            <LoadingIndicator type="dot-circle" size="xs" className="text-white" />
+                            <span>Rejecting…</span>
+                        </span>
+                    ) : (
+                        'Reject Request'
+                    )}
+                </button>
+            </div>
+        </Modal>
     );
 }
 
-/**
- * Main Standalone Component: TeacherAccounts
- */
+// Main faculty management page for reviewing, approving, and provisioning teachers
 export default function TeacherAccounts() {
     const [teachers, setTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -398,6 +364,12 @@ export default function TeacherAccounts() {
     async function handleCreateTeacher(e) {
         e.preventDefault();
         setModalError('');
+
+        if (!addForm.email.trim().toLowerCase().endsWith('@gmail.com')) {
+            setModalError('Faculty accounts must use a valid @gmail.com address.');
+            return;
+        }
+
         setSaving(true);
 
         try {
@@ -416,39 +388,45 @@ export default function TeacherAccounts() {
     return (
         <div className="flex flex-col gap-5 w-full">
             {/* Feedback Notice Toast */}
-            {notice && (
-                <div
-                    role="alert"
-                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-xs font-semibold shadow-2xs transition ${
-                        notice.type === 'error'
-                            ? 'border-rose-200 bg-rose-50 text-rose-900'
-                            : 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                    }`}
-                >
-                    <div className="flex items-center gap-2">
-                        {notice.type === 'error' ? (
-                            <svg className="size-4 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                                <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
-                                <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
-                        ) : (
-                            <svg className="size-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        )}
-                        <span>{notice.text}</span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setNotice(null)}
-                        className="text-slate-400 hover:text-slate-600"
-                        aria-label="Dismiss notice"
+            <AnimatePresence>
+                {notice && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        role="alert"
+                        className={`flex items-center justify-between rounded-xl border px-4 py-3 text-xs font-semibold shadow-2xs transition ${
+                            notice.type === 'error'
+                                ? 'border-rose-200 bg-rose-50 text-rose-900'
+                                : 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                        }`}
                     >
-                        ✕
-                    </button>
-                </div>
-            )}
+                        <div className="flex items-center gap-2">
+                            {notice.type === 'error' ? (
+                                <svg className="size-4 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                                    <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                                </svg>
+                            ) : (
+                                <svg className="size-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            )}
+                            <span>{notice.text}</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setNotice(null)}
+                            className="text-slate-400 hover:text-slate-600 p-1"
+                            aria-label="Dismiss notice"
+                        >
+                            ✕
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Main Content Card: Filter Bar + Faculty Roster Table */}
             <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
@@ -456,58 +434,40 @@ export default function TeacherAccounts() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 p-4">
                     {/* Status Segments */}
                     <div role="tablist" aria-label="Faculty status filter" className="inline-flex rounded-xl bg-slate-200/60 p-1 text-xs">
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('all')}
-                            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                                statusFilter === 'all'
-                                    ? 'bg-white text-slate-900 shadow-2xs'
-                                    : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                        >
-                            All ({teachers.length})
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('pending')}
-                            className={`px-3 py-1.5 rounded-lg font-semibold transition-all relative flex items-center gap-1.5 ${
-                                statusFilter === 'pending'
-                                    ? 'bg-white text-amber-900 shadow-2xs'
-                                    : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                        >
-                            <span>Pending</span>
-                            <span className={`inline-flex items-center justify-center size-4 rounded-full text-[10px] font-bold ${
-                                pendingCount > 0 ? 'bg-amber-500 text-white animate-pulse' : 'bg-slate-200 text-slate-600'
-                            }`}>
-                                {pendingCount}
-                            </span>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('active')}
-                            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                                statusFilter === 'active'
-                                    ? 'bg-white text-emerald-900 shadow-2xs'
-                                    : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                        >
-                            Active ({activeCount})
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('removed')}
-                            className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                                statusFilter === 'removed'
-                                    ? 'bg-white text-slate-900 shadow-2xs'
-                                    : 'text-slate-600 hover:text-slate-900'
-                            }`}
-                        >
-                            Removed ({removedCount})
-                        </button>
+                        {[
+                            { id: 'all', label: `All (${teachers.length})` },
+                            { id: 'pending', label: 'Pending', countBadge: true, count: pendingCount },
+                            { id: 'active', label: `Active (${activeCount})` },
+                            { id: 'removed', label: `Removed (${removedCount})` },
+                        ].map((tab) => {
+                            const isSelected = statusFilter === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setStatusFilter(tab.id)}
+                                    className={`relative px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
+                                        isSelected ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                >
+                                    {isSelected && (
+                                        <motion.div
+                                            layoutId="teacher-status-pill"
+                                            className="absolute inset-0 rounded-lg bg-white shadow-2xs"
+                                            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10">{tab.label}</span>
+                                    {tab.countBadge && (
+                                        <span className={`relative z-10 inline-flex items-center justify-center size-4 rounded-full text-[10px] font-bold ${
+                                            pendingCount > 0 ? 'bg-amber-500 text-white animate-pulse' : 'bg-slate-200 text-slate-600'
+                                        }`}>
+                                            {tab.count}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Live Search Input & Add Action */}

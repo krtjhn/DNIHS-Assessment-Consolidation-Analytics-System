@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import { api } from './api';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
@@ -9,32 +10,62 @@ import PerformanceReport from './pages/reports/PerformanceReport';
 import SchoolCalendar from './pages/admin/system/SchoolCalendar';
 import TeacherAssignment from './pages/admin/TeacherAssignment';
 import TeacherAccounts from './pages/admin/system/TeacherAccounts';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from './components/LoadingIndicator';
 
-/**
- * @file App.jsx
- * @description Master Application Shell matching Dayap NIHS Capstone Architecture.
- * Coordinates authentication state, responsive sidebar layout, and role-based module routing.
- */
+// Tab pane wrapper that animates cleanly when activated without unmounting or losing memory state
+function AnimatedTabPane({ isActive, children }) {
+    return (
+        <div className={isActive ? 'block' : 'hidden'}>
+            <motion.div
+                initial={false}
+                animate={isActive ? { opacity: [0.35, 1], y: [6, 0] } : {}}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+                {children}
+            </motion.div>
+        </div>
+    );
+}
+
+// Resolve the authorized active tab according to user RBAC role
+function resolveAuthorizedTab(requestedTab, isAdmin) {
+    const adminTabs = ['consolidation', 'sections', 'assignments', 'calendar', 'teachers'];
+    const teacherTabs = ['records'];
+
+    if (isAdmin) {
+        return adminTabs.includes(requestedTab) ? requestedTab : 'consolidation';
+    }
+    // Teachers are strictly restricted to Record Entry
+    return teacherTabs.includes(requestedTab) ? requestedTab : 'records';
+}
+
+// Master Application Shell coordinating auth state, sidebar layout, and module routing
 export default function App() {
     // 1. Authentication State
     const [token, setToken] = useState(() => localStorage.getItem('token') || '');
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 2. Navigation & Layout State (Persisted in localStorage and URL hash)
+    // 2. Navigation & Layout State (Pure state persisted in localStorage with zero hashtags)
     const [activeTab, setActiveTabState] = useState(() => {
-        const hash = window.location.hash?.replace('#', '');
         const saved = localStorage.getItem('activeTab');
-        return hash || saved || 'consolidation';
+        return saved || 'records';
     });
 
+    // Track mounted tabs so tabs stay alive in memory (instant 0ms switching without refetching)
+    const [visitedTabs, setVisitedTabs] = useState(() => new Set([activeTab]));
+
     const setActiveTab = (tab) => {
-        setActiveTabState(tab);
-        localStorage.setItem('activeTab', tab);
-        if (window.location.hash !== `#${tab}`) {
-            window.location.hash = tab;
-        }
+        const isAdmin = Boolean(user?.roles?.some((r) => r.name === 'system_admin'));
+        const validTab = resolveAuthorizedTab(tab, isAdmin);
+        setActiveTabState(validTab);
+        setVisitedTabs((prev) => {
+            if (prev.has(validTab)) return prev;
+            const updated = new Set(prev);
+            updated.add(validTab);
+            return updated;
+        });
+        localStorage.setItem('activeTab', validTab);
     };
 
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -44,34 +75,50 @@ export default function App() {
     const [activeSY, setActiveSY] = useState(null);
     const [activeTerm, setActiveTerm] = useState(null);
 
-    // On mount or token change, verify user session
+    const isLoggingOutRef = useRef(false);
+
+    // Completely clear local session state and reset client routing
+    function performLocalLogout() {
+        api.clearAuth();
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('activeTab');
+
+        // Strip legacy hashtag if present
+        if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+        }
+
+        setToken('');
+        setUser(null);
+        setVisitedTabs(new Set());
+    }
+
+    // On mount, strip any legacy URL hashtag and verify user session
     useEffect(() => {
+        // Strip legacy URL hashtag if present in browser address bar
+        if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+        }
+
         checkSession();
 
+        // When receiving unauthorized status, only perform local state cleanup
+        // (Do NOT invoke backend logout to prevent recursive 401 dispatch cascades)
         function handleUnauthorized() {
-            handleLogout();
+            performLocalLogout();
         }
 
         function handlePeriodUpdated() {
             loadAcademicPeriod();
         }
 
-        function handleHashChange() {
-            const hash = window.location.hash?.replace('#', '');
-            if (hash) {
-                setActiveTabState(hash);
-                localStorage.setItem('activeTab', hash);
-            }
-        }
-
         window.addEventListener('auth:unauthorized', handleUnauthorized);
         window.addEventListener('academic-period:updated', handlePeriodUpdated);
-        window.addEventListener('hashchange', handleHashChange);
 
         return () => {
             window.removeEventListener('auth:unauthorized', handleUnauthorized);
             window.removeEventListener('academic-period:updated', handlePeriodUpdated);
-            window.removeEventListener('hashchange', handleHashChange);
         };
     }, []);
 
@@ -88,26 +135,17 @@ export default function App() {
             setToken(storedToken);
 
             const isAdmin = res.user?.roles?.some((r) => r.name === 'system_admin');
-            const hash = window.location.hash?.replace('#', '');
             const saved = localStorage.getItem('activeTab');
-            let targetTab = hash || saved;
+            const validTab = resolveAuthorizedTab(saved, isAdmin);
 
-            if (!targetTab) {
-                targetTab = isAdmin ? 'consolidation' : 'records';
-            } else if (!isAdmin && targetTab !== 'records' && targetTab !== 'consolidation') {
-                targetTab = 'records';
-            } else if (isAdmin && targetTab === 'records') {
-                targetTab = 'consolidation';
-            }
-
-            setActiveTab(targetTab);
+            setActiveTabState(validTab);
+            setVisitedTabs(new Set([validTab]));
+            localStorage.setItem('activeTab', validTab);
 
             // Load reference data for TopBar active SY badge
             loadAcademicPeriod();
         } catch {
-            api.clearAuth();
-            setUser(null);
-            setToken('');
+            performLocalLogout();
         } finally {
             setLoading(false);
         }
@@ -131,25 +169,47 @@ export default function App() {
         setToken(newToken);
         setUser(loggedInUser);
         const isAdmin = loggedInUser?.roles?.some((r) => r.name === 'system_admin');
-        const hash = window.location.hash?.replace('#', '');
         const saved = localStorage.getItem('activeTab');
-        const targetTab = hash || saved || (isAdmin ? 'consolidation' : 'records');
-        setActiveTab(targetTab);
+        const validTab = resolveAuthorizedTab(saved, isAdmin);
+        setActiveTabState(validTab);
+        setVisitedTabs(new Set([validTab]));
+        localStorage.setItem('activeTab', validTab);
+
+        // Ensure URL stays completely clean without any hashtags
+        if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+        }
+
         loadAcademicPeriod();
     }
 
     async function handleLogout() {
-        try {
-            await api.post('/auth/logout', {});
-        } catch {
-            // Invalidate token locally even if server response fails
-        } finally {
-            api.clearAuth();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setToken('');
-            setUser(null);
+        if (isLoggingOutRef.current) return;
+        isLoggingOutRef.current = true;
+
+        const currentToken = api.getToken();
+
+        // 1. Immediately reset client state so components unmount cleanly
+        performLocalLogout();
+
+        // 2. Best-effort server token revocation with captured token
+        if (currentToken) {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`,
+                    },
+                    body: JSON.stringify({}),
+                });
+            } catch {
+                // Ignore any network/server failure during background token revocation
+            }
         }
+
+        isLoggingOutRef.current = false;
     }
 
     // Full screen loading indicator while session is validating
@@ -202,51 +262,56 @@ export default function App() {
 
                 {/* Main Dynamic Workspace Area - Wide layout with high information density */}
                 <main className="flex-1 w-full px-3 sm:px-5 md:px-6 py-4">
-                    {activeTab === 'records' && (
-                        !isAdmin ? (
+                    {/* Teachers: Record Entry */}
+                    {!isAdmin && visitedTabs.has('records') && (
+                        <AnimatedTabPane isActive={activeTab === 'records'}>
                             <RecordEntry user={user} />
-                        ) : (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Assessment Record Entry is restricted to Teachers.
-                            </div>
-                        )
+                        </AnimatedTabPane>
                     )}
-                    {activeTab === 'consolidation' && <PerformanceReport />}
-                    {activeTab === 'sections' && (
-                        isAdmin ? (
+                    {isAdmin && activeTab === 'records' && (
+                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
+                            Assessment Record Entry is restricted to Teachers.
+                        </div>
+                    )}
+
+                    {/* Admin: Consolidated Performance Reports */}
+                    {isAdmin && visitedTabs.has('consolidation') && (
+                        <AnimatedTabPane isActive={activeTab === 'consolidation'}>
+                            <PerformanceReport />
+                        </AnimatedTabPane>
+                    )}
+                    {!isAdmin && activeTab === 'consolidation' && (
+                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
+                            Consolidated Reports are restricted to System Administrators.
+                        </div>
+                    )}
+
+                    {/* Admin: Sections Management */}
+                    {isAdmin && visitedTabs.has('sections') && (
+                        <AnimatedTabPane isActive={activeTab === 'sections'}>
                             <SectionList />
-                        ) : (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Section Management is restricted to System Administrators.
-                            </div>
-                        )
+                        </AnimatedTabPane>
                     )}
-                    {activeTab === 'assignments' && (
-                        isAdmin ? (
+
+                    {/* Admin: Teacher Class Assignments */}
+                    {isAdmin && visitedTabs.has('assignments') && (
+                        <AnimatedTabPane isActive={activeTab === 'assignments'}>
                             <TeacherAssignment />
-                        ) : (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Class Assignments are restricted to System Administrators.
-                            </div>
-                        )
+                        </AnimatedTabPane>
                     )}
-                    {activeTab === 'calendar' && (
-                        isAdmin ? (
+
+                    {/* Admin: School Calendar */}
+                    {isAdmin && visitedTabs.has('calendar') && (
+                        <AnimatedTabPane isActive={activeTab === 'calendar'}>
                             <SchoolCalendar />
-                        ) : (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                School Calendar is restricted to System Administrators.
-                            </div>
-                        )
+                        </AnimatedTabPane>
                     )}
-                    {activeTab === 'teachers' && (
-                        isAdmin ? (
+
+                    {/* Admin: Teacher Accounts */}
+                    {isAdmin && visitedTabs.has('teachers') && (
+                        <AnimatedTabPane isActive={activeTab === 'teachers'}>
                             <TeacherAccounts />
-                        ) : (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                                Teacher Accounts are restricted to System Administrators.
-                            </div>
-                        )
+                        </AnimatedTabPane>
                     )}
                 </main>
 

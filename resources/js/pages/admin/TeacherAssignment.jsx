@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
-/**
- * Subcomponent: Teacher List Sidebar
- */
+// Faculty list sidebar for filtering and selecting teachers
 function TeacherListSidebar({
     searchQuery,
     setSearchQuery,
@@ -103,9 +101,7 @@ function TeacherListSidebar({
     );
 }
 
-/**
- * Subcomponent: Add Class Assignment Form
- */
+// Subcomponent form for assigning a teacher to a grade, section, and subject
 function AddClassForm({
     teacher,
     addGradeId,
@@ -252,9 +248,7 @@ function AddClassForm({
     );
 }
 
-/**
- * Subcomponent: Teaching Schedule Table
- */
+// Subcomponent displaying active teaching assignments and schedule table
 function TeachingScheduleTable({
     teacherAssignments,
     actionLoading,
@@ -314,9 +308,7 @@ function TeachingScheduleTable({
     );
 }
 
-/**
- * Master Controller: Teacher Class Assignment Matrix
- */
+// Main faculty class assignment management page
 export default function TeacherAssignment() {
     const [schoolYears, setSchoolYears] = useState([]);
     const [selectedSYId, setSelectedSYId] = useState('');

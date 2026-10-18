@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'motion/react';
 import { api } from '../../../api';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import Modal from '../../../components/Modal';
 
 function SectionTableRow({ section, grade, saving, onToggleArchive, onDelete }) {
     return (
@@ -53,27 +55,8 @@ function SectionTableRow({ section, grade, saving, onToggleArchive, onDelete }) 
 }
 
 function AddSectionModal({ isOpen, onClose, form, onFormChange, onSubmit, schoolYears = [], gradeLevels = [], saving, error }) {
-    if (!isOpen) return null;
-
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="add-section-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
-        >
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-4">
-                    <h3 id="add-section-title" className="text-base font-bold text-slate-900">Add New Section</h3>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="Close dialog"
-                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
-                    >
-                        ✕
-                    </button>
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose} title="Add New Section">
 
                 {error && (
                     <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
@@ -159,8 +142,7 @@ function AddSectionModal({ isOpen, onClose, form, onFormChange, onSubmit, school
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 }
 
@@ -294,16 +276,18 @@ export default function SectionList() {
                             </select>
                         </div>
 
-                        <button
+                        <motion.button
                             type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
                             onClick={() => {
                                 setModalError('');
                                 setIsAddModalOpen(true);
                             }}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-[#0077ed] transition-all active:scale-[0.98] cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-[#0077ed] transition-colors cursor-pointer"
                         >
                             <span>+ Add Section</span>
-                        </button>
+                        </motion.button>
                     </div>
                 </div>
 

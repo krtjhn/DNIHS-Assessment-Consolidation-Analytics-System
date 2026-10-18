@@ -17,7 +17,21 @@ class TeacherAssignmentTest extends TestCase
 
     public function test_admin_can_view_all_teaching_assignments(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
+        $sy = SchoolYear::active()->first();
+        $section = Section::first();
+        $subject = Subject::first();
+
+        TeachingAssignment::firstOrCreate([
+            'user_id' => $teacher->id,
+            'school_year_id' => $sy->id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
+        ], [
+            'effective_from' => '2025-06-16',
+            'assigned_by' => $admin->id,
+        ]);
 
         $response = $this->actingAs($admin)->getJson('/api/teaching-assignments');
 
@@ -27,7 +41,7 @@ class TeacherAssignmentTest extends TestCase
 
     public function test_teacher_can_view_own_assignments(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
         $response = $this->actingAs($teacher)->getJson('/api/my-assignments');
 
@@ -37,8 +51,8 @@ class TeacherAssignmentTest extends TestCase
 
     public function test_admin_cannot_assign_class_that_is_already_taken(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first();
         $section = Section::first();
         $subject = Subject::first();
@@ -58,7 +72,7 @@ class TeacherAssignmentTest extends TestCase
         // 2. Re-assigning to another user is strictly blocked (422)
         $anotherTeacher = User::create([
             'name' => 'Test Teacher',
-            'email' => 'test.teacher_'.uniqid().'@dayapnhs.edu.ph',
+            'email' => 'test.teacher_'.uniqid().'@gmail.com',
             'password' => bcrypt('Password@123'),
             'is_active' => true,
             'approval_status' => 'approved',
@@ -80,8 +94,8 @@ class TeacherAssignmentTest extends TestCase
 
     public function test_admin_can_bulk_sync_teacher_loads(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first();
         $sections = Section::take(2)->get();
         $subjects = Subject::take(2)->get();
@@ -108,7 +122,7 @@ class TeacherAssignmentTest extends TestCase
 
     public function test_teacher_cannot_manage_assignments(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first();
 
         $response = $this->actingAs($teacher)->postJson('/api/teaching-assignments', [

@@ -15,10 +15,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-/**
- * Seed realistic DepEd assessment test data for SY 2025-2026 Term 1 (Pilot A & Pilot B across all subjects).
- * Seeds for BOTH Term Exam ('quarterly') and Diagnostic Test ('diagnostic').
- */
+// Seed realistic DepEd assessment test data for SY 2025-2026 Term 1 (Pilot A & Pilot B across all subjects)
 Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
     $syName = (string) ($this->option('sy') ?: '2025-2026');
     $termNumber = (int) ($this->option('term') ?: 1);
@@ -69,9 +66,6 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
 
     // 3. Resolve Teacher accounts
     $teachers = User::whereHas('roles', fn ($q) => $q->where('name', 'teacher'))->get();
-    if ($teachers->isEmpty()) {
-        $teachers = User::where('role', 'teacher')->get();
-    }
     if ($teachers->isEmpty()) {
         $teachers = User::where('email', 'like', '%teacher%')->get();
     }
@@ -309,9 +303,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
     $this->comment('👉 To safely wipe all test data anytime, run: php artisan test-data:clear');
 })->purpose('Seed test assessment data for SY 2025-2026 Term 1 (Pilot A & Pilot B, all subjects, Term Exam & Diagnostic)');
 
-/**
- * Safely wipe test assessment records for a specific School Year and Term.
- */
+// Safely wipe test assessment records for a specific School Year and Term
 Artisan::command('test-data:clear {--sy=2025-2026} {--term=1} {--with-sections}', function () {
     $syName = (string) ($this->option('sy') ?: '2025-2026');
     $termNumber = (int) ($this->option('term') ?: 1);

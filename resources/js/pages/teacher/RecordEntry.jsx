@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../api';
 import ScoreSheet from '../../components/ScoreSheet';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 export default function RecordEntry({ user }) {
     const isTeacher = user?.roles?.some((r) => r.name === 'teacher');

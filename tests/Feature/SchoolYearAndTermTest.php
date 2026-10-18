@@ -14,7 +14,7 @@ class SchoolYearAndTermTest extends TestCase
 
     public function test_authenticated_user_can_view_school_years(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
         $response = $this->actingAs($teacher)->getJson('/api/school-years');
 
@@ -24,7 +24,7 @@ class SchoolYearAndTermTest extends TestCase
 
     public function test_admin_can_create_school_year_and_auto_generates_three_terms(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $syName = 'SY-'.uniqid();
 
         $response = $this->actingAs($admin)->postJson('/api/school-years', [
@@ -44,7 +44,7 @@ class SchoolYearAndTermTest extends TestCase
 
     public function test_teacher_cannot_create_school_year(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
         $response = $this->actingAs($teacher)->postJson('/api/school-years', [
             'name' => 'SY-Unauthorized',
@@ -57,7 +57,7 @@ class SchoolYearAndTermTest extends TestCase
 
     public function test_admin_can_update_term_status_and_auto_completes_previous_active(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
 
         $sy = SchoolYear::first();
         $term1 = $sy->terms()->where('term_number', 1)->first();
@@ -81,7 +81,7 @@ class SchoolYearAndTermTest extends TestCase
 
     public function test_admin_can_delete_inactive_school_year(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $sy = SchoolYear::create([
             'name' => '2099-2100',
             'start_date' => '2099-06-01',

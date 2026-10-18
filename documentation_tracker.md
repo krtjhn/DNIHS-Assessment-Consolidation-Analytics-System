@@ -151,7 +151,7 @@ gantt
     - **`api.js`**: Reusable HTTP client na may automatic Sanctum Bearer token headers at session handling.
     - **Apple HIG UI Primitives** (`Button.jsx`, `Badge.jsx`, `Modal.jsx`, `StatCard.jsx`): Semantic HTML, accessible focus-visible rings, pill status badges para sa 7-level DepEd mastery, at backdrop blur sheets.
     - **`Navbar.jsx`**: Translucent frosted-glass sticky navigation (`backdrop-blur-md bg-white/80`) na may segmented pill navigation, role chips, at logout button.
-    - **`AuthView.jsx`**: Focused sign-in card na may **1-Click Midterm Defense Quick Fill buttons** para sa Admin (`admin@dayapnhs.edu.ph`) at Teacher (`maria.santos@dayapnhs.edu.ph`).
+    - **`AuthView.jsx`**: Focused sign-in card na may **1-Click Midterm Defense Quick Fill buttons** para sa Admin (`admin@gmail.com`) at Teacher (`maria.santos@gmail.com`).
     - **`SectionsView.jsx`**: Core Entity 1 CRUD table, Add/Edit modal dialog, at Delete confirmation modal para sa Admin.
     - **`AssessmentsView.jsx`**: Core Entity 2 scoresheet para sa Teacher na may **LIVE DepEd Analytics Dashboard** (Mean, Pop. SD, MPS, at 7-Mastery Bracket pills) habang nag-e-encode ng scores bago i-save.
   - **Vite Build Verification**: Matagumpay na na-compile ang bundle sa `public/build/` via `npm run build` nang walang anumang error (`✓ built in 6.51s`).

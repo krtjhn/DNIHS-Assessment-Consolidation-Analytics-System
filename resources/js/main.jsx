@@ -10,7 +10,7 @@ if (typeof document !== 'undefined' && document.documentElement) {
     document.documentElement.style.zoom = '';
 }
 
-// + React 18 createRoot mount
+// Mount React 18 root component
 const rootElement = document.getElementById('root');
 if (rootElement) {
     ReactDOM.createRoot(rootElement).render(

@@ -1,65 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../../api';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
-
-/**
- * Filter Pill Component (Apple HIG Clean Dropdown)
- */
-function FilterPill({ icon, label, value, displayValue, options, onChange, onClear, disabled = false }) {
-    const isFiltered = Boolean(value);
-
-    return (
-        <div
-            className={`group relative inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-xs font-semibold transition-all has-[:focus-visible]:border-[#0071e3] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#0071e3]/40 ${
-                isFiltered
-                    ? 'border-[#0071e3]/30 bg-blue-50/80 text-[#0071e3] shadow-2xs'
-                    : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/80 shadow-2xs'
-            } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-        >
-            <span className="pointer-events-none text-slate-400 flex items-center" aria-hidden="true">{icon}</span>
-            {label && <span className="pointer-events-none text-slate-500 font-medium">{label}:</span>}
-            <span className={`pointer-events-none truncate max-w-[160px] ${isFiltered ? 'font-semibold text-slate-900' : 'text-slate-800'}`}>
-                {displayValue}
-            </span>
-
-            {!disabled && (
-                <select
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="absolute inset-0 size-full cursor-pointer opacity-0 focus-visible:outline-none"
-                    title={`${label ? `${label}: ` : ''}${displayValue}`}
-                >
-                    {options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                        </option>
-                    ))}
-                </select>
-            )}
-
-            {isFiltered && onClear ? (
-                <button
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onClear();
-                    }}
-                    className="relative z-10 -mr-1 ml-0.5 flex size-4 items-center justify-center rounded-full text-blue-500 hover:bg-blue-200 hover:text-blue-900 transition text-[11px] font-bold focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0071e3]"
-                    aria-label={`Clear ${label || 'filter'}`}
-                    title="Clear filter"
-                >
-                    ✕
-                </button>
-            ) : (
-                <span className="pointer-events-none -mr-0.5 text-slate-400 group-hover:text-slate-600 transition" aria-hidden="true">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </span>
-            )}
-        </div>
-    );
-}
+import LoadingIndicator from '../../components/LoadingIndicator';
 
 export default function PerformanceReport() {
     // 1. Core Reference Data
@@ -78,6 +20,30 @@ export default function PerformanceReport() {
     const [selectedSectionId, setSelectedSectionId] = useState('');
     const [selectedSubjectName, setSelectedSubjectName] = useState('');
     const [showFilters, setShowFilters] = useState(false);
+    const filterPopoverRef = useRef(null);
+
+    // Close filter popover when clicking outside or pressing Escape
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (filterPopoverRef.current && !filterPopoverRef.current.contains(event.target)) {
+                setShowFilters(false);
+            }
+        }
+        function handleKeyDown(event) {
+            if (event.key === 'Escape') {
+                setShowFilters(false);
+            }
+        }
+
+        if (showFilters) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('keydown', handleKeyDown);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showFilters]);
 
     // 3. Consolidated Data State
     const [consolidationData, setConsolidationData] = useState(null);
@@ -227,11 +193,7 @@ export default function PerformanceReport() {
         return counts;
     };
 
-    /**
-     * Compute aggregated table stats for a group of records.
-     * Uses exact pooled population statistics so that standard deviation, mean,
-     * and MPS correctly account for both within-group and between-group variances.
-     */
+    // Compute aggregated table statistics using pooled population statistics for mean, SD, and MPS
     const computeStats = (recList) => {
         if (!recList || recList.length === 0) {
             return {
@@ -410,13 +372,7 @@ export default function PerformanceReport() {
         };
     };
 
-    /**
-     * MULTI-TABLE GROUP GENERATOR:
-     * - School-Wide (All Subjects): 4 Grade-level tables (Grade 7, Grade 8, Grade 9, Grade 10) with subject rows.
-     * - School-Wide (Filtered Subject): 1 Unified table (e.g. FILIPINO — ALL GRADE LEVELS) with grade rows.
-     * - Specific Grade (All Subjects): Grouped by Section (all sections in grade) with all subject rows.
-     * - Specific Grade (Filtered Subject): 1 Section comparison table (e.g. GRADE 7 — FILIPINO) with all section rows.
-     */
+    // Group records dynamically based on active school-wide, grade, subject, and section filters
     const reportTableGroups = useMemo(() => {
         const records = filteredRecords;
         if (records.length === 0) return [];
@@ -703,7 +659,7 @@ export default function PerformanceReport() {
 
     // Dynamic Title Generation based on active filters
     const autoReportTitle = useMemo(() => {
-        const typeLabel = assessmentType === 'diagnostic' ? 'Diagnostic Assessment' : 'Quarterly Assessment';
+        const typeLabel = assessmentType === 'diagnostic' ? 'Diagnostic Assessment' : 'Term Examination';
         if (selectedSubjectName && selectedGradeId) {
             return `${currentGradeLabel} — ${selectedSubjectName} ${typeLabel} Consolidated Report`;
         }
@@ -718,79 +674,34 @@ export default function PerformanceReport() {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            {/* Minimal Header Card: Auto-generated Title & Funnel Filter Toggle */}
-            <div className="no-print flex flex-col md:flex-row md:items-center justify-between gap-3.5 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
-                <div className="flex flex-col gap-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 truncate">
-                            {autoReportTitle}
-                        </h2>
-                        <span className="inline-flex items-center rounded-md border border-blue-200/80 bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#0071e3]">
-                            {assessmentType === 'diagnostic' ? 'Diagnostic Test' : 'Term Exam'}
-                        </span>
-                    </div>
-
-                    {/* Dynamic Context Template: School Year, Term, Grade Scope, Subject (if filtered), Section (if filtered) */}
-                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
-                        <span className="inline-flex items-center gap-1 font-semibold text-slate-800">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                <line x1="16" y1="2" x2="16" y2="6" />
-                                <line x1="8" y1="2" x2="8" y2="6" />
-                            </svg>
-                            S.Y. {activeSYName}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="inline-flex items-center gap-1 text-slate-700">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            {activeTermName}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-[#0071e3]">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#0071e3]">
-                                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                                <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                            </svg>
-                            {currentGradeLabel}
-                        </span>
-
-                        {selectedSubjectName && (
-                            <>
-                                <span className="text-slate-300">•</span>
-                                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200/80">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-600">
-                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
-                                    </svg>
-                                    Subject: {selectedSubjectName}
-                                </span>
-                            </>
-                        )}
-
+            {/* Header Card: Centered Clean Title & Subtitle with Anchored Filter Button */}
+            <div className="no-print relative flex flex-col sm:flex-row items-center justify-between sm:justify-center gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
+                {/* Centered Clean Title & Subtitle (No logos, No icons, No badges, Non-redundant) */}
+                <div className="text-center min-w-0 sm:px-24">
+                    <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
+                        {autoReportTitle}
+                    </h2>
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-500 font-medium pt-0.5">
+                        <span>S.Y. {activeSYName}</span>
+                        <span>•</span>
+                        <span>{activeTermName}</span>
                         {selectedSectionId && (
                             <>
-                                <span className="text-slate-300">•</span>
-                                <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-800 border border-indigo-200/80">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-indigo-600">
-                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                        <circle cx="9" cy="7" r="4" />
-                                    </svg>
-                                    Section: {activeSectionName}
-                                </span>
+                                <span>•</span>
+                                <span className="font-semibold text-slate-700">Section: {activeSectionName}</span>
                             </>
                         )}
                     </div>
                 </div>
 
-                {/* Right: Funnel / Filter Toggle Button */}
-                <div className="flex items-center gap-2 shrink-0">
-                    <button
+                {/* Right: Filter Toggle Button with Anchored Rectangular Popover Modal */}
+                <div className="sm:absolute sm:right-4 sm:top-1/2 sm:-translate-y-1/2 shrink-0" ref={filterPopoverRef}>
+                    <motion.button
                         type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => setShowFilters((prev) => !prev)}
-                        className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3.5 text-xs font-bold transition-all shadow-2xs ${
+                        className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3.5 text-xs font-bold transition-colors shadow-2xs ${
                             showFilters
                                 ? 'border-[#0071e3] bg-[#0071e3] text-white shadow-blue-500/20'
                                 : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
@@ -808,152 +719,227 @@ export default function PerformanceReport() {
                                 title="Active filters applied"
                             />
                         )}
-                    </button>
-                </div>
+                    </motion.button>
+
+                    {/* Rectangular Filter Popover Anchored Directly Below Button */}
+                    <AnimatePresence>
+                        {showFilters && (
+                            <motion.div
+                                key="filter-popover"
+                                role="dialog"
+                                aria-label="Report Filter Controls"
+                                initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                                transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                                className="absolute right-0 top-full mt-2.5 z-50 w-[320px] sm:w-[380px] rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xl ring-1 ring-slate-900/5 text-left"
+                            >
+                            {/* Close button */}
+                            <button
+                                type="button"
+                                onClick={() => setShowFilters(false)}
+                                className="absolute top-3 right-3 flex size-6 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition text-xs font-bold"
+                                title="Close"
+                            >
+                                ✕
+                            </button>
+
+                            {/* Assessment Type Segmented Control */}
+                            <div className="space-y-1.5 pr-6">
+                                <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                                    Assessment Type
+                                </label>
+                                <div className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 border border-slate-200/70">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAssessmentType('term_exam')}
+                                        className={`rounded-lg py-1.5 text-xs font-bold transition-all text-center ${
+                                            assessmentType === 'term_exam'
+                                                ? 'bg-white text-[#0071e3] shadow-2xs'
+                                                : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Term Exam
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAssessmentType('diagnostic')}
+                                        className={`rounded-lg py-1.5 text-xs font-bold transition-all text-center ${
+                                            assessmentType === 'diagnostic'
+                                                ? 'bg-white text-[#0071e3] shadow-2xs'
+                                                : 'text-slate-600 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Diagnostic Test
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* School Year & Term / Quarter */}
+                            <div className="mt-3 grid grid-cols-2 gap-2.5">
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                                        School Year
+                                    </label>
+                                    <select
+                                        value={selectedSYId}
+                                        onChange={(e) => setSelectedSYId(e.target.value)}
+                                        disabled={refLoading}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                    >
+                                        {schoolYearOptions.map((opt) => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                                        Term
+                                    </label>
+                                    <select
+                                        value={selectedTermId}
+                                        onChange={(e) => setSelectedTermId(e.target.value)}
+                                        disabled={refLoading}
+                                        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                    >
+                                        {termOptions.map((opt) => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Grade Level Selection */}
+                            <div className="mt-3 space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                                        Grade Level
+                                    </label>
+                                    {selectedGradeId && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedGradeId('')}
+                                            className="text-[10px] font-bold text-[#0071e3] hover:underline"
+                                        >
+                                            Reset to All
+                                        </button>
+                                    )}
+                                </div>
+                                <select
+                                    value={selectedGradeId}
+                                    onChange={(e) => setSelectedGradeId(e.target.value)}
+                                    disabled={refLoading}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                >
+                                    {gradeOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Section Drill-Down */}
+                            <div className="mt-3 space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                                        Section
+                                    </label>
+                                    {selectedSectionId && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedSectionId('')}
+                                            className="text-[10px] font-bold text-[#0071e3] hover:underline"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+                                </div>
+                                <select
+                                    value={selectedSectionId}
+                                    onChange={(e) => setSelectedSectionId(e.target.value)}
+                                    disabled={refLoading || sectionOptions.length <= 1}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                >
+                                    {sectionOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Subject Drill-Down */}
+                            <div className="mt-3 space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                                        Subject
+                                    </label>
+                                    {selectedSubjectName && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedSubjectName('')}
+                                            className="text-[10px] font-bold text-[#0071e3] hover:underline"
+                                        >
+                                            Clear
+                                        </button>
+                                    )}
+                                </div>
+                                <select
+                                    value={selectedSubjectName}
+                                    onChange={(e) => setSelectedSubjectName(e.target.value)}
+                                    disabled={refLoading || subjectOptions.length <= 1}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                >
+                                    {subjectOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                                {hasActiveFilters ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedSectionId('');
+                                            setSelectedSubjectName('');
+                                            setSelectedGradeId('');
+                                        }}
+                                        className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline px-1"
+                                    >
+                                        Reset Filters
+                                    </button>
+                                ) : (
+                                    <div />
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowFilters(false)}
+                                    className="inline-flex items-center justify-center rounded-xl bg-[#0071e3] px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-[#0077ed] transition focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                                >
+                                    Apply & Close
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
+        </div>
 
-            {/* Collapsible Filter Toolbar Card (Only shown when Funnel is clicked) */}
-            {showFilters && (
-                <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-slate-50/70 p-3 shadow-2xs animate-in fade-in duration-150">
-                    <div className="flex flex-wrap items-center gap-2">
-                        {/* Assessment Type Switcher */}
-                        <div className="inline-flex rounded-xl bg-white p-1 border border-slate-200/90 mr-1 shadow-2xs">
-                            <button
-                                type="button"
-                                onClick={() => setAssessmentType('term_exam')}
-                                className={`rounded-lg px-3 py-1 text-xs font-bold transition-all ${
-                                    assessmentType === 'term_exam'
-                                        ? 'bg-blue-50 text-[#0071e3] shadow-2xs'
-                                        : 'text-slate-600 hover:text-slate-900'
-                                }`}
-                            >
-                                Term Exam
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setAssessmentType('diagnostic')}
-                                className={`rounded-lg px-3 py-1 text-xs font-bold transition-all ${
-                                    assessmentType === 'diagnostic'
-                                        ? 'bg-blue-50 text-[#0071e3] shadow-2xs'
-                                        : 'text-slate-600 hover:text-slate-900'
-                                }`}
-                            >
-                                Diagnostic Test
-                            </button>
-                        </div>
-
-                        <FilterPill
-                            icon={
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="16" y1="2" x2="16" y2="6" />
-                                    <line x1="8" y1="2" x2="8" y2="6" />
-                                    <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                            }
-                            label="SY"
-                            value={selectedSYId}
-                            displayValue={activeSYName}
-                            options={schoolYearOptions}
-                            onChange={setSelectedSYId}
-                            disabled={refLoading}
-                        />
-
-                        <FilterPill
-                            icon={
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
-                                </svg>
-                            }
-                            label="Term"
-                            value={selectedTermId}
-                            displayValue={activeTermName}
-                            options={termOptions}
-                            onChange={setSelectedTermId}
-                            disabled={refLoading}
-                        />
-
-                        <FilterPill
-                            icon={
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                                </svg>
-                            }
-                            label="Grade"
-                            value={selectedGradeId}
-                            displayValue={selectedGradeId ? (currentGradeObj?.display_name || currentGradeObj?.name || `Grade ${currentGradeObj?.level}`) : 'School-Wide (All)'}
-                            options={gradeOptions}
-                            onChange={setSelectedGradeId}
-                            onClear={() => setSelectedGradeId('')}
-                            disabled={refLoading}
-                        />
-
-                        <FilterPill
-                            icon={
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                </svg>
-                            }
-                            label="Section"
-                            value={selectedSectionId}
-                            displayValue={selectedSectionId ? activeSectionName : 'All'}
-                            options={sectionOptions}
-                            onChange={setSelectedSectionId}
-                            onClear={() => setSelectedSectionId('')}
-                        />
-
-                        <FilterPill
-                            icon={
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
-                                </svg>
-                            }
-                            label="Subject"
-                            value={selectedSubjectName}
-                            displayValue={selectedSubjectName ? activeSubjectName : 'All'}
-                            options={subjectOptions}
-                            onChange={setSelectedSubjectName}
-                            onClear={() => setSelectedSubjectName('')}
-                        />
-
-                        {hasActiveFilters && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSelectedSectionId('');
-                                    setSelectedSubjectName('');
-                                    setSelectedGradeId('');
-                                }}
-                                className="inline-flex h-9 items-center gap-1 rounded-xl px-2.5 text-xs font-semibold text-slate-600 hover:bg-white hover:text-slate-900 transition border border-transparent hover:border-slate-200"
-                            >
-                                ✕ Reset filters
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setShowFilters(false)}
-                            className="inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-200/80 hover:text-slate-900 transition"
-                            title="Close filter toolbar"
-                        >
-                            ✕ Done
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Error Message */}
+        {/* Error Message */}
+        <AnimatePresence>
             {errorMessage && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-700">
+                <motion.div
+                    key="report-error"
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-700"
+                >
                     {errorMessage}
-                </div>
+                </motion.div>
             )}
+        </AnimatePresence>
 
             {/* EXECUTIVE SUMMARY KPI PANELS: MEAN, SD, MPS, MASTERY DISTRIBUTION */}
             {filteredRecords.length > 0 && !loadingData && (
@@ -1049,17 +1035,65 @@ export default function PerformanceReport() {
                     <LoadingIndicator type="dot-circle" size="md" label="Loading consolidated performance records…" />
                 </div>
             ) : reportTableGroups.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-16 rounded-2xl border border-slate-200 bg-white shadow-2xs text-center">
-                    <div className="size-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                        </svg>
-                    </div>
-                    <div className="text-sm font-semibold text-slate-800">No records found</div>
-                    <div className="text-xs text-slate-500 max-w-sm">
-                        No assessment records match the selected school year, term, and filter scope.
+                <div className="report-table-block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse text-left text-xs">
+                            <thead>
+                                {/* Unified Table Title: Part of table, Green background, White text, Center aligned */}
+                                <tr className="bg-[#1e5622] text-white">
+                                    <th
+                                        colSpan={16}
+                                        className="border border-green-800 px-4 py-3 text-center text-sm md:text-base font-extrabold uppercase tracking-wide text-white"
+                                    >
+                                        {autoReportTitle}
+                                    </th>
+                                </tr>
+                                <tr className="bg-[#1e5622] text-white font-bold uppercase tracking-wider text-[11px]">
+                                    <th rowSpan="2" className="border border-green-800 px-3 py-3 whitespace-nowrap">
+                                        {selectedSubjectName ? 'Section' : (selectedGradeId ? 'Subject' : 'Grade / Section')}
+                                    </th>
+                                    <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">No. of Cases</th>
+                                    <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Highest</th>
+                                    <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Lowest</th>
+                                    <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Mean</th>
+                                    <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">SD</th>
+                                    <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center whitespace-nowrap bg-[#17441a]">MPS</th>
+                                    <th colSpan="7" className="border border-green-800 px-2 py-2 text-center bg-[#133816] tracking-normal font-semibold">
+                                        Mastery Level Distribution (No. of Examinees)
+                                    </th>
+                                    <th rowSpan="2" className="border border-green-800 px-3 py-3 min-w-[180px]">Least Learned Competency</th>
+                                    <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center bg-[#256a29] whitespace-nowrap">Remarks</th>
+                                </tr>
+                                <tr className="bg-[#246528] text-white text-[10px] font-semibold">
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Mastered<br /><span className="font-mono opacity-80">96-100%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Closely Approx.<br /><span className="font-mono opacity-80">86-95%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Moving Towards<br /><span className="font-mono opacity-80">66-85%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Average<br /><span className="font-mono opacity-80">35-65%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Low<br /><span className="font-mono opacity-80">15-34%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Very Low<br /><span className="font-mono opacity-80">5-14%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">No Mastery<br /><span className="font-mono opacity-80">0-4%</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colSpan={16} className="py-14 text-center text-slate-500 bg-white">
+                                        <div className="flex flex-col items-center justify-center gap-1.5">
+                                            <div className="size-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-sm font-semibold text-slate-800">No records found</div>
+                                            <div className="text-xs text-slate-500 max-w-sm">
+                                                No assessment records match the selected school year, term, and filter scope.
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             ) : (
@@ -1091,7 +1125,7 @@ export default function PerformanceReport() {
                                                 <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Lowest</th>
                                                 <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Mean</th>
                                                 <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">SD</th>
-                                                <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center whitespace-nowrap bg-[#17441a]">DepEd MPS</th>
+                                                <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center whitespace-nowrap bg-[#17441a]">MPS</th>
                                                 <th colSpan="7" className="border border-green-800 px-2 py-2 text-center bg-[#133816] tracking-normal font-semibold">
                                                     Mastery Level Distribution (No. of Examinees)
                                                 </th>

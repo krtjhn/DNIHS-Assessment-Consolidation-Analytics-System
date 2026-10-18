@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../../../api';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from '../../../components/LoadingIndicator';
+import Modal from '../../../components/Modal';
 
-/**
- * 1. Term Card Component
- */
+// Term card component displaying term details and status controls
 function TermCard({ term, saving, onUpdateStatus }) {
     const isActiveTerm = term.status === 'active';
     const isCompleted = term.status === 'completed';
@@ -77,9 +77,7 @@ function TermCard({ term, saving, onUpdateStatus }) {
     );
 }
 
-/**
- * 2. School Year Table Row
- */
+// School year table row with activation and delete actions
 function SchoolYearRow({ schoolYear, saving, onActivate, onDelete }) {
     const displayName = schoolYear.name?.startsWith('SY') ? schoolYear.name : `SY ${schoolYear.name}`;
 
@@ -132,34 +130,12 @@ function SchoolYearRow({ schoolYear, saving, onActivate, onDelete }) {
     );
 }
 
-/**
- * 3. Add School Year Modal
- */
+// Modal for provisioning a new school year
 function AddSchoolYearModal({ isOpen, onClose, form, onFormChange, onSubmit, saving, error }) {
-    if (!isOpen) return null;
-
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="add-sy-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
-        >
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80 animate-in fade-in duration-150">
-                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-4">
-                    <h3 id="add-sy-title" className="text-base font-bold text-slate-900">Add New School Year</h3>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="Close dialog"
-                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
-                    >
-                        ✕
-                    </button>
-                </div>
-
-                {error && (
-                    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
+        <Modal isOpen={isOpen} onClose={onClose} title="Add New School Year">
+            {error && (
+                <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
                         {error}
                     </div>
                 )}
@@ -242,14 +218,11 @@ function AddSchoolYearModal({ isOpen, onClose, form, onFormChange, onSubmit, sav
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 }
 
-/**
- * Main School Calendar Controller Component
- */
+// Main School Calendar module managing terms and school years
 export default function SchoolCalendar() {
     const [schoolYears, setSchoolYears] = useState([]);
     const [selectedSchoolYearId, setSelectedSchoolYearId] = useState('');
@@ -390,17 +363,24 @@ export default function SchoolCalendar() {
     return (
         <div className="flex flex-col gap-5">
             {/* Flash Notice */}
-            {notice && (
-                <div
-                    className={`rounded-xl border p-3 text-xs font-semibold transition-all ${
-                        notice.type === 'success'
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                            : 'border-red-200 bg-red-50 text-red-700'
-                    }`}
-                >
-                    {notice.text}
-                </div>
-            )}
+            <AnimatePresence>
+                {notice && (
+                    <motion.div
+                        key={notice.text}
+                        initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        className={`rounded-xl border p-3 text-xs font-semibold ${
+                            notice.type === 'success'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                                : 'border-red-200 bg-red-50 text-red-700'
+                        }`}
+                    >
+                        {notice.text}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Active Terms Summary Card */}
             <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
@@ -452,16 +432,18 @@ export default function SchoolCalendar() {
                     <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
                         All School Years ({sortedSchoolYears.length})
                     </h3>
-                    <button
+                    <motion.button
                         type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => {
                             setModalError('');
                             setIsAddSYOpen(true);
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-all active:scale-[0.98] cursor-pointer"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#0071e3] hover:bg-[#0077ed] active:bg-[#0062c4] px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
                     >
                         <span>+ Add School Year</span>
-                    </button>
+                    </motion.button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left text-xs">

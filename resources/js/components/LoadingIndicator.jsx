@@ -1,8 +1,6 @@
 import React from 'react';
 
-/**
- * Size mapping dictionary for Apple HIG loading indicators.
- */
+// Size presets for standard loading indicators
 const SIZES = {
     xs: 'size-3.5',
     sm: 'size-4',
@@ -11,9 +9,7 @@ const SIZES = {
     xl: 'size-10',
 };
 
-/**
- * 8-Dot Circle SVG Spinner with decaying opacity matching Apple HIG.
- */
+// 8-Dot Circle SVG Spinner with decaying opacity matching Apple HIG design
 function DotCircleSvg({ className = '' }) {
     return (
         <svg
@@ -23,7 +19,6 @@ function DotCircleSvg({ className = '' }) {
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
         >
-            {/* 8 circular dots positioned along a 7.5px radius with decaying opacity */}
             <circle cx="12" cy="4.5" r="1.75" fill="currentColor" opacity="1" />
             <circle cx="17.3" cy="6.7" r="1.75" fill="currentColor" opacity="0.88" />
             <circle cx="19.5" cy="12" r="1.75" fill="currentColor" opacity="0.75" />
@@ -36,17 +31,7 @@ function DotCircleSvg({ className = '' }) {
     );
 }
 
-/**
- * Standardized LoadingIndicator Component
- *
- * @param {Object} props
- * @param {'dot-circle'} [props.type='dot-circle'] - Indicator style
- * @param {'xs'|'sm'|'md'|'lg'|'xl'} [props.size='md'] - Visual dimension
- * @param {string} [props.className] - Additional Tailwind classes
- * @param {string} [props.label] - Accessible / visible text description
- * @param {'vertical'|'horizontal'} [props.orientation='vertical'] - Layout direction when label is present
- * @param {React.ReactNode} [props.children] - Alternate label or sub-content
- */
+// Reusable LoadingIndicator component supporting various sizes and labels
 export function LoadingIndicator({
     type = 'dot-circle',
     size = 'md',
@@ -59,7 +44,7 @@ export function LoadingIndicator({
     const sizeClass = SIZES[size] || SIZES.md;
     const resolvedLabel = label || children;
 
-    // Standalone spinner if no text label provided
+    // Render standalone icon when no text label is provided
     if (!resolvedLabel) {
         return (
             <span
@@ -74,7 +59,7 @@ export function LoadingIndicator({
         );
     }
 
-    // Centered layout with label text
+    // Render centered layout with label text
     const isHorizontal = orientation === 'horizontal';
 
     return (
@@ -94,12 +79,5 @@ export function LoadingIndicator({
         </div>
     );
 }
-
-/**
- * Standardized Demo / Preview component
- */
-export const DotCircleDemo = () => {
-    return <LoadingIndicator type="dot-circle" size="md" />;
-};
 
 export default LoadingIndicator;

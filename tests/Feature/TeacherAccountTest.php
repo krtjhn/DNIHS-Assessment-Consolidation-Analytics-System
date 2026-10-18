@@ -15,7 +15,7 @@ class TeacherAccountTest extends TestCase
     {
         $response = $this->postJson('/api/auth/register', [
             'name' => 'Professor Armando Ramos',
-            'email' => 'armando.ramos@dayapnhs.edu.ph',
+            'email' => 'armando.ramos@gmail.com',
             'password' => 'FacultySecret123',
             'password_confirmation' => 'FacultySecret123',
         ]);
@@ -24,7 +24,7 @@ class TeacherAccountTest extends TestCase
             ->assertJsonPath('requires_approval', true)
             ->assertJsonMissing(['access_token']);
 
-        $user = User::where('email', 'armando.ramos@dayapnhs.edu.ph')->first();
+        $user = User::where('email', 'armando.ramos@gmail.com')->first();
         $this->assertNotNull($user);
         $this->assertEquals('pending', $user->approval_status);
         $this->assertFalse($user->is_active);
@@ -35,14 +35,14 @@ class TeacherAccountTest extends TestCase
     {
         $user = User::create([
             'name' => 'Pending Teacher',
-            'email' => 'pending.teacher@dayapnhs.edu.ph',
+            'email' => 'pending.teacher@gmail.com',
             'password' => bcrypt('password123'),
             'is_active' => false,
             'approval_status' => 'pending',
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'pending.teacher@dayapnhs.edu.ph',
+            'email' => 'pending.teacher@gmail.com',
             'password' => 'password123',
         ]);
 
@@ -52,11 +52,11 @@ class TeacherAccountTest extends TestCase
 
     public function test_admin_can_view_teachers_list_including_pending_and_inactive(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
 
         User::create([
             'name' => 'Applicant Teacher',
-            'email' => 'applicant@dayapnhs.edu.ph',
+            'email' => 'applicant@gmail.com',
             'password' => bcrypt('password123'),
             'is_active' => false,
             'approval_status' => 'pending',
@@ -68,16 +68,16 @@ class TeacherAccountTest extends TestCase
             ->assertJsonStructure(['data' => [['id', 'name', 'email', 'is_active', 'approval_status']]]);
 
         $emails = collect($response->json('data'))->pluck('email');
-        $this->assertTrue($emails->contains('applicant@dayapnhs.edu.ph'));
+        $this->assertTrue($emails->contains('applicant@gmail.com'));
     }
 
     public function test_admin_can_approve_pending_teacher_enabling_login(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
 
         $applicant = User::create([
             'name' => 'New Approved Teacher',
-            'email' => 'approved.applicant@dayapnhs.edu.ph',
+            'email' => 'approved.applicant@gmail.com',
             'password' => bcrypt('password123'),
             'is_active' => false,
             'approval_status' => 'pending',
@@ -97,7 +97,7 @@ class TeacherAccountTest extends TestCase
 
         // Teacher can now log in
         $loginResponse = $this->postJson('/api/auth/login', [
-            'email' => 'approved.applicant@dayapnhs.edu.ph',
+            'email' => 'approved.applicant@gmail.com',
             'password' => 'password123',
         ]);
 
@@ -107,11 +107,11 @@ class TeacherAccountTest extends TestCase
 
     public function test_admin_can_reject_pending_teacher(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
 
         $applicant = User::create([
             'name' => 'Rejected Teacher',
-            'email' => 'rejected.applicant@dayapnhs.edu.ph',
+            'email' => 'rejected.applicant@gmail.com',
             'password' => bcrypt('password123'),
             'is_active' => false,
             'approval_status' => 'pending',
@@ -129,7 +129,7 @@ class TeacherAccountTest extends TestCase
 
         // Login fails with rejected status
         $loginResponse = $this->postJson('/api/auth/login', [
-            'email' => 'rejected.applicant@dayapnhs.edu.ph',
+            'email' => 'rejected.applicant@gmail.com',
             'password' => 'password123',
         ]);
 
@@ -139,11 +139,11 @@ class TeacherAccountTest extends TestCase
 
     public function test_admin_can_provision_teacher_directly(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
 
         $response = $this->actingAs($admin)->postJson('/api/teachers', [
             'name' => 'Directly Provisioned Teacher',
-            'email' => 'direct.teacher@dayapnhs.edu.ph',
+            'email' => 'direct.teacher@gmail.com',
             'password' => 'ProvisionSecret123',
         ]);
 
@@ -152,7 +152,7 @@ class TeacherAccountTest extends TestCase
             ->assertJsonPath('data.approval_status', 'approved')
             ->assertJsonPath('data.is_active', true);
 
-        $created = User::where('email', 'direct.teacher@dayapnhs.edu.ph')->first();
+        $created = User::where('email', 'direct.teacher@gmail.com')->first();
         $this->assertNotNull($created);
         $this->assertTrue($created->is_active);
         $this->assertEquals('approved', $created->approval_status);
@@ -161,8 +161,8 @@ class TeacherAccountTest extends TestCase
 
     public function test_admin_can_soft_revoke_and_reactivate_teacher(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
         // 1. Soft revoke
         $response1 = $this->actingAs($admin)->deleteJson("/api/teachers/{$teacher->id}");
@@ -182,7 +182,7 @@ class TeacherAccountTest extends TestCase
 
     public function test_admin_cannot_revoke_administrator_account(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
 
         $response = $this->actingAs($admin)->deleteJson("/api/teachers/{$admin->id}");
 
@@ -192,14 +192,14 @@ class TeacherAccountTest extends TestCase
 
     public function test_non_admin_cannot_manage_teachers(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
         $response = $this->actingAs($teacher)->getJson('/api/teachers');
         $response->assertStatus(403);
 
         $responsePost = $this->actingAs($teacher)->postJson('/api/teachers', [
             'name' => 'Hacker Teacher',
-            'email' => 'hacker@dayapnhs.edu.ph',
+            'email' => 'hacker@gmail.com',
             'password' => 'secret123',
         ]);
         $responsePost->assertStatus(403);

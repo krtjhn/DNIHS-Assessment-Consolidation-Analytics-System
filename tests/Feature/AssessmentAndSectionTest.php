@@ -17,12 +17,10 @@ class AssessmentAndSectionTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /**
-     * Test Teacher can encode scores and system calculates Mean, SD, and MPS.
-     */
+    // Test Teacher can encode scores and system calculates Mean, SD, and MPS
     public function test_teacher_encodes_scores_and_calculates_deped_stats(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first()
             ?? Term::first();
@@ -70,12 +68,10 @@ class AssessmentAndSectionTest extends TestCase
             ->assertJsonPath('data.no_of_entries', 5);
     }
 
-    /**
-     * Test cannot submit individual score exceeding total items (Issue 2).
-     */
+    // Test cannot submit individual score exceeding total items (Issue 2)
     public function test_cannot_submit_score_exceeding_total_items(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -106,12 +102,10 @@ class AssessmentAndSectionTest extends TestCase
             ->assertJsonValidationErrors(['raw_scores.1']);
     }
 
-    /**
-     * Test unassigned teacher cannot record scores for a class (Issue 3).
-     */
+    // Test unassigned teacher cannot record scores for a class (Issue 3)
     public function test_unassigned_teacher_cannot_record_assessment(): void
     {
-        $teacher = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'juan.delacruz@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -141,13 +135,38 @@ class AssessmentAndSectionTest extends TestCase
             ->assertJsonPath('message', 'You are not assigned to teach this class. Only assigned teachers or administrators can record scores.');
     }
 
-    /**
-     * Test cannot delete section that contains recorded assessment scores (Issue 5).
-     */
+    // Test cannot delete section that contains recorded assessment scores (Issue 5)
     public function test_cannot_delete_section_with_assessment_records(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $record = AssessmentRecord::first();
+        if (! $record) {
+            $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+            $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
+            $section = Section::first();
+            $subject = Subject::first();
+            $teacher = User::where('email', 'maria.santos@gmail.com')->first();
+
+            $record = AssessmentRecord::create([
+                'school_year_id' => $sy->id,
+                'term_id' => $term->id,
+                'grade_level_id' => $section->grade_level_id,
+                'section_id' => $section->id,
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id,
+                'type' => 'diagnostic',
+                'total_items' => 50,
+                'raw_scores' => [40, 42, 38],
+                'no_of_entries' => 3,
+                'mean' => 40.0,
+                'mps' => 80.0,
+                'sd' => 2.0,
+                'highest_score' => 42.0,
+                'lowest_score' => 38.0,
+                'least_learned_competency' => 'Fractions',
+                'remarks' => 'Complete',
+            ]);
+        }
         $this->assertNotNull($record, 'Assessment record fixture required');
 
         $section = $record->section;
@@ -160,12 +179,10 @@ class AssessmentAndSectionTest extends TestCase
         $this->assertDatabaseHas('sections', ['id' => $section->id]);
     }
 
-    /**
-     * Test cross-grade section mismatch is rejected (Issue 8).
-     */
+    // Test cross-grade section mismatch is rejected (Issue 8)
     public function test_cross_grade_section_mismatch_is_rejected(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -188,12 +205,10 @@ class AssessmentAndSectionTest extends TestCase
             ->assertJsonValidationErrors(['section_id']);
     }
 
-    /**
-     * Test authenticated staff can fetch consolidated assessment reports.
-     */
+    // Test authenticated staff can fetch consolidated assessment reports
     public function test_authenticated_staff_can_fetch_consolidation_report(): void
     {
-        $teacher = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
+        $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
 

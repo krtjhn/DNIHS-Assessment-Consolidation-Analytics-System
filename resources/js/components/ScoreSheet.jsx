@@ -1,6 +1,8 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { api } from '../api';
-import { LoadingIndicator } from '@/components/application/loading-indicator/loading-indicator';
+import LoadingIndicator from './LoadingIndicator';
+import Modal from './Modal';
 
 export default function ScoreSheet({
     selectedTerm,
@@ -222,18 +224,22 @@ export default function ScoreSheet({
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
+                    <motion.button
                         type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => setShowPasteModal(true)}
-                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98] shadow-2xs"
+                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs"
                     >
                         📋 Paste from Excel / eCR
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                         type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         disabled={saving}
                         onClick={handleSaveRecord}
-                        className="rounded-xl bg-[#0071e3] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98] shadow-2xs disabled:opacity-50"
+                        className="rounded-xl bg-[#0071e3] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed] transition-colors shadow-2xs disabled:opacity-50"
                     >
                         {saving ? (
                             <span className="inline-flex items-center gap-1.5">
@@ -243,22 +249,29 @@ export default function ScoreSheet({
                         ) : (
                             'Save Score Sheet'
                         )}
-                    </button>
+                    </motion.button>
                 </div>
             </div>
 
             {/* Feedback alert */}
-            {feedback && (
-                <div
-                    className={`rounded-xl border p-3.5 text-xs font-medium ${
-                        feedback.type === 'success'
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                            : 'border-red-200 bg-red-50 text-red-700'
-                    }`}
-                >
-                    {feedback.message}
-                </div>
-            )}
+            <AnimatePresence>
+                {feedback && (
+                    <motion.div
+                        key={feedback.message}
+                        initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        className={`rounded-xl border p-3.5 text-xs font-medium ${
+                            feedback.type === 'success'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                                : 'border-red-200 bg-red-50 text-red-700'
+                        }`}
+                    >
+                        {feedback.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Live DepEd Statistical Summary Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -377,61 +390,46 @@ export default function ScoreSheet({
             </div>
 
             {/* Paste Modal */}
-            {showPasteModal && (
-                <div
-                    role="dialog"
-                    aria-modal="true"
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs"
-                >
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80">
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                            <h3 className="text-sm font-bold text-slate-900">Paste Scores from Excel / eCR</h3>
-                            <button
-                                type="button"
-                                onClick={() => setShowPasteModal(false)}
-                                className="text-slate-400 hover:text-slate-600"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        {pasteError && (
-                            <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 font-medium">
-                                {pasteError}
-                            </div>
-                        )}
-
-                        <p className="text-xs text-slate-500 mb-2">
-                            Copy a column of scores directly from Excel and paste it below:
-                        </p>
-
-                        <textarea
-                            rows="6"
-                            value={pasteRawText}
-                            onChange={(e) => setPasteRawText(e.target.value)}
-                            placeholder="45&#10;42&#10;38&#10;50&#10;..."
-                            className="w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
-                        />
-
-                        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 mt-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowPasteModal(false)}
-                                className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleApplyPaste}
-                                className="rounded-xl bg-[#0071e3] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed]"
-                            >
-                                Apply Scores
-                            </button>
-                        </div>
+            <Modal
+                isOpen={showPasteModal}
+                onClose={() => setShowPasteModal(false)}
+                title="Paste Scores from Excel / eCR"
+            >
+                {pasteError && (
+                    <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 font-medium">
+                        {pasteError}
                     </div>
+                )}
+
+                <p className="text-xs text-slate-500 mb-2">
+                    Copy a column of scores directly from Excel and paste it below:
+                </p>
+
+                <textarea
+                    rows="6"
+                    value={pasteRawText}
+                    onChange={(e) => setPasteRawText(e.target.value)}
+                    placeholder="45&#10;42&#10;38&#10;50&#10;..."
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs font-mono text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
+                />
+
+                <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100 mt-4">
+                    <button
+                        type="button"
+                        onClick={() => setShowPasteModal(false)}
+                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all active:scale-[0.98]"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleApplyPaste}
+                        className="rounded-xl bg-[#0071e3] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed] transition-all active:scale-[0.98]"
+                    >
+                        Apply Scores
+                    </button>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 }

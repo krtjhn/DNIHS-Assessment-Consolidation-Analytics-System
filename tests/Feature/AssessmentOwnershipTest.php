@@ -29,13 +29,11 @@ class AssessmentOwnershipTest extends TestCase
         return AssessmentRecord::create($attrs);
     }
 
-    /**
-     * Test a teacher only receives their own recorded score sheets in the assessments index.
-     */
+    // Test a teacher only receives their own recorded score sheets in the assessments index
     public function test_teacher_only_receives_own_records_in_assessments_index(): void
     {
-        $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
-        $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $teacher1 = User::where('email', 'maria.santos@gmail.com')->first();
+        $teacher2 = User::where('email', 'juan.delacruz@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -71,13 +69,11 @@ class AssessmentOwnershipTest extends TestCase
         $this->assertNotContains($record2->id, $ids);
     }
 
-    /**
-     * Test a teacher cannot update another teacher's assessment record (403 Forbidden).
-     */
+    // Test a teacher cannot update another teacher's assessment record (403 Forbidden)
     public function test_teacher_cannot_update_another_teachers_record(): void
     {
-        $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
-        $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $teacher1 = User::where('email', 'maria.santos@gmail.com')->first();
+        $teacher2 = User::where('email', 'juan.delacruz@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -112,13 +108,11 @@ class AssessmentOwnershipTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /**
-     * Test a teacher cannot delete another teacher's assessment record (403 Forbidden).
-     */
+    // Test a teacher cannot delete another teacher's assessment record (403 Forbidden)
     public function test_teacher_cannot_delete_another_teachers_record(): void
     {
-        $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
-        $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $teacher1 = User::where('email', 'maria.santos@gmail.com')->first();
+        $teacher2 = User::where('email', 'juan.delacruz@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -150,13 +144,11 @@ class AssessmentOwnershipTest extends TestCase
         $this->assertDatabaseHas('assessment_records', ['id' => $record2->id]);
     }
 
-    /**
-     * Test a teacher cannot overwrite an existing assessment recorded by another teacher.
-     */
+    // Test a teacher cannot overwrite an existing assessment recorded by another teacher
     public function test_teacher_cannot_overwrite_existing_record_of_another_teacher(): void
     {
-        $teacher1 = User::where('email', 'maria.santos@dayapnhs.edu.ph')->first();
-        $teacher2 = User::where('email', 'juan.delacruz@dayapnhs.edu.ph')->first();
+        $teacher1 = User::where('email', 'maria.santos@gmail.com')->first();
+        $teacher2 = User::where('email', 'juan.delacruz@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
@@ -218,13 +210,38 @@ class AssessmentOwnershipTest extends TestCase
             ->assertJsonPath('message', 'This assessment was already recorded by Juan Dela Cruz. You cannot overwrite another teacher\'s score sheet.');
     }
 
-    /**
-     * Test admin can update any teacher's assessment record (Issue 9 resolved).
-     */
+    // Test admin can update any teacher's assessment record (Issue 9 resolved)
     public function test_admin_can_update_any_teachers_record(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $record = AssessmentRecord::first();
+        if (! $record) {
+            $sy = SchoolYear::active()->first() ?? SchoolYear::first();
+            $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
+            $section = Section::first();
+            $subject = Subject::first();
+            $teacher = User::where('email', 'maria.santos@gmail.com')->first();
+
+            $record = $this->createTestRecord([
+                'school_year_id' => $sy->id,
+                'term_id' => $term->id,
+                'grade_level_id' => $section->grade_level_id,
+                'section_id' => $section->id,
+                'subject_id' => $subject->id,
+                'teacher_id' => $teacher->id,
+                'type' => 'diagnostic',
+                'total_items' => 50,
+                'raw_scores' => [40, 42, 38],
+                'no_of_entries' => 3,
+                'mean' => 40.0,
+                'mps' => 80.0,
+                'sd' => 2.0,
+                'highest_score' => 42.0,
+                'lowest_score' => 38.0,
+                'least_learned_competency' => 'Fractions',
+                'remarks' => 'Complete',
+            ]);
+        }
         $this->assertNotNull($record, 'Assessment record fixture required');
 
         $response = $this->actingAs($admin)->putJson("/api/assessments/{$record->id}", [
@@ -238,12 +255,10 @@ class AssessmentOwnershipTest extends TestCase
             ->assertJsonPath('message', 'Assessment scores updated and recalculated successfully.');
     }
 
-    /**
-     * Test admin can view all assessments in consolidation report regardless of teacher.
-     */
+    // Test admin can view all assessments in consolidation report regardless of teacher
     public function test_admin_can_view_all_assessments_in_consolidation(): void
     {
-        $admin = User::where('email', 'admin@dayapnhs.edu.ph')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
 
