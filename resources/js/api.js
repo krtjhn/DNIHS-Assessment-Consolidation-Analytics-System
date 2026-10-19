@@ -1,5 +1,7 @@
 // Centralized API client handling Laravel Sanctum Bearer token authentication
-const API_BASE = '/api';
+// Support external backend URL (e.g. Render) via VITE_API_BASE_URL, or relative /api in local dev
+const BACKEND_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+const API_BASE = `${BACKEND_BASE}/api`;
 
 // In-memory response cache for idempotent reference endpoints
 const memoryCache = new Map();

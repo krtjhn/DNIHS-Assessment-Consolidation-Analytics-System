@@ -2,12 +2,22 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Serve the frontend Single Page Application (React) on root URL
+// Health and status endpoint for pure API backend deployment
 Route::get('/', function () {
-    return view('welcome'); // Return the welcome Blade view that mounts the React frontend
+    return response()->json([
+        'name' => 'DNIHS Assessment System API', // API service identifier
+        'status' => 'active', // Service health status
+        'institution' => 'Dayap National Integrated High School', // Operating institution
+        'endpoints' => [
+            'health' => '/api/health', // API health check route
+            'reference_data' => '/api/reference-data', // Academic reference data route
+        ],
+    ]);
 });
 
-// Fallback route to redirect all unmatched web URLs to the React app
+// Fallback route returning JSON error for all unregistered web paths
 Route::fallback(function () {
-    return view('welcome'); // Route all non-API web paths back to React client-side router
+    return response()->json([
+        'message' => 'Route not found. This service operates exclusively as a backend API.', // 404 notice
+    ], 404);
 });
