@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '../css/app.css';
 import App from './App.jsx';
 
 // Ensure clean root zoom style so resources/css/app.css is the single source of truth
