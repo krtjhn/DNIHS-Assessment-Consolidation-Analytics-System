@@ -4,53 +4,50 @@
 
 ---
 
-## DNIHS - Assessment Consolidation & Analytics Decision Support System (DSS)
+## DEVELOPMENT OF A CENTRALIZED ASSESSMENT CONSOLIDATION AND ANALYTICS SYSTEM FOR DAYAP NATIONAL INTEGRATED HIGH SCHOOL
 
 **Members:**
-1. ____________________________________ sig. _________
-2. ____________________________________ sig. _________
-3. ____________________________________ sig. _________
-4. ____________________________________ sig. _________
+1. Caraig, Kurt John P. sig. _________
+2. Austria, Norwin L. sig. _________
+3. Bati, Daisuke Reggie C. sig. _________
 
 ---
 
 ## Project Overview
 
-The **DNIHS Assessment Consolidation & Analytics Decision Support System (DSS)** is an enterprise-grade academic assessment management platform designed specifically for **Dayap Integrated National High School (DNIHS)** under the Department of Education (DepEd).
+The **Centralized Assessment Consolidation and Analytics System for Dayap National Integrated High School (DNIHS)** is a web-based educational data management platform and Decision Support System (DSS). Developed under Republic Act No. 10533 (Enhanced Basic Education Act of 2013) and strictly aligned with DepEd Order No. 015, s. 2026 (Revised Guidelines on Classroom Assessment) and DepEd Order No. 009, s. 2026 (Implementation of the Three-Term School Calendar), the platform modernizes periodic examination recording and institutional reporting.
 
-### What does it do?
-The system automates the encoding, statistical analysis, and institutional consolidation of periodic student examinations (Diagnostic Tests and Periodic Term Examinations) across Junior High School (Grades 7 through 10). It automatically calculates key descriptive statistics:
-- Total valid examinees ($N$)
-- Arithmetic Mean ($\bar{x}$)
-- Mean Percentage Score ($\text{MPS}$)
-- Population Standard Deviation ($\sigma$)
-- Score extremes (Highest and Lowest scores)
-- DepEd 7-Bracket Verbal Mastery Descriptors (from "Mastered" down to "Absolutely No Mastery")
-- Least learned competencies identification
+### Context of the Problem
+Across public secondary schools under the Schools Division Office (SDO) of Laguna, including Dayap National Integrated High School, assessment data is currently managed using **shared Google Sheets with universal edit permissions**. For each academic year, the school maintains **six (6) separate shared spreadsheet files** to cover baseline diagnostic tests and periodic term examinations across Junior High School (Grades 7 to 10):
+1. **Cell Collision & Overwrite Conflicts**: Multiple teachers simultaneously edit shared sheets with unrestricted access, causing teachers to accidentally overwrite, alter, or delete another teacher's encoded scores.
+2. **Formula Corruption**: Embedded spreadsheet formulas for Mean, Mean Percentage Score (MPS), and Standard Deviation in summary sheets are directly exposed to users. These formulas are frequently corrupted, deleted, or incorrectly dragged by concurrent encoders.
+3. **Absence of Role-Based Access Control (RBAC) & Validation**: Out-of-range scores bypass detection, while any user with the shared link possesses full authority over official school records.
+4. **Data Partitioning & Consolidation Bottlenecks**: Because examination datasets are fragmented across six separate spreadsheet files, compiling division-mandated summaries and tracking student mastery across terms requires tedious, error-prone manual copying and cross-sheet aggregation.
+5. **Delayed Academic Interventions**: Reporting delays prevent school heads and teachers from promptly identifying least learned competencies, delaying remedial instruction for struggling learners. Furthermore, manual consolidation frequently commits the mathematical fallacy of directly averaging standard deviations across sections of unequal sizes.
 
-### What problem does it solve?
-In high school public education, consolidation has historically relied on fragmented manual spreadsheets and paper records. This workflow causes:
-1. Significant manual tabulation errors in calculating statistical indicators.
-2. Statistically flawed school-wide reporting (such as naively averaging standard deviations across sections of unequal sizes).
-3. Slow and delayed turnaround in identifying low-performing subjects and learning competencies.
-4. Loss of historical records when teachers transfer or go on leave mid-year.
+### What does the system do?
+The centralized web application replaces vulnerable shared spreadsheets with a secured web platform connected to a centralized PostgreSQL database:
+- Automates descriptive statistics computation: Total Examinees ($N$), Mean ($\bar{x}$), Mean Percentage Score ($\text{MPS}$), and Population Standard Deviation ($\sigma$).
+- Implements the official DepEd 7-Bracket Verbal Mastery Scale (from "Mastered" down to "Absolutely No Mastery").
+- Consolidates assessment results across sections, grade levels, and the entire institution using mathematically sound **Pooled Population Variance** ($\sigma^2_{\text{pooled}}$).
+- Identifies least learned competencies to drive targeted instructional adjustments.
+- Enforces strict server-side Role-Based Access Control (RBAC) via Laravel Sanctum and score range validation ($0 \le \text{score} \le \text{total\_items}$).
 
 ### Who benefits?
-- **Classroom Teachers**: Gain a spreadsheet-like score encoding interface that automatically computes examination statistics and identifies least learned competencies with zero manual math.
-- **Department Heads & Academic Coordinators**: Instantly evaluate subject-wide mastery levels across sections and grade levels without waiting weeks for consolidated manual submissions.
-- **School Administrators & Principals**: Access an automated Decision Support System (DSS) offering school-wide consolidated analytics using mathematically rigorous pooled population variance to make data-driven decisions on remedial instruction and resource allocation.
-- **DepEd Division Supervisors**: Receive standardized, accurate, and audit-compliant academic reports adhering strictly to DepEd grading parameters and academic calendar standards.
+- **Teachers**: Eliminates clerical calculation burdens in compliance with DepEd Order No. 002, s. 2024 (Removal of Administrative Tasks), automating statistics and protecting score sheets from cell collisions.
+- **School Administrators & Academic Coordinators**: Provides real-time visibility into submission progress, consolidated grade-level mastery, and longitudinal performance trends through interactive Decision Support System (DSS) analytics.
+- **SDO Laguna & DepEd Sub-Offices**: Delivers uniform, audit-ready reports that eliminate cross-file consolidation discrepancies.
 
 ---
 
 ## Screens
 
 ### Frontend Technical Summary
-The client application is built as a responsive Single Page Application (SPA) leveraging:
-- **Framework & Core**: React 19 with Vite asset bundling.
-- **Styling & Tokens**: Tailwind CSS v4 following Apple Human Interface Guidelines (clean neutral backgrounds, elevated frosted cards, clear visual hierarchy, and accessible typography).
-- **Icons & Motion**: Lucide React iconography and Motion for smooth tab transitions without remounting memory state.
-- **Responsive Views**: Desktop-first layout with collapsible navigation sidebars and full mobile drawer navigation for tablet and mobile devices.
+The user interface is engineered as an interactive Single Page Application (SPA):
+- **Core Framework**: React 19 bundled via Vite.
+- **Styling Architecture**: Tailwind CSS v4 structured according to Apple Human Interface Guidelines (clean neutral palettes, elevated translucent containers, high contrast typography, and accessible status indicators).
+- **Navigation & Motion**: Lucide React icons with Motion animations supporting stateful tab switching (0ms tab restore without remounting).
+- **Responsive Layout**: Desktop-first layout with collapsible side navigation and dedicated mobile navigation drawers.
 
 ---
 
@@ -68,7 +65,7 @@ The client application is built as a responsive Single Page Application (SPA) le
 ```
 
 **Short Description**:
-The entry point for all users. Faculty members and administrators authenticate using their email and password. The system checks account status and displays clear validation states if an account is pending administrative approval, deactivated, or rejected. A toggle allows prospective faculty members to switch to the self-registration form.
+The authentication portal for faculty and administrators. Protects school records by verifying user credentials, account activation status (`is_active`), and administrative approval status (`approval_status`). Displays informative alerts if an account is pending approval, deactivated, or rejected. Includes a toggle to access the self-registration form.
 
 ---
 
@@ -88,7 +85,7 @@ The entry point for all users. Faculty members and administrators authenticate u
 ```
 
 **Short Description**:
-Allows teachers to encode student raw scores in an interactive spreadsheet-style table. As scores are entered, the system calculates the Mean, Standard Deviation, and Mean Percentage Score (MPS) in real-time. Teachers can also enter the least learned competency and notes before submitting. Built-in guards prevent overwriting another teacher's score sheet and lock editing if the academic term is closed.
+Replaces vulnerable Google Sheet cells with an interactive spreadsheet-style score sheet. Validates input ranges ($0 \le \text{score} \le \text{total\_items}$) and computes Mean, SD, MPS, and DepEd Mastery Level in real time. Enforces RBAC so teachers only access their assigned classes, prevents overwriting another teacher's submission, and locks editing when the academic term is closed.
 
 ---
 
@@ -109,7 +106,7 @@ Allows teachers to encode student raw scores in an interactive spreadsheet-style
 ```
 
 **Short Description**:
-The core administrative Decision Support System (DSS) dashboard. It aggregates examination scores across multiple class sections, grade levels, or the entire school using pooled population variance. Administrators can view performance trends, compare section mastery, identify critical learning deficits, and export clean, formatted reports for institutional presentation.
+The administrative Decision Support System (DSS) dashboard. Automatically consolidates assessment records across multiple sections, grade levels, or the entire school using pooled population variance. Eliminates cross-file spreadsheet copying and highlights least learned competencies to inform targeted remedial instruction.
 
 ---
 
@@ -127,7 +124,7 @@ The core administrative Decision Support System (DSS) dashboard. It aggregates e
 ```
 
 **Short Description**:
-Enables administrators to create, edit, and organize classroom sections by grade level (Grades 7 to 10) and school year. The system enforces composite uniqueness to prevent duplicate section names and implements referential deletion protection to block deleting any section with existing assessment records.
+Enables administrators to organize classroom sections across Grades 7 to 10 for each academic year. Enforces composite unique constraints to prevent duplicate section naming and applies referential deletion protection to block deleting any section tied to existing assessment records.
 
 ---
 
@@ -145,7 +142,7 @@ Enables administrators to create, edit, and organize classroom sections by grade
 ```
 
 **Short Description**:
-Provides a comprehensive matrix for allocating teaching loads to faculty members for the active school year. Administrators can assign section-subject combinations individually or perform bulk synchronization. The backend uses a PostgreSQL partial unique index to prevent conflicting assignments while supporting mid-year substitute teachers.
+Manages teaching loads by mapping teachers to section-subject pairs for the active school year. Features batch workload synchronization and leverages a PostgreSQL partial unique index to support mid-year substitute teachers without overwriting past assignment history.
 
 ---
 
@@ -163,7 +160,7 @@ Provides a comprehensive matrix for allocating teaching loads to faculty members
 ```
 
 **Short Description**:
-Controls the institution's academic calendar. Creating a new school year automatically provisions the 3 DepEd terms (`1st Term`, `2nd Term`, `3rd Term`). Administrators can activate terms sequentially, automatically closing previous terms and locking score editing to maintain historical record integrity.
+Controls the 3-term academic calendar under DepEd Order No. 009, s. 2026. Creating a school year automatically provisions the 3 terms (`1st Term`, `2nd Term`, `3rd Term`). Sequential term activation automatically concludes previous terms and locks historical score sheets to preserve audit integrity.
 
 ---
 
@@ -181,13 +178,13 @@ Controls the institution's academic calendar. Creating a new school year automat
 ```
 
 **Short Description**:
-Manages the faculty account lifecycle. Administrators can review pending self-registered faculty applications to approve or reject them, provision active accounts directly, or deactivate accounts when faculty depart while preserving all their historical score sheets and audit data.
+Supervises the teacher account lifecycle. Administrators review self-registered faculty applications, approve or reject them, provision pre-approved accounts, or deactivate departing faculty accounts while keeping all their historical examination score sheets intact.
 
 ---
 
 ## Project Structure
 
-The project employs a decoupled architecture comprising a Laravel 11 RESTful API backend and a React 19 Single Page Application frontend.
+The project implements a decoupled architecture pairing a Laravel 11 RESTful API backend with a React 19 Single Page Application frontend.
 
 ```
 m_capstone/
@@ -319,7 +316,7 @@ The relational database is implemented in **PostgreSQL** (hosted on Supabase Clo
 ```
 
 ### Relational Cardinality Summary
-- **`school_years` to `terms`**: One-to-Many ($1:3$). Creating a school year automatically creates 3 terms.
+- **`school_years` to `terms`**: One-to-Many ($1:3$). Creating a school year automatically provisions 3 terms.
 - **`school_years` to `sections`**: One-to-Many ($1:N$). Sections belong to a specific school year.
 - **`grade_levels` to `sections`**: One-to-Many ($1:N$). Each section belongs to exactly one grade level.
 - **`grade_levels` to `subjects`**: One-to-Many ($1:8$). Each grade level has 8 standardized learning areas.
@@ -331,16 +328,25 @@ The relational database is implemented in **PostgreSQL** (hosted on Supabase Clo
 
 ## Challenges and Solutions
 
-### Challenge 1: Statistically Flawed Consolidation (Averaging Standard Deviations)
+### Challenge 1: Resolving Division-Wide Google Sheet Cell Collisions & Formula Corruption
+- **Problem Encountered**: Under the existing SDO Laguna workflow, teachers shared six Google Sheet files with open edit permissions. Concurrent access routinely caused cell collisions where teachers accidentally overwrote each other's score entries. Furthermore, exposed spreadsheet formulas for Mean, SD, and MPS were frequently dragged over, broken, or deleted.
+- **Solution Implemented**: Built a centralized web architecture with server-side calculation and strict authorization:
+  1. Relational persistence in PostgreSQL ensures all writes are transactional and isolated.
+  2. Encapsulated all mathematical calculations in `StatsCalculatorService.php`, computing statistics on the server so formulas can never be exposed, modified, or corrupted by end-users.
+  3. Enforced client- and server-side range validation ($0 \le \text{score} \le \text{total\_items}$) via `StoreAssessmentRequest.php`.
+
+---
+
+### Challenge 2: Statistically Flawed Consolidation (Averaging Standard Deviations)
 - **Problem Encountered**: In traditional school spreadsheets, overall standard deviation across multiple sections was calculated by taking the simple average of individual section standard deviations ($\frac{\sigma_1 + \sigma_2}{2}$). This is a well-known mathematical fallacy because standard deviation is non-linear and ignores differences in section sample sizes ($n_i$) and the spread between section means.
-- **Solution Implemented**: Engineered `StatsCalculatorService.php` to calculate mathematically rigorous **Pooled Population Variance**:
+- **Solution Implemented**: Implemented mathematically rigorous **Pooled Population Variance**:
   $$\sigma^2_{\text{pooled}} = \frac{1}{N} \sum_{i=1}^{k} n_i \left( \sigma_i^2 + (\mu_i - \bar{\mu})^2 \right)$$
   This accounts for both **within-group variance** and **between-group mean dispersion**, providing school administrators with 100% statistically accurate decision support metrics.
 
 ---
 
-### Challenge 2: Handling Mid-Year Substitute Teachers without Data Conflicts
-- **Problem Encountered**: When a teacher goes on maternity leave or transfers mid-year, a standard database unique constraint on `(school_year_id, section_id, subject_id)` completely blocks assigning a new substitute teacher unless the original assignment is deleted. Deleting the assignment would wipe historical audit trails and orphan past score sheets.
+### Challenge 3: Handling Mid-Year Substitute Teachers without Data Loss
+- **Problem Encountered**: When a teacher goes on leave or transfers mid-year, a standard database unique constraint on `(school_year_id, section_id, subject_id)` completely blocks assigning a substitute teacher unless the original assignment is deleted. Deleting the assignment would destroy historical audit trails and orphan past score sheets.
 - **Solution Implemented**: Replaced standard unique constraints with a **PostgreSQL Partial Unique Index**:
   ```sql
   CREATE UNIQUE INDEX teaching_assignments_sy_sec_subj_active_unique
@@ -351,7 +357,7 @@ The relational database is implemented in **PostgreSQL** (hosted on Supabase Clo
 
 ---
 
-### Challenge 3: Decoupled Multi-Cloud Deployment & Asset Bundling
+### Challenge 4: Decoupled Multi-Cloud Deployment & Asset Bundling
 - **Problem Encountered**: When decoupling the monolithic Laravel Blade setup into a pure PHP backend on Render and a standalone React SPA on Vercel, the production frontend deployed with unstyled HTML (missing CSS) and failed API calls due to CORS pre-flight rejection.
 - **Solution Implemented**:
   1. Configured Laravel's `config/cors.php` to allow wildcard Vercel deployment domains (`https://*.vercel.app`) with credentials and standard HTTP methods.
