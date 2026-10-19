@@ -26,6 +26,18 @@ export default function Login({ onLoginSuccess }) {
         };
     }, []);
 
+    const handleModeToggle = () => {
+        setIsRegistering((prev) => !prev);
+        setError('');
+        setNotice('');
+        setName('');
+        setEmail('');
+        setPassword('');
+        setPasswordConfirmation('');
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError('');
@@ -92,14 +104,16 @@ export default function Login({ onLoginSuccess }) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs"
+                    className={`w-full rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 ${
+                        isRegistering ? 'p-5 sm:p-6' : 'p-5 sm:py-7 sm:px-6'
+                    }`}
                 >
                     <motion.div
                         key={isRegistering ? 'reg-header' : 'login-header'}
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="mb-2.5 sm:mb-3"
+                        className={isRegistering ? 'mb-3 sm:mb-3.5' : 'mb-3.5 sm:mb-4.5'}
                     >
                         <h2 className="text-sm sm:text-base font-semibold tracking-tight text-slate-900">
                             {isRegistering ? 'Create Faculty Account' : 'Sign in with your account'}
@@ -111,7 +125,7 @@ export default function Login({ onLoginSuccess }) {
                         </p>
                     </motion.div>
 
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:gap-2.5">
+                    <form onSubmit={handleSubmit} className={`flex flex-col ${isRegistering ? 'gap-2.5 sm:gap-3' : 'gap-3 sm:gap-3.5'}`}>
                         <AnimatePresence initial={false}>
                             {isRegistering && (
                                 <motion.div
@@ -132,8 +146,8 @@ export default function Login({ onLoginSuccess }) {
                                             required
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            placeholder="e.g. Maria C. Santos, LPT"
-                                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                            placeholder="Enter your full name"
+                                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                         />
                                     </div>
                                 </motion.div>
@@ -153,8 +167,8 @@ export default function Login({ onLoginSuccess }) {
                                     autoComplete="email"
                                     value={email}
                                     onChange={(event) => setEmail(event.target.value)}
-                                    placeholder="juandelacruz@gmail.com"
-                                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                    placeholder="Enter your email address"
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 sm:py-2.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                 />
                             </div>
                         </div>
@@ -172,8 +186,8 @@ export default function Login({ onLoginSuccess }) {
                                     autoComplete={isRegistering ? 'new-password' : 'current-password'}
                                     value={password}
                                     onChange={(event) => setPassword(event.target.value)}
-                                    placeholder={isRegistering ? 'Create password (min. 8 chars)' : 'Enter your account password'}
-                                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 pr-9 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                    placeholder={isRegistering ? 'At least 8 characters' : 'Enter your password'}
+                                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 sm:py-2.5 pr-9 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                 />
                                 <motion.button
                                     type="button"
@@ -224,8 +238,8 @@ export default function Login({ onLoginSuccess }) {
                                             required
                                             value={passwordConfirmation}
                                             onChange={(e) => setPasswordConfirmation(e.target.value)}
-                                            placeholder="Re-enter password to confirm"
-                                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 sm:py-2 pr-9 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
+                                            placeholder="Re-enter your password"
+                                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 sm:py-2.5 pr-9 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-[#0071e3] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/20"
                                         />
                                         <motion.button
                                             type="button"
@@ -308,7 +322,7 @@ export default function Login({ onLoginSuccess }) {
                             whileHover={{ scale: loading ? 1 : 1.01 }}
                             whileTap={{ scale: loading ? 1 : 0.98 }}
                             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                            className="mt-1 flex h-9 sm:h-9.5 w-full items-center justify-center rounded-xl bg-[#0071e3] px-4 text-xs sm:text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-[#0077ed] active:bg-[#0062c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={`${isRegistering ? 'mt-2 h-9.5 sm:h-10' : 'mt-2.5 sm:mt-3.5 h-10 sm:h-10.5'} flex w-full items-center justify-center rounded-xl bg-[#0071e3] px-4 text-xs sm:text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-[#0077ed] active:bg-[#0062c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/50 disabled:cursor-not-allowed disabled:opacity-50`}
                         >
                             {loading ? (
                                 <span className="flex items-center gap-2">
@@ -322,13 +336,10 @@ export default function Login({ onLoginSuccess }) {
                     </form>
 
                     {/* Mode Toggle Link */}
-                    <div className="mt-3 pt-2 border-t border-slate-100 text-center">
+                    <div className={`${isRegistering ? 'mt-3.5 pt-2.5' : 'mt-4.5 sm:mt-5 pt-3 sm:pt-3.5'} border-t border-slate-100 text-center`}>
                         <button
                             type="button"
-                            onClick={() => {
-                                setIsRegistering(!isRegistering);
-                                setError('');
-                            }}
+                            onClick={handleModeToggle}
                             className="text-[11px] font-medium text-[#0071e3] hover:underline focus-visible:outline-none transition-transform active:scale-98"
                         >
                             {isRegistering

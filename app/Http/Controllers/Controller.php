@@ -1,11 +1,9 @@
 <?php
 
-// Declare strict PHP syntax for base web and API controller
-
 namespace App\Http\Controllers;
 
-// Base controller class serving as ancestor for all application API controllers
+// Base controller class for all application controllers
 abstract class Controller
 {
-    // Shared controller helper methods and middleware authorization logic can be declared here
+    // Common controller logic can be placed here
 }

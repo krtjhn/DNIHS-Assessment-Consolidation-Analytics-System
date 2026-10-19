@@ -15,7 +15,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Seed realistic DepEd assessment test data for SY 2025-2026 Term 1 (Pilot A & Pilot B across all subjects)
+// Seed test assessment data for demo and testing purposes
 Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
     $syName = (string) ($this->option('sy') ?: '2025-2026');
     $termNumber = (int) ($this->option('term') ?: 1);
@@ -25,7 +25,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
     $this->info('   Sections: Pilot A & Pilot B | Both Diagnostic & Term Exam');
     $this->info('============================================================');
 
-    // 1. Ensure School Year exists and is ACTIVE
+    // 1. Ensure school year exists and is marked active
     $schoolYear = SchoolYear::firstOrCreate(
         ['name' => $syName],
         [
@@ -37,9 +37,9 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
 
     SchoolYear::where('id', '!=', $schoolYear->id)->update(['is_active' => false]);
     SchoolYear::where('id', $schoolYear->id)->update(['is_active' => true]);
-    $this->info("✓ School Year {$syName} set as ACTIVE.");
+    $this->info("[OK] School Year {$syName} set as active.");
 
-    // 2. Ensure Term exists and is ACTIVE
+    // 2. Ensure the requested term exists and is marked active
     $termName = match ($termNumber) {
         1 => '1st Term',
         2 => '2nd Term',
@@ -62,9 +62,9 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
         ->where('id', '!=', $term->id)
         ->update(['status' => 'pending']);
 
-    $this->info("✓ Term '{$term->name}' (ID {$term->id}) set as ACTIVE.");
+    $this->info("[OK] Term '{$term->name}' (ID {$term->id}) set as active.");
 
-    // 3. Resolve Teacher accounts
+    // 3. Find teacher accounts to attach to seeded records
     $teachers = User::whereHas('roles', fn ($q) => $q->where('name', 'teacher'))->get();
     if ($teachers->isEmpty()) {
         $teachers = User::where('email', 'like', '%teacher%')->get();
@@ -79,9 +79,9 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
 
         return 1;
     }
-    $this->info("✓ Using {$teachers->count()} teacher account(s) for assignments.");
+    $this->info("[OK] Using {$teachers->count()} teacher account(s) for assignments.");
 
-    // 4. Competencies per subject
+    // 4. Sample least learned competencies per subject
     $competencyMap = [
         'Mathematics' => [
             'Factoring polynomials and quadratic equations',
@@ -147,7 +147,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
     $statsCalc = app(StatsCalculatorService::class);
     $gradeLevels = GradeLevel::whereIn('level', [7, 8, 9, 10])->orderBy('level')->get();
 
-    // Clean up or rename any old section 'Pilot' to 'Pilot A'
+    // Clean up or rename any old section named Pilot to Pilot A
     Section::where('name', 'Pilot')->update(['name' => 'Pilot A']);
 
     $termExamsCreated = 0;
@@ -156,7 +156,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
     $teacherIndex = 0;
 
     foreach ($gradeLevels as $grade) {
-        // Ensure standard subjects exist for this grade level
+        // Ensure all standard subjects exist for this grade level
         foreach ($standardSubjects as $subName) {
             Subject::firstOrCreate(
                 [
@@ -175,11 +175,11 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
             ->orderBy('name')
             ->get();
 
-        // Target sections: Pilot A and Pilot B
+        // Target test sections: Pilot A and Pilot B
         $targetSections = ['Pilot A', 'Pilot B'];
 
         foreach ($targetSections as $sectionName) {
-            // Find existing section if present (or attach to this school year)
+            // Find existing section or create a new one
             $section = Section::where('grade_level_id', $grade->id)
                 ->where(function ($q) use ($sectionName) {
                     $q->whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($sectionName))])
@@ -211,7 +211,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
                 $totalItems = 50;
                 $examineeCount = rand(36, 44);
 
-                // Authentic score distribution: Target average 36 to 42 (MPS 72% to 84%)
+                // Score distribution aiming for an average of 36 to 42 (MPS 72% to 84%)
                 $targetMean = rand(360, 420) / 10.0;
                 $targetSd = rand(45, 65) / 10.0;
 
@@ -228,7 +228,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
                 $competencies = $competencyMap[$subject->name] ?? ['Curriculum foundational competencies'];
                 $competency = $competencies[array_rand($competencies)];
 
-                // Upsert Term Exam ('term_exam') record tagged with TEST_DATA
+                // Create or update term exam record tagged with TEST_DATA
                 AssessmentRecord::updateOrCreate(
                     [
                         'school_year_id' => $schoolYear->id,
@@ -254,7 +254,7 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
                 );
                 $termExamsCreated++;
 
-                // Upsert Diagnostic Test ('diagnostic') record tagged with TEST_DATA
+                // Create or update diagnostic test record tagged with TEST_DATA
                 $diagMean = rand(310, 370) / 10.0;
                 $diagScores = [];
                 for ($i = 0; $i < $examineeCount; $i++) {
@@ -294,16 +294,16 @@ Artisan::command('test-data:seed {--sy=2025-2026} {--term=1}', function () {
         }
     }
 
-    $this->info('✓ Successfully seeded test data:');
+    $this->info('[OK] Successfully seeded test data:');
     $this->line('  - Sections configured: '.implode(', ', array_unique($sectionsProcessed)));
     $this->line("  - {$termExamsCreated} Term Exam records seeded (Type: 'term_exam', Remarks: 'Complete [TEST_DATA]')");
     $this->line("  - {$diagTestsCreated} Diagnostic Test records seeded (Type: 'diagnostic', Remarks: 'Complete [TEST_DATA]')");
     $this->line('  - Total Assessment Records: '.($termExamsCreated + $diagTestsCreated));
-    $this->info('✓ All 32 school-wide tables & per-grade views now have complete test data in m_capstone!');
-    $this->comment('👉 To safely wipe all test data anytime, run: php artisan test-data:clear');
+    $this->info('[OK] All school-wide tables and per-grade views now have complete test data.');
+    $this->comment('To wipe all test data anytime, run: php artisan test-data:clear');
 })->purpose('Seed test assessment data for SY 2025-2026 Term 1 (Pilot A & Pilot B, all subjects, Term Exam & Diagnostic)');
 
-// Safely wipe test assessment records for a specific School Year and Term
+// Wipe test assessment records for a specific school year and term
 Artisan::command('test-data:clear {--sy=2025-2026} {--term=1} {--with-sections}', function () {
     $syName = (string) ($this->option('sy') ?: '2025-2026');
     $termNumber = (int) ($this->option('term') ?: 1);
@@ -327,7 +327,7 @@ Artisan::command('test-data:clear {--sy=2025-2026} {--term=1} {--with-sections}'
         ->where('remarks', 'like', '%TEST_DATA%')
         ->delete();
 
-    $this->info("✓ Cleaned up test assessment data for SY {$syName} Term {$termNumber}:");
+    $this->info("[OK] Cleaned up test assessment data for SY {$syName} Term {$termNumber}:");
     $this->line("  - {$deleted} Assessment records deleted.");
 
     if ($withSections) {
@@ -337,5 +337,5 @@ Artisan::command('test-data:clear {--sy=2025-2026} {--term=1} {--with-sections}'
         $this->line("  - {$deletedSections} test sections (Pilot A & Pilot B) removed.");
     }
 
-    $this->info('✓ Database test records have been safely cleared!');
+    $this->info('[OK] Database test records have been safely cleared.');
 })->purpose('Safely clear test assessment records for a specific School Year and Term');

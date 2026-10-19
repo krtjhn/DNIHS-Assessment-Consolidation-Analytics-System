@@ -320,7 +320,7 @@ export default function SectionList() {
                                 <tr>
                                     <td colSpan="4" className="py-12 text-center">
                                         {loading ? (
-                                            <LoadingIndicator type="dot-circle" size="md" label="Loading sections…" />
+                                            <LoadingIndicator type="dot-circle" size="md" label="Loading..." />
                                         ) : (
                                             <span className="text-xs text-slate-400">No sections found for this school year.</span>
                                         )}

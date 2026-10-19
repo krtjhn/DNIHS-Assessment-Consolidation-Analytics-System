@@ -1,6 +1,5 @@
 <?php
 
-// Import API controllers for route registration
 use App\Http\Controllers\Api\AcademicReferenceController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
@@ -9,102 +8,77 @@ use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\TeacherAssignmentController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\TermController;
-// Import Laravel Route facade
 use Illuminate\Support\Facades\Route;
 
-// Public health check route to verify backend availability and API responsiveness
-Route::get('/health', fn () => response()->json(['message' => 'API is active and running.']));
+// Public health check route to verify backend is working
+Route::get('/health', fn () => response()->json(['message' => 'API is active and running.'])); // Health check endpoint
 
-// Public authentication endpoint for self-registration of teacher accounts
-Route::post('/auth/register', [AuthController::class, 'register']);
-// Public authentication endpoint for logging in with credentials to obtain Sanctum bearer tokens
-Route::post('/auth/login', [AuthController::class, 'login']);
+// Public routes for teacher registration and login
+Route::post('/auth/register', [AuthController::class, 'register']); // Self-register a new teacher account with pending status
+Route::post('/auth/login', [AuthController::class, 'login']); // Log in user with email and password to receive API token
 
-// Authenticated API routes requiring valid Laravel Sanctum bearer token
+// Protected routes requiring authentication with Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Revoke current user session and invalidate the active bearer token
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    // Fetch profile and roles of the currently authenticated user
-    Route::get('/auth/me', [AuthController::class, 'me']);
+    // Current user logout and profile
+    Route::post('/auth/logout', [AuthController::class, 'logout']); // Log out user and delete current Sanctum token
+    Route::get('/auth/me', [AuthController::class, 'me']); // Return currently logged in user profile and roles
 
-    // Retrieve master academic lookup data (grade levels, subjects, active school years, and terms)
-    Route::get('/reference-data', [AcademicReferenceController::class, 'referenceData']);
+    // Academic reference data
+    Route::get('/reference-data', [AcademicReferenceController::class, 'referenceData']); // Get grade levels, subjects, active year, and terms
 
-    // Retrieve list of all school years with optional active filter
-    Route::get('/school-years', [SchoolYearController::class, 'index']);
-    // Retrieve details for a specific school year by ID
-    Route::get('/school-years/{school_year}', [SchoolYearController::class, 'show']);
-    // Retrieve academic terms with optional school year filter
-    Route::get('/terms', [TermController::class, 'index']);
-    // Retrieve details for a specific term by ID
-    Route::get('/terms/{term}', [TermController::class, 'show']);
+    // School years and terms
+    Route::get('/school-years', [SchoolYearController::class, 'index']); // Get list of all school years with their terms
+    Route::get('/terms', [TermController::class, 'index']); // Get all terms
+    Route::get('/terms/{term}', [TermController::class, 'show']); // Get single term by id
 
-    // Retrieve classroom sections with optional grade level and school year filters
-    Route::get('/sections', [SectionController::class, 'index']);
-    // Retrieve details for a specific classroom section by ID
-    Route::get('/sections/{section}', [SectionController::class, 'show']);
+    // Classroom sections list
+    Route::get('/sections', [SectionController::class, 'index']); // Get active sections filtered by grade level or year
 
-    // Retrieve classroom sections and subjects assigned to the logged-in teacher for active school year
-    Route::get('/my-classes', [AssessmentController::class, 'myClasses']);
-    // Retrieve full teaching assignment records for the authenticated teacher
-    Route::get('/my-assignments', [TeacherAssignmentController::class, 'myAssignments']);
+    // Classes assigned to the logged-in teacher
+    Route::get('/my-classes', [AssessmentController::class, 'myClasses']); // Get classes assigned to current teacher
 
-    // Query and filter individual assessment records with statistical metrics
-    Route::get('/assessments', [AssessmentController::class, 'index']);
-    // Aggregate assessment metrics across sections, grade levels, or school-wide using pooled variance
-    Route::get('/assessments/consolidation', [AssessmentController::class, 'consolidation']);
-    // View detailed metrics and raw scores for a single assessment record by ID
-    Route::get('/assessments/{assessment}', [AssessmentController::class, 'show']);
+    // Assessment records list and detail
+    Route::get('/assessments', [AssessmentController::class, 'index']); // Get assessments (teachers see own, admins see all)
+    Route::get('/assessments/{assessment}', [AssessmentController::class, 'show'])->whereNumber('assessment'); // Get single assessment with statistics
 
-    // Assessment modification routes restricted to authorized teachers and system administrators
+    // Routes for teachers and admins to create, update, or delete assessments
     Route::middleware('role:teacher,system_admin')->group(function () {
-        // Record and calculate statistics for a new assessment score sheet
-        Route::post('/assessments', [AssessmentController::class, 'store']);
-        // Update raw scores and recalculate statistical metrics for an existing assessment
-        Route::put('/assessments/{assessment}', [AssessmentController::class, 'update']);
-        // Remove an assessment record from the database
-        Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destroy']);
+        Route::post('/assessments', [AssessmentController::class, 'store']); // Save raw scores and calculate DepEd statistics
+        Route::put('/assessments/{assessment}', [AssessmentController::class, 'update']); // Update scores and recalculate statistics
+        Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destroy']); // Delete an assessment record
     });
 
-    // Administrative configuration routes strictly restricted to system administrators
+    // Admin only routes
     Route::middleware('role:system_admin')->group(function () {
-        // Create a new academic school year and automatically generate its 3 terms
-        Route::post('/school-years', [SchoolYearController::class, 'store']);
-        // Update school year details or activate/deactivate an academic year
-        Route::put('/school-years/{school_year}', [SchoolYearController::class, 'update']);
-        // Delete an inactive school year that has no associated assessment history
-        Route::delete('/school-years/{school_year}', [SchoolYearController::class, 'destroy']);
-        // Lock or unlock an academic term to control teacher score entry permissions
-        Route::patch('/terms/{term}/status', [TermController::class, 'updateStatus']);
+        // Consolidated statistical reports for assessments
+        Route::get('/assessments/consolidation', [AssessmentController::class, 'consolidation']); // Get consolidated report for sections, grades, or school
 
-        // Create a new classroom section within a grade level and school year
-        Route::post('/sections', [SectionController::class, 'store']);
-        // Update section name or active status
-        Route::put('/sections/{section}', [SectionController::class, 'update']);
-        // Soft delete an active section while preserving historical assessment data
-        Route::delete('/sections/{section}', [SectionController::class, 'destroy']);
+        // School years management
+        Route::post('/school-years', [SchoolYearController::class, 'store']); // Create new school year and auto-generate 3 terms
+        Route::put('/school-years/{school_year}', [SchoolYearController::class, 'update']); // Update school year details or active status
+        Route::delete('/school-years/{school_year}', [SchoolYearController::class, 'destroy']); // Delete inactive school year if no assessments exist
 
-        // List faculty accounts with pending approval, active, or deactivated filter states
-        Route::get('/teachers', [TeacherController::class, 'index']);
-        // Manually create and activate a new teacher account
-        Route::post('/teachers', [TeacherController::class, 'store']);
-        // Approve a pending self-registered teacher account
-        Route::patch('/teachers/{teacher}/approve', [TeacherController::class, 'approve']);
-        // Reject and delete an invalid self-registration submission
-        Route::patch('/teachers/{teacher}/reject', [TeacherController::class, 'reject']);
-        // Reactivate a previously deactivated teacher account
-        Route::patch('/teachers/{teacher}/reactivate', [TeacherController::class, 'reactivate']);
-        // Deactivate an active faculty account
-        Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']);
+        // Update term status
+        Route::patch('/terms/{term}/status', [TermController::class, 'updateStatus']); // Change term status to pending, active, or completed
 
-        // List all teaching assignment records across the school
-        Route::get('/teaching-assignments', [TeacherAssignmentController::class, 'index']);
-        // Create an individual teaching assignment linking teacher, section, and subject
-        Route::post('/teaching-assignments', [TeacherAssignmentController::class, 'store']);
-        // Batch synchronize and replace all teaching assignments for a specific teacher
-        Route::post('/teaching-assignments/sync', [TeacherAssignmentController::class, 'syncTeacher']);
-        // Remove a teaching assignment record
-        Route::delete('/teaching-assignments/{teaching_assignment}', [TeacherAssignmentController::class, 'destroy']);
+        // Sections management
+        Route::post('/sections', [SectionController::class, 'store']); // Create a new section under a grade level and school year
+        Route::put('/sections/{section}', [SectionController::class, 'update']); // Update section name or active status
+        Route::delete('/sections/{section}', [SectionController::class, 'destroy']); // Soft delete section if no assessments exist
+
+        // Teacher accounts management
+        Route::get('/teachers', [TeacherController::class, 'index']); // List teachers with optional status filter
+        Route::post('/teachers', [TeacherController::class, 'store']); // Manually create an active teacher account
+        Route::patch('/teachers/{teacher}/approve', [TeacherController::class, 'approve']); // Approve pending teacher registration
+        Route::patch('/teachers/{teacher}/reject', [TeacherController::class, 'reject']); // Reject and remove pending registration
+        Route::patch('/teachers/{teacher}/reactivate', [TeacherController::class, 'reactivate']); // Reactivate a deactivated teacher account
+        Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']); // Deactivate an active teacher account
+
+        // Teaching assignments management
+        Route::get('/teaching-assignments', [TeacherAssignmentController::class, 'index']); // List teaching assignments with teacher, section, subject
+        Route::post('/teaching-assignments', [TeacherAssignmentController::class, 'store']); // Assign a teacher to a section and subject
+        Route::post('/teaching-assignments/sync', [TeacherAssignmentController::class, 'syncTeacher']); // Bulk sync teacher loads for a school year
+        Route::delete('/teaching-assignments/{teaching_assignment}', [TeacherAssignmentController::class, 'destroy']); // Delete a teaching assignment
     });
 });

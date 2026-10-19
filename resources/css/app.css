@@ -26,12 +26,12 @@
         text-rendering: optimizeLegibility;
 
         /* =========================================================================
-           GLOBAL SYSTEM VIEW ZOOM (Dito namomodify ang laki/liit ng view):
-           - 0.85 = 85% zoom (Ultra-wide / pinakamalawak na view para sa spreadsheets)
-           - 0.90 = 90% zoom (Default wide view - sakop ang buong screen)
-           - 1.00 = 100% normal browser zoom
+           GLOBAL SYSTEM VIEW ZOOM (Configure UI scaling density):
+           - 0.85 = 85% zoom (Ultra-wide density optimal for consolidated spreadsheets)
+           - 0.90 = 90% zoom (Default wide view accommodating high-density tables)
+           - 1.00 = 100% standard browser zoom
            ========================================================================= */
-        zoom: 0.85;
+        zoom: 0.90;
     }
 
     * {

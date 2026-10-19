@@ -6,51 +6,43 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-// Form Request handling validation and authorization for allocating a teaching assignment to a faculty member
+// Form request for validating a new teaching assignment created by an admin
 class StoreTeachingAssignmentRequest extends FormRequest
 {
-    // Authorize only system administrators to assign teaching workloads
+    // Only system admins can create teaching assignments
     public function authorize(): bool
     {
-        // Enforce system_admin role requirement
-        return $this->user()?->hasRole('system_admin') ?? false;
+        return $this->user()?->hasRole('system_admin') ?? false; // Restrict to system_admin
     }
 
-    // Validation rules for assigning a faculty workload
+    // Validation rules for assigning a teacher to a class
     public function rules(): array
     {
         return [
-            // Ensure target user is active, approved, and possesses the teacher role
+            // Teacher user ID must exist, be active, approved, and have the teacher role
             'user_id' => [
-                'required',
-                'integer',
-                // Verify user exists, has active status, and is officially approved
-                Rule::exists('users', 'id')->where('is_active', true)->where('approval_status', 'approved'),
-                // Custom rule callback verifying that the user is officially assigned the teacher role
+                'required', // Mandatory field
+                'integer', // Must be an integer id
+                Rule::exists('users', 'id')->where('is_active', true)->where('approval_status', 'approved'), // Must be active and approved
                 function ($attribute, $value, $fail) {
                     $user = User::find($value);
                     if ($user && ! $user->hasRole('teacher')) {
-                        $fail('The selected user must have the teacher role to receive class assignments.');
+                        $fail('The selected user must have the teacher role to receive class assignments.'); // Role check fail
                     }
                 },
             ],
-            // Ensure academic year exists in school_years table
-            'school_year_id' => ['required', 'integer', 'exists:school_years,id'],
-            // Ensure class section exists in sections table
-            'section_id' => ['required', 'integer', 'exists:sections,id'],
-            // Ensure subject exists in subjects table
-            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            // Optional effective start date for assignment
-            'effective_from' => ['nullable', 'date'],
+            'school_year_id' => ['required', 'integer', 'exists:school_years,id'], // Must exist in school_years table
+            'section_id' => ['required', 'integer', 'exists:sections,id'], // Must exist in sections table
+            'subject_id' => ['required', 'integer', 'exists:subjects,id'], // Must exist in subjects table
+            'effective_from' => ['nullable', 'date'], // Optional assignment start date
         ];
     }
 
-    // Custom user-facing error messages
+    // Custom error messages
     public function messages(): array
     {
         return [
-            // Feedback when assigned faculty member is deactivated or pending approval
-            'user_id.exists' => 'The assigned faculty account must be active and approved.',
+            'user_id.exists' => 'The assigned faculty account must be active and approved.', // Inactive/unapproved teacher error
         ];
     }
 }

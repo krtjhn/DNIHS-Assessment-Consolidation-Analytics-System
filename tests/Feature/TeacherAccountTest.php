@@ -94,6 +94,7 @@ class TeacherAccountTest extends TestCase
         $this->assertEquals('approved', $applicant->approval_status);
         $this->assertTrue($applicant->is_active);
         $this->assertNotNull($applicant->approved_at);
+        $this->assertNotNull($applicant->email_verified_at);
 
         // Teacher can now log in
         $loginResponse = $this->postJson('/api/auth/login', [
@@ -156,6 +157,7 @@ class TeacherAccountTest extends TestCase
         $this->assertNotNull($created);
         $this->assertTrue($created->is_active);
         $this->assertEquals('approved', $created->approval_status);
+        $this->assertNotNull($created->email_verified_at);
         $this->assertTrue($created->hasRole('teacher'));
     }
 

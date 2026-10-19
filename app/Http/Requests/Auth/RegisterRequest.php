@@ -4,35 +4,31 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-// Form Request handling validation and authorization for faculty self-registration
+// Validates self-registration requests from new teachers
 class RegisterRequest extends FormRequest
 {
-    // Public endpoint: Allow unauthenticated visitors to submit registration applications
+    // Anyone can submit a registration form
     public function authorize(): bool
     {
-        return true;
+        return true; // Public access
     }
 
-    // Validation rules for verifying faculty applicant details
+    // Rules for teacher registration fields
     public function rules(): array
     {
         return [
-            // Full legal name of the faculty applicant
-            'name' => ['required', 'string', 'max:255'],
-            // Email address must be unique and valid
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            // Password must have minimum 8 characters and match the confirmation field
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            // Optional role specification, restricted to teacher or system_admin
-            'role' => ['nullable', 'string', 'in:teacher,system_admin'],
+            'name' => ['required', 'string', 'max:255'], // Full name of the applicant
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'], // Unique email address
+            'password' => ['required', 'string', 'min:8', 'confirmed'], // Password must be at least 8 chars and confirmed
+            'role' => ['nullable', 'string', 'in:teacher,system_admin'], // Requested role (defaults to teacher)
         ];
     }
 
-    // Custom user-friendly validation error messages
+    // Custom error messages
     public function messages(): array
     {
         return [
-            'email.email' => 'Please provide a valid email address.',
+            'email.email' => 'Please provide a valid email address.', // Invalid email format message
         ];
     }
 }

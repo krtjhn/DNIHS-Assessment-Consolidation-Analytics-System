@@ -4,32 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// Eloquent Model representing an academic term within a school year (1st, 2nd, 3rd Term)
+// Model for academic terms (1st Term, 2nd Term, 3rd Term)
 class Term extends Model
 {
-    // Mass-assignable attributes
     protected $fillable = [
-        // Foreign key linking term to parent school year
-        'school_year_id',
-        // Sequential term number (e.g. 1 for 1st Term, 2 for 2nd Term)
-        'term_number',
-        // Official title of the term (e.g. 1st Term, 2nd Term, 3rd Term)
-        'name',
-        // Calendar status: pending (locked), active (open for encoding), or completed (locked)
-        'status',
+        'school_year_id', // Foreign key to school_years table
+        'term_number', // Term sequence number (1, 2, or 3)
+        'name', // Term display name (e.g. 1st Term)
+        'status', // Calendar state: pending, active, or completed
     ];
 
-    // Relationship: The parent school year this academic term belongs to
+    // Parent school year
     public function schoolYear(): BelongsTo
     {
-        return $this->belongsTo(SchoolYear::class);
+        return $this->belongsTo(SchoolYear::class); // Parent school year relation
     }
 
-    // Security helper: Check whether this academic term is currently open for score encoding and modifications
+    // Assessment records recorded during this term
+    public function assessmentRecords(): HasMany
+    {
+        return $this->hasMany(AssessmentRecord::class); // Assessments recorded for this term
+    }
+
+    // Check if this term is open for score encoding
     public function isOpen(): bool
     {
-        // Only terms marked with active status permit score encoding
-        return $this->status === 'active';
+        return $this->status === 'active'; // True only when term status is active
     }
 }

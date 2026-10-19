@@ -8,58 +8,52 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-// Eloquent Model representing a class section within a specific grade level and academic school year
+// Model for class sections (e.g. Bonifacio, Rizal)
 class Section extends Model
 {
-    use SoftDeletes;
-    // Mass-assignable attributes permitted for section creation and updates
+    use SoftDeletes; // Soft deletes prevent data loss if a section has past scores
+
     protected $fillable = [
-        // Foreign key linking section to academic school year
-        'school_year_id',
-        // Foreign key linking section to grade level (Grade 7, 8, 9, or 10)
-        'grade_level_id',
-        // Class section designation name (e.g. Diamond, Emerald, Mabini)
-        'name',
-        // Operational status flag: true for active sections, false for archived/deactivated sections
-        'is_active',
+        'school_year_id', // Foreign key to school_years table
+        'grade_level_id', // Foreign key to grade_levels table
+        'name', // Section name label
+        'is_active', // Whether the section is active
     ];
 
-    // Attribute type casting
     protected function casts(): array
     {
         return [
-            // Cast is_active attribute to native boolean
-            'is_active' => 'boolean',
+            'is_active' => 'boolean', // Cast active flag as boolean
         ];
     }
 
-    // Relationship: The academic school year this section belongs to
+    // School year this section belongs to
     public function schoolYear(): BelongsTo
     {
-        return $this->belongsTo(SchoolYear::class);
+        return $this->belongsTo(SchoolYear::class); // Parent school year relation
     }
 
-    // Relationship: The grade level corresponding to this section
+    // Grade level of this section
     public function gradeLevel(): BelongsTo
     {
-        return $this->belongsTo(GradeLevel::class);
+        return $this->belongsTo(GradeLevel::class); // Parent grade level relation
     }
 
-    // Relationship: All student assessment records encoded for this section
+    // Assessment records recorded for this section
     public function assessmentRecords(): HasMany
     {
-        return $this->hasMany(AssessmentRecord::class);
+        return $this->hasMany(AssessmentRecord::class); // Assessments linked to this section
     }
 
-    // Relationship: Teaching assignments allocated to faculty members for this section
+    // Teachers assigned to this section
     public function teachingAssignments(): HasMany
     {
-        return $this->hasMany(TeachingAssignment::class);
+        return $this->hasMany(TeachingAssignment::class); // Teaching assignment loads
     }
 
-    // Eloquent query scope to retrieve only active sections
+    // Query scope to get only active sections
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('is_active', true); // Filter sections where is_active is true
     }
 }

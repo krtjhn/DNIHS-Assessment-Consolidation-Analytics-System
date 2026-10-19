@@ -42,7 +42,7 @@ export function LoadingIndicator({
     ...rest
 }) {
     const sizeClass = SIZES[size] || SIZES.md;
-    const resolvedLabel = label || children;
+    const resolvedLabel = label === true ? 'Loading...' : (label || children);
 
     // Render standalone icon when no text label is provided
     if (!resolvedLabel) {

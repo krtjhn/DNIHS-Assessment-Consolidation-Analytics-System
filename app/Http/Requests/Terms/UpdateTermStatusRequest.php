@@ -4,22 +4,20 @@ namespace App\Http\Requests\Terms;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-// Form Request handling validation and authorization for modifying academic term calendar status
+// Form request for updating the status of an academic term
 class UpdateTermStatusRequest extends FormRequest
 {
-    // Authorize only system administrators to toggle term status
+    // Only system admins can change term status
     public function authorize(): bool
     {
-        // Enforce system_admin role requirement
-        return $this->user() && $this->user()->hasRole('system_admin');
+        return $this->user() && $this->user()->hasRole('system_admin'); // Restrict to system_admin
     }
 
-    // Validation rules for switching academic term status
+    // Validation rules for changing term status
     public function rules(): array
     {
         return [
-            // Status must match one of the three recognized calendar states: pending (locked), active (open), or completed (locked)
-            'status' => ['required', 'string', 'in:pending,active,completed'],
+            'status' => ['required', 'string', 'in:pending,active,completed'], // Must be pending, active, or completed
         ];
     }
 }

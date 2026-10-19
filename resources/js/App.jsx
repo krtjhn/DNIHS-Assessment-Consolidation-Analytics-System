@@ -216,7 +216,7 @@ export default function App() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#f5f5f7]">
-                <LoadingIndicator type="dot-circle" size="lg" label="Loading portal…" />
+                <LoadingIndicator type="dot-circle" size="lg" label="Loading..." />
             </div>
         );
     }
@@ -256,7 +256,6 @@ export default function App() {
                     activeTab={activeTab}
                     activeSYName={activeSYName}
                     activeTermName={activeTermName}
-                    isAdmin={isAdmin}
                     onToggleSidebar={() => setIsCollapsed((prev) => !prev)}
                     onOpenMobileSidebar={() => setIsMobileOpen(true)}
                 />
@@ -269,22 +268,11 @@ export default function App() {
                             <RecordEntry user={user} />
                         </AnimatedTabPane>
                     )}
-                    {isAdmin && activeTab === 'records' && (
-                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                            Assessment Record Entry is restricted to Teachers.
-                        </div>
-                    )}
-
                     {/* Admin: Consolidated Performance Reports */}
                     {isAdmin && visitedTabs.has('consolidation') && (
                         <AnimatedTabPane isActive={activeTab === 'consolidation'}>
                             <PerformanceReport />
                         </AnimatedTabPane>
-                    )}
-                    {!isAdmin && activeTab === 'consolidation' && (
-                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-xs font-semibold text-amber-800">
-                            Consolidated Reports are restricted to System Administrators.
-                        </div>
                     )}
 
                     {/* Admin: Sections Management */}

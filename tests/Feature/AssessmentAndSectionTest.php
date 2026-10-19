@@ -24,7 +24,7 @@ class AssessmentAndSectionTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first()
             ?? Term::first();
-        $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
+        $section = Section::where('name', 'Pilot A')->first() ?? Section::where('school_year_id', $sy->id)->first() ?? Section::first();
         $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         // Ensure active teaching assignment exists
@@ -38,13 +38,13 @@ class AssessmentAndSectionTest extends TestCase
         ]);
 
         // Clear any existing collision for this specific test slot
-        AssessmentRecord::where([
+        AssessmentRecord::withTrashed()->where([
             'school_year_id' => $sy->id,
             'term_id' => $term->id,
             'section_id' => $section->id,
             'subject_id' => $subject->id,
             'type' => 'diagnostic',
-        ])->delete();
+        ])->forceDelete();
 
         // Raw scores: 40, 45, 50, 35, 30. Total items: 50
         // Sum = 200, N = 5, Mean = 40.00, MPS = (40 / 50) * 100 = 80.00%
@@ -77,12 +77,17 @@ class AssessmentAndSectionTest extends TestCase
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
         $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
-        TeachingAssignment::firstOrCreate([
+        TeachingAssignment::where([
+            'school_year_id' => $sy->id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
+        ])->delete();
+
+        TeachingAssignment::create([
             'user_id' => $teacher->id,
             'school_year_id' => $sy->id,
             'section_id' => $section->id,
             'subject_id' => $subject->id,
-        ], [
             'effective_from' => now()->toDateString(),
         ]);
 
@@ -205,17 +210,25 @@ class AssessmentAndSectionTest extends TestCase
             ->assertJsonValidationErrors(['section_id']);
     }
 
-    // Test authenticated staff can fetch consolidated assessment reports
-    public function test_authenticated_staff_can_fetch_consolidation_report(): void
+    // Test consolidation reports are restricted strictly to system administrators (teachers receive 403)
+    public function test_only_admin_can_fetch_consolidation_report_and_teacher_is_forbidden(): void
     {
         $teacher = User::where('email', 'maria.santos@gmail.com')->first();
+        $admin = User::where('email', 'admin@gmail.com')->first();
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->first() ?? Term::first();
 
-        $response = $this->actingAs($teacher)
+        // 1. Regular teacher must be forbidden from fetching school-wide consolidation
+        $teacherResponse = $this->actingAs($teacher)
             ->getJson("/api/assessments/consolidation?school_year_id={$sy->id}&term_id={$term->id}");
 
-        $response->assertStatus(200)
+        $teacherResponse->assertStatus(403);
+
+        // 2. Administrator is authorized to view school-wide consolidation
+        $adminResponse = $this->actingAs($admin)
+            ->getJson("/api/assessments/consolidation?school_year_id={$sy->id}&term_id={$term->id}");
+
+        $adminResponse->assertStatus(200)
             ->assertJsonStructure([
                 'summary' => [
                     'total_sections_encoded',

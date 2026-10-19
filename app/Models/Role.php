@@ -1,29 +1,21 @@
 <?php
 
-// Declare strict PHP syntax for role-based authorization model
-
 namespace App\Models;
 
-// Import base Eloquent model class
 use Illuminate\Database\Eloquent\Model;
-// Import many-to-many relationship return type definition
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-// Role model defines system access tiers (admin, teacher, school_head) for RBAC enforcement
+// Model for user roles (system_admin, teacher) used in permission checks
 class Role extends Model
 {
-    // Define fillable columns for mass assignment
     protected $fillable = [
-        // Unique technical role slug (e.g., 'admin', 'teacher')
-        'name',
-        // Human-readable label displayed in UI (e.g., 'Administrator', 'Teacher')
-        'display_name',
+        'name', // Internal role slug: system_admin or teacher
+        'display_name', // Human-readable label: System Administrator or Teacher
     ];
 
-    // Define many-to-many relationship connecting roles to assigned user accounts
+    // Users who have this role
     public function users(): BelongsToMany
     {
-        // Link to User model via role_user pivot table with automatic timestamp tracking
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this->belongsToMany(User::class)->withTimestamps(); // Many-to-many relationship via role_user table
     }
 }

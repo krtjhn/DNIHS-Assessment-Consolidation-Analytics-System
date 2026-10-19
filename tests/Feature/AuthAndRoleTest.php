@@ -13,10 +13,10 @@ class AuthAndRoleTest extends TestCase
     // Test registration creates a user with pending approval status and teacher role
     public function test_user_can_register_as_teacher(): void
     {
-        $uniqueEmail = 'bagong.guro_'.uniqid().'@gmail.com';
+        $uniqueEmail = 'applicant.teacher_'.uniqid().'@gmail.com';
 
         $response = $this->postJson('/api/auth/register', [
-            'name' => 'Bagong Guro',
+            'name' => 'Applicant Teacher',
             'email' => $uniqueEmail,
             'password' => 'Password@123',
             'password_confirmation' => 'Password@123',

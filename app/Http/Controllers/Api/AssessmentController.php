@@ -17,326 +17,286 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-// Primary API Controller managing student assessment score encoding, recalculation, ownership validation, and cohort consolidation
+// Manages assessment score sheets, statistics calculation, and report consolidation
 class AssessmentController extends Controller
 {
-    // Inject statistical calculation service via constructor promotion
     public function __construct(
-        protected StatsCalculatorService $statsCalculator
+        protected StatsCalculatorService $statsCalculator // Inject statistical calculation service
     ) {}
 
-    // Retrieve all active teaching assignments and classes allocated to the authenticated teacher for active school year
+    // Get the classes and subjects assigned to the logged-in teacher for the active school year
     public function myClasses(Request $request): JsonResponse
     {
-        $schoolYearId = $request->input('school_year_id');
+        $schoolYearId = $request->input('school_year_id'); // Optional school year filter
         if (! $schoolYearId) {
-            $activeSY = \App\Models\SchoolYear::active()->first();
-            $schoolYearId = $activeSY?->id;
+            $activeSY = \App\Models\SchoolYear::active()->first(); // Resolve active school year
+            $schoolYearId = $activeSY?->id; // Fallback to active year id
         }
 
-        $userId = $request->user()->id;
-        $cacheKey = "teacher_classes_{$userId}_{$schoolYearId}";
+        $userId = $request->user()->id; // Logged-in teacher ID
+        $cacheKey = "teacher_classes_{$userId}_{$schoolYearId}"; // Cache key per teacher and year
 
-        // Fast disk cache for teaching assignments to avoid repeating 5 relational queries
+        // Cache the teaching schedule for 5 minutes to avoid repeating queries
         $assignments = Cache::store('file')->remember($cacheKey, 300, function () use ($userId, $schoolYearId) {
-            $query = TeachingAssignment::with(['section.gradeLevel', 'subject', 'schoolYear'])
-                ->where('user_id', $userId)
-                ->active();
+            $query = TeachingAssignment::with(['section.gradeLevel', 'subject', 'schoolYear']) // Eager load relations
+                ->where('user_id', $userId) // Restrict to current teacher
+                ->active(); // Scope to active assignments
 
             if ($schoolYearId) {
-                $query->where('school_year_id', $schoolYearId);
+                $query->where('school_year_id', $schoolYearId); // Filter by school year
             }
 
-            return $query->get()->toArray();
+            return $query->get()->toArray(); // Convert collection to array
         });
 
-        // Return the teacher's active teaching workload schedule as a JSON response
         return response()->json([
-            'data' => $assignments,
+            'data' => $assignments, // Return teaching assignments array
         ]);
     }
 
-    // List assessment records filtered by academic year, term, section, subject, and assessment type
+    // List assessment records with optional filters
     public function index(Request $request): JsonResponse
     {
-        // Construct Eloquent query with eager-loaded relations to prevent N+1 performance bottlenecks
-        $query = AssessmentRecord::with(['teacher', 'section', 'subject', 'gradeLevel', 'term', 'schoolYear'])
-            // Filter by school year if present in request parameters
-            ->when($request->filled('school_year_id'), fn ($q) => $q->where('school_year_id', $request->school_year_id))
-            // Filter by academic term if specified
-            ->when($request->filled('term_id'), fn ($q) => $q->where('term_id', $request->term_id))
-            // Filter by section if specified
-            ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->section_id))
-            // Filter by subject curriculum area if specified
-            ->when($request->filled('subject_id'), fn ($q) => $q->where('subject_id', $request->subject_id))
-            // Filter by assessment type (diagnostic or term_exam)
-            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type));
+        $query = AssessmentRecord::with(['teacher', 'section', 'subject', 'gradeLevel', 'term', 'schoolYear']) // Eager load relations
+            ->when($request->filled('school_year_id'), fn ($q) => $q->where('school_year_id', $request->school_year_id)) // Filter school year
+            ->when($request->filled('term_id'), fn ($q) => $q->where('term_id', $request->term_id)) // Filter term
+            ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->section_id)) // Filter section
+            ->when($request->filled('subject_id'), fn ($q) => $q->where('subject_id', $request->subject_id)) // Filter subject
+            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type)); // Filter type
 
-        // Role-based data access: Regular teachers only see their own score sheets; administrators see all school-wide records
+        // Teachers only see their own records; administrators see records across all classes
         if ($request->user()->hasRole('teacher') && ! $request->user()->hasRole('system_admin')) {
-            $query->where('teacher_id', $request->user()->id);
+            $query->where('teacher_id', $request->user()->id); // Enforce teacher ownership
         }
 
-        // Execute query ordered chronologically by newest records first
-        $records = $query->orderBy('created_at', 'desc')->get();
+        $records = $query->orderBy('created_at', 'desc')->get(); // Sort newest first
 
-        // Return structured JSON collection transformed through AssessmentRecordResource
         return response()->json([
-            'data' => AssessmentRecordResource::collection($records),
+            'data' => AssessmentRecordResource::collection($records), // Return formatted resource collection
         ]);
     }
 
-    // Encode a new student assessment score sheet, compute DepEd statistics, and save to database
+    // Save student scores, calculate DepEd stats, and store the assessment record
     public function store(StoreAssessmentRequest $request): JsonResponse
     {
-        // Extract validated request data from StoreAssessmentRequest
-        $validated = $request->validated();
-        // Check if the current authenticated user has administrator privileges
-        $isAdmin = $request->user()->hasRole('system_admin');
+        $validated = $request->validated(); // Get validated payload
+        $isAdmin = $request->user()->hasRole('system_admin'); // Check if requester is admin
 
-        // Step 1: Academic calendar lockout safeguard - verify term and school year are currently active and open
-        $term = Term::with('schoolYear')->find($validated['term_id']);
+        // Check if the school year and term are open and active
+        $term = Term::with('schoolYear')->find($validated['term_id']); // Find requested term
         if (! $isAdmin && (! $term || ! $term->isOpen() || ($term->schoolYear && ! $term->schoolYear->is_active))) {
             return response()->json([
-                'message' => 'The academic calendar term or school year is closed or inactive. Scores cannot be recorded.',
+                'message' => 'The academic calendar term or school year is closed or inactive. Scores cannot be recorded.', // Closed term error
             ], 422);
         }
 
-        // Step 1.5: Relational integrity safeguard - ensure section and subject match the designated grade level
-        $section = Section::find($validated['section_id']);
-        $subject = Subject::find($validated['subject_id']);
+        // Make sure the section and subject belong to the same grade level
+        $section = Section::find($validated['section_id']); // Find section model
+        $subject = Subject::find($validated['subject_id']); // Find subject model
         if ($section && $subject && $section->grade_level_id !== $subject->grade_level_id) {
             return response()->json([
-                'message' => 'Academic alignment error: The selected section and subject do not belong to the same grade level.',
+                'message' => 'Academic alignment error: The selected section and subject do not belong to the same grade level.', // Grade mismatch error
             ], 422);
         }
 
-        // Step 2: Workload authorization verification - ensure non-admin teacher is assigned to this section and subject
+        // Verify that the teacher is officially assigned to teach this class
         if (! $isAdmin) {
             $isAssigned = TeachingAssignment::where([
-                'user_id' => $request->user()->id,
-                'school_year_id' => $validated['school_year_id'],
-                'section_id' => $validated['section_id'],
-                'subject_id' => $validated['subject_id'],
-            ])->active()->exists();
+                'user_id' => $request->user()->id, // Current teacher
+                'school_year_id' => $validated['school_year_id'], // School year
+                'section_id' => $validated['section_id'], // Section
+                'subject_id' => $validated['subject_id'], // Subject
+            ])->active()->exists(); // Check assignment exists
 
-            // Reject request with 403 Forbidden if teacher attempts to encode scores for an unassigned class
             if (! $isAssigned) {
                 return response()->json([
-                    'message' => 'You are not assigned to teach this class. Only assigned teachers or administrators can record scores.',
+                    'message' => 'You are not assigned to teach this class. Only assigned teachers or administrators can record scores.', // Forbidden message
                 ], 403);
             }
         }
 
-        // Step 2.5: Normalize assessment type (diagnostic or term_exam)
-        $type = $validated['type'] === 'diagnostic' ? 'diagnostic' : 'term_exam';
-        $validated['type'] = $type;
+        $type = $validated['type']; // Resolve assessment milestone type
+        $validated['type'] = $type; // Ensure type is present
 
-        // Step 3: Anti-overwrite protection - check if another faculty member has already recorded this exact score sheet
+        // Prevent a teacher from overwriting a score sheet already recorded by another teacher
         $existing = AssessmentRecord::where([
-            'school_year_id' => $validated['school_year_id'],
-            'term_id' => $validated['term_id'],
-            'section_id' => $validated['section_id'],
-            'subject_id' => $validated['subject_id'],
-            'type' => $type,
-        ])->first();
+            'school_year_id' => $validated['school_year_id'], // Matching school year
+            'term_id' => $validated['term_id'], // Matching term
+            'section_id' => $validated['section_id'], // Matching section
+            'subject_id' => $validated['subject_id'], // Matching subject
+            'type' => $type, // Matching type
+        ])->first(); // Search existing record
 
-        // Prevent a teacher from modifying another teacher's existing score sheet
         if ($existing && ! $isAdmin && $existing->teacher_id !== $request->user()->id) {
-            $existingTeacher = $existing->teacher?->name ?? 'another faculty member';
+            $existingTeacher = $existing->teacher?->name ?? 'another faculty member'; // Existing author name
 
             return response()->json([
-                'message' => "This assessment was already recorded by {$existingTeacher}. You cannot overwrite another teacher's score sheet.",
+                'message' => "This assessment was already recorded by {$existingTeacher}. You cannot overwrite another teacher's score sheet.", // Conflict message
             ], 403);
         }
 
-        // Step 4: Perform statistical computations and persist assessment record inside a database transaction
+        // Compute statistics and save the record in a database transaction
         $record = DB::transaction(function () use ($validated, $request, $type) {
-            // Compute arithmetic mean, Mean Percentage Score (MPS), standard deviation, and mastery level via StatsCalculatorService
             $stats = $this->statsCalculator->calculate(
-                $validated['raw_scores'],
-                $validated['total_items']
+                $validated['raw_scores'], // Raw scores array
+                $validated['total_items'] // Test items count
             );
 
-            // Sanitize least learned competency text input
-            $leastLearned = isset($validated['least_learned_competency']) ? trim((string) $validated['least_learned_competency']) : null;
-            $leastLearned = ($leastLearned === '' || $leastLearned === '-' || $leastLearned === '—') ? null : $leastLearned;
+            // Clean up least learned competency text input
+            $leastLearned = isset($validated['least_learned_competency']) ? trim((string) $validated['least_learned_competency']) : null; // Trim string
+            $leastLearned = ($leastLearned === '' || $leastLearned === '-' || $leastLearned === '—') ? null : $leastLearned; // Treat dashes as null
 
-            // Upsert the assessment record based on unique composite key
+            // Create or update the score record
             return AssessmentRecord::updateOrCreate(
                 [
-                    // Composite unique key attributes
-                    'school_year_id' => $validated['school_year_id'],
-                    'term_id' => $validated['term_id'],
-                    'section_id' => $validated['section_id'],
-                    'subject_id' => $validated['subject_id'],
-                    'type' => $type,
+                    'school_year_id' => $validated['school_year_id'], // Unique key: school year
+                    'term_id' => $validated['term_id'], // Unique key: term
+                    'section_id' => $validated['section_id'], // Unique key: section
+                    'subject_id' => $validated['subject_id'], // Unique key: subject
+                    'type' => $type, // Unique key: type
                 ],
                 [
-                    // Associated academic details and computed statistics
-                    'grade_level_id' => $validated['grade_level_id'],
-                    'teacher_id' => $request->user()->id,
-                    'total_items' => $validated['total_items'],
-                    'raw_scores' => array_values($validated['raw_scores']),
-                    'no_of_entries' => $stats['no_of_entries'],
-                    'mean' => $stats['mean'],
-                    'mps' => $stats['mps'],
-                    'sd' => $stats['sd'],
-                    'highest_score' => $stats['highest_score'],
-                    'lowest_score' => $stats['lowest_score'],
-                    'least_learned_competency' => $leastLearned,
-                    'remarks' => $validated['remarks'] ?? 'Complete',
+                    'grade_level_id' => $validated['grade_level_id'], // Grade level
+                    'teacher_id' => $request->user()->id, // Recording teacher
+                    'total_items' => $validated['total_items'], // Item count
+                    'raw_scores' => array_values($validated['raw_scores']), // Indexed scores
+                    'no_of_entries' => $stats['no_of_entries'], // Number of examinees
+                    'mean' => $stats['mean'], // Computed mean
+                    'mps' => $stats['mps'], // Computed MPS
+                    'sd' => $stats['sd'], // Computed SD
+                    'highest_score' => $stats['highest_score'], // Highest score
+                    'lowest_score' => $stats['lowest_score'], // Lowest score
+                    'least_learned_competency' => $leastLearned, // Weak competency
+                    'remarks' => $validated['remarks'] ?? 'Complete', // Status remark
                 ]
             );
         });
 
-        // Return 201 Created response containing the newly created assessment resource
         return response()->json([
-            'message' => 'Assessment scores encoded and calculated successfully.',
-            'data' => new AssessmentRecordResource($record->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
+            'message' => 'Assessment scores encoded and calculated successfully.', // Success confirmation
+            'data' => new AssessmentRecordResource($record->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])), // Formatted resource
         ], 201);
     }
 
-    // Retrieve a single assessment record by ID with full relationship data
+    // View a single assessment record by ID
     public function show(Request $request, AssessmentRecord $assessment): JsonResponse
     {
-        // Enforce ownership safeguard: regular teachers cannot inspect assessment records belonging to peer teachers
+        // Teachers cannot view another teacher's assessment record
         if ($request->user()->hasRole('teacher') && ! $request->user()->hasRole('system_admin') && $assessment->teacher_id !== $request->user()->id) {
             return response()->json([
-                'message' => "You are not authorized to view another teacher's assessment record.",
+                'message' => "You are not authorized to view another teacher's assessment record.", // Forbidden message
             ], 403);
         }
 
-        // Return the single assessment record formatted through AssessmentRecordResource
         return response()->json([
-            'data' => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
+            'data' => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])), // Formatted resource
         ]);
     }
 
-    // Update raw student examination scores and recalculate statistical metrics
+    // Update raw scores and recalculate statistics
     public function update(UpdateAssessmentRequest $request, AssessmentRecord $assessment): JsonResponse
     {
-        // Identify administrative privileges
-        $isAdmin = $request->user()->hasRole('system_admin');
+        $isAdmin = $request->user()->hasRole('system_admin'); // Check if requester is admin
 
-        // Non-admin teacher constraints: verify ownership and active calendar status
+        // Check ownership and calendar status for non-admin teachers
         if (! $isAdmin) {
-            // Block modification if assessment belongs to another faculty member
             if ($assessment->teacher_id !== $request->user()->id) {
                 return response()->json([
-                    'message' => "You are not authorized to update another teacher's assessment record.",
+                    'message' => "You are not authorized to update another teacher's assessment record.", // Forbidden message
                 ], 403);
             }
 
-            // Block modification if the academic calendar term or school year is closed/locked
             if (! $assessment->term || ! $assessment->term->isOpen() || ($assessment->schoolYear && ! $assessment->schoolYear->is_active)) {
                 return response()->json([
-                    'message' => 'The academic calendar term or school year is closed. Historical score sheets cannot be modified.',
+                    'message' => 'The academic calendar term or school year is closed. Historical score sheets cannot be modified.', // Closed calendar error
                 ], 422);
             }
         }
 
-        // Retrieve validated request data from UpdateAssessmentRequest
-        $validated = $request->validated();
+        $validated = $request->validated(); // Get validated payload
 
-        // Recalculate statistical metrics and save within a database transaction
+        // Recalculate statistics and save changes in a transaction
         $assessment = DB::transaction(function () use ($validated, $assessment) {
-            // Compute updated arithmetic mean, MPS, and population standard deviation
             $stats = $this->statsCalculator->calculate(
-                $validated['raw_scores'],
-                $validated['total_items']
+                $validated['raw_scores'], // Updated scores
+                $validated['total_items'] // Item count
             );
 
-            // Sanitize least learned competency text input
-            $leastLearned = isset($validated['least_learned_competency']) ? trim((string) $validated['least_learned_competency']) : null;
-            $leastLearned = ($leastLearned === '' || $leastLearned === '-' || $leastLearned === '—') ? null : $leastLearned;
+            $leastLearned = isset($validated['least_learned_competency']) ? trim((string) $validated['least_learned_competency']) : null; // Trim competency
+            $leastLearned = ($leastLearned === '' || $leastLearned === '-' || $leastLearned === '—') ? null : $leastLearned; // Treat dashes as null
 
-            // Update database attributes with newly recalculated statistics
             $assessment->update([
-                'total_items' => $validated['total_items'],
-                'raw_scores' => array_values($validated['raw_scores']),
-                'no_of_entries' => $stats['no_of_entries'],
-                'mean' => $stats['mean'],
-                'mps' => $stats['mps'],
-                'sd' => $stats['sd'],
-                'highest_score' => $stats['highest_score'],
-                'lowest_score' => $stats['lowest_score'],
-                'least_learned_competency' => $leastLearned,
-                'remarks' => $validated['remarks'] ?? 'Complete',
+                'total_items' => $validated['total_items'], // Item count
+                'raw_scores' => array_values($validated['raw_scores']), // Indexed scores
+                'no_of_entries' => $stats['no_of_entries'], // Number of examinees
+                'mean' => $stats['mean'], // Recalculated mean
+                'mps' => $stats['mps'], // Recalculated MPS
+                'sd' => $stats['sd'], // Recalculated SD
+                'highest_score' => $stats['highest_score'], // High score
+                'lowest_score' => $stats['lowest_score'], // Low score
+                'least_learned_competency' => $leastLearned, // Weak competency
+                'remarks' => $validated['remarks'] ?? 'Complete', // Status remark
             ]);
 
-            return $assessment;
+            return $assessment; // Return updated model
         });
 
-        // Return success response with updated assessment resource
         return response()->json([
-            'message' => 'Assessment scores updated and recalculated successfully.',
-            'data' => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])),
+            'message' => 'Assessment scores updated and recalculated successfully.', // Success confirmation
+            'data' => new AssessmentRecordResource($assessment->load(['teacher', 'section', 'subject', 'gradeLevel', 'term'])), // Formatted resource
         ]);
     }
 
-    // Delete an assessment record with academic calendar and ownership safeguards
+    // Delete an assessment record
     public function destroy(Request $request, AssessmentRecord $assessment): JsonResponse
     {
-        // Identify administrative privileges
-        $isAdmin = $request->user()->hasRole('system_admin');
+        $isAdmin = $request->user()->hasRole('system_admin'); // Check if requester is admin
 
-        // Non-admin teacher safeguards
+        // Non-admin teachers can only delete their own records during an open term
         if (! $isAdmin) {
-            // Reject deletion if assessment was created by another teacher
             if ($assessment->teacher_id !== $request->user()->id) {
                 return response()->json([
-                    'message' => "You are not authorized to delete another teacher's assessment record.",
+                    'message' => "You are not authorized to delete another teacher's assessment record.", // Forbidden message
                 ], 403);
             }
 
-            // Reject deletion if the academic calendar term or school year is closed
             if (! $assessment->term || ! $assessment->term->isOpen() || ($assessment->schoolYear && ! $assessment->schoolYear->is_active)) {
                 return response()->json([
-                    'message' => 'The academic calendar term or school year is closed. Historical records cannot be deleted.',
+                    'message' => 'The academic calendar term or school year is closed. Historical records cannot be deleted.', // Closed calendar error
                 ], 422);
             }
         }
 
-        // Delete the assessment record from the database
-        $assessment->delete();
+        $assessment->delete(); // Soft delete record
 
-        // Return success message confirming deletion
         return response()->json([
-            'message' => 'Assessment record deleted successfully.',
+            'message' => 'Assessment record deleted successfully.', // Deletion confirmation
         ]);
     }
 
-    // Compute consolidated cohort statistics across multiple sections for reporting and analytics
+    // Generate consolidated report and statistics across sections
     public function consolidation(Request $request): JsonResponse
     {
-        // Validate incoming filter parameters
         $request->validate([
-            'school_year_id' => ['required', 'exists:school_years,id'],
-            'term_id' => ['required', 'exists:terms,id'],
-            'type' => ['nullable', 'string', 'in:diagnostic,term_exam'],
-            'grade_level_id' => ['nullable', 'exists:grade_levels,id'],
+            'school_year_id' => ['required', 'exists:school_years,id'], // Must exist in school_years table
+            'term_id' => ['required', 'exists:terms,id'], // Must exist in terms table
+            'type' => ['nullable', 'string', 'in:diagnostic,term_exam'], // Optional type filter
+            'grade_level_id' => ['nullable', 'exists:grade_levels,id'], // Optional grade level filter
         ]);
 
-        // Filter by assessment type
-        $type = $request->type;
+        $type = $request->type; // Milestone type
 
-        // Build query matching the selected school year, term, assessment type, and grade level
-        $query = AssessmentRecord::with(['gradeLevel', 'section', 'subject', 'teacher'])
-            ->where('school_year_id', $request->school_year_id)
-            ->where('term_id', $request->term_id)
-            ->when($type, fn ($q) => $q->where('type', $type))
-            ->when($request->filled('grade_level_id'), fn ($q) => $q->where('grade_level_id', $request->grade_level_id));
+        $query = AssessmentRecord::with(['gradeLevel', 'section', 'subject', 'teacher']) // Eager load relations
+            ->where('school_year_id', $request->school_year_id) // Matching school year
+            ->where('term_id', $request->term_id) // Matching term
+            ->when($type, fn ($q) => $q->where('type', $type)) // Optional type filter
+            ->when($request->filled('grade_level_id'), fn ($q) => $q->where('grade_level_id', $request->grade_level_id)); // Optional grade filter
 
-        // Retrieve matched assessment records
-        $records = $query->get();
+        $records = $query->get(); // Retrieve collection
 
-        // Return combined JSON containing mathematically pooled summary metrics and individual section records
         return response()->json([
-            // Compute cohort statistics using pooled variance and weighted mean
-            'summary' => $this->statsCalculator->summarizeConsolidation($records),
-            // Individual section assessment records for tabular breakdown
-            'records' => AssessmentRecordResource::collection($records),
+            'summary' => $this->statsCalculator->summarizeConsolidation($records), // Overall summary stats for the group
+            'records' => AssessmentRecordResource::collection($records), // Individual section breakdown
         ]);
     }
 }

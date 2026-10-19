@@ -6,53 +6,44 @@ use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-// Form Request handling validation and authorization for synchronizing a faculty member's complete workload schedule
+// Form request for validating bulk synchronization of teaching assignments for a teacher
 class SyncTeachingAssignmentRequest extends FormRequest
 {
-    // Authorize only system administrators to batch-synchronize teaching workloads
+    // Only system admins can sync teaching assignments
     public function authorize(): bool
     {
-        // Enforce system_admin role requirement
-        return $this->user()?->hasRole('system_admin') ?? false;
+        return $this->user()?->hasRole('system_admin') ?? false; // Restrict to system_admin
     }
 
-    // Validation rules for synchronizing a teacher's full workload matrix
+    // Validation rules for syncing a teacher's schedule
     public function rules(): array
     {
         return [
-            // Target faculty user must exist, be active and approved, and possess the teacher role
+            // Teacher user ID must exist, be active, approved, and have the teacher role
             'user_id' => [
-                'required',
-                'integer',
-                // Verify user exists with active and approved status
-                Rule::exists('users', 'id')->where('is_active', true)->where('approval_status', 'approved'),
-                // Custom rule callback verifying that the user is officially assigned the teacher role
+                'required', // Mandatory field
+                'integer', // Must be an integer id
+                Rule::exists('users', 'id')->where('is_active', true)->where('approval_status', 'approved'), // Must be active and approved
                 function ($attribute, $value, $fail) {
                     $user = User::find($value);
                     if ($user && ! $user->hasRole('teacher')) {
-                        $fail('The selected user must have the teacher role to receive class assignments.');
+                        $fail('The selected user must have the teacher role to receive class assignments.'); // Role check fail
                     }
                 },
             ],
-            // Ensure target school year exists in school_years table
-            'school_year_id' => ['required', 'integer', 'exists:school_years,id'],
-            // The assignments array must be present in request payload, even if empty (to allow clearing loads)
-            'assignments' => ['present', 'array'],
-            // Each individual assignment entry must specify an existing class section ID
-            'assignments.*.section_id' => ['required', 'integer', 'exists:sections,id'],
-            // Each individual assignment entry must specify an existing subject ID
-            'assignments.*.subject_id' => ['required', 'integer', 'exists:subjects,id'],
-            // Optional effective start date for newly synced assignments
-            'effective_from' => ['nullable', 'date'],
+            'school_year_id' => ['required', 'integer', 'exists:school_years,id'], // Must exist in school_years table
+            'assignments' => ['present', 'array'], // Present array (can be empty to clear load)
+            'assignments.*.section_id' => ['required', 'integer', 'exists:sections,id'], // Must exist in sections table
+            'assignments.*.subject_id' => ['required', 'integer', 'exists:subjects,id'], // Must exist in subjects table
+            'effective_from' => ['nullable', 'date'], // Optional start date
         ];
     }
 
-    // Custom user-facing error messages
+    // Custom error messages
     public function messages(): array
     {
         return [
-            // Feedback when assigned faculty member is deactivated or pending approval
-            'user_id.exists' => 'The assigned faculty account must be active and approved.',
+            'user_id.exists' => 'The assigned faculty account must be active and approved.', // Inactive/unapproved teacher error
         ];
     }
 }

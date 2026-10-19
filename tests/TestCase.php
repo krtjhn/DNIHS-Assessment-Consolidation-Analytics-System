@@ -65,14 +65,41 @@ abstract class TestCase extends BaseTestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $grade = GradeLevel::first();
         if ($sy && $grade) {
-            Section::firstOrCreate(
-                ['school_year_id' => $sy->id, 'grade_level_id' => $grade->id, 'name' => 'Pilot A'],
-                ['is_active' => true]
-            );
-            Section::firstOrCreate(
-                ['school_year_id' => $sy->id, 'grade_level_id' => $grade->id, 'name' => 'Pilot B'],
-                ['is_active' => true]
-            );
+            $secA = Section::withTrashed()->where([
+                'school_year_id' => $sy->id,
+                'grade_level_id' => $grade->id,
+                'name' => 'Pilot A',
+            ])->first();
+            if ($secA) {
+                if ($secA->trashed()) {
+                    $secA->restore();
+                }
+            } else {
+                Section::create([
+                    'school_year_id' => $sy->id,
+                    'grade_level_id' => $grade->id,
+                    'name' => 'Pilot A',
+                    'is_active' => true,
+                ]);
+            }
+
+            $secB = Section::withTrashed()->where([
+                'school_year_id' => $sy->id,
+                'grade_level_id' => $grade->id,
+                'name' => 'Pilot B',
+            ])->first();
+            if ($secB) {
+                if ($secB->trashed()) {
+                    $secB->restore();
+                }
+            } else {
+                Section::create([
+                    'school_year_id' => $sy->id,
+                    'grade_level_id' => $grade->id,
+                    'name' => 'Pilot B',
+                    'is_active' => true,
+                ]);
+            }
         }
     }
 }

@@ -355,7 +355,7 @@ export default function SchoolCalendar() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center p-12">
-                <LoadingIndicator type="dot-circle" size="md" label="Loading school calendar…" />
+                <LoadingIndicator type="dot-circle" size="md" label="Loading..." />
             </div>
         );
     }

@@ -18,13 +18,13 @@ class AssessmentOwnershipTest extends TestCase
 
     protected function createTestRecord(array $attrs): AssessmentRecord
     {
-        AssessmentRecord::where([
+        AssessmentRecord::withTrashed()->where([
             'school_year_id' => $attrs['school_year_id'],
             'term_id' => $attrs['term_id'],
             'section_id' => $attrs['section_id'],
             'subject_id' => $attrs['subject_id'],
             'type' => $attrs['type'],
-        ])->delete();
+        ])->forceDelete();
 
         return AssessmentRecord::create($attrs);
     }
@@ -155,22 +155,27 @@ class AssessmentOwnershipTest extends TestCase
         $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
 
         // Ensure teacher1 is assigned to class so teaching assignment check passes
-        TeachingAssignment::firstOrCreate([
+        TeachingAssignment::where([
+            'school_year_id' => $sy->id,
+            'section_id' => $section->id,
+            'subject_id' => $subject->id,
+        ])->delete();
+
+        TeachingAssignment::create([
             'user_id' => $teacher1->id,
             'school_year_id' => $sy->id,
             'section_id' => $section->id,
             'subject_id' => $subject->id,
-        ], [
             'effective_from' => now()->toDateString(),
         ]);
 
-        AssessmentRecord::where([
+        AssessmentRecord::withTrashed()->where([
             'school_year_id' => $sy->id,
             'term_id' => $term->id,
             'section_id' => $section->id,
             'subject_id' => $subject->id,
             'type' => 'diagnostic',
-        ])->delete();
+        ])->forceDelete();
 
         AssessmentRecord::create([
             'school_year_id' => $sy->id,
@@ -207,7 +212,7 @@ class AssessmentOwnershipTest extends TestCase
         ]);
 
         $response->assertStatus(403)
-            ->assertJsonPath('message', 'This assessment was already recorded by Juan Dela Cruz. You cannot overwrite another teacher\'s score sheet.');
+            ->assertJsonPath('message', "This assessment was already recorded by {$teacher2->name}. You cannot overwrite another teacher's score sheet.");
     }
 
     // Test admin can update any teacher's assessment record (Issue 9 resolved)

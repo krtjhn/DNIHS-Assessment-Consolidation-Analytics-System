@@ -83,7 +83,6 @@ export default function PerformanceReport() {
                 if (activeTerm) setSelectedTermId(String(activeTerm.id));
             }
         } catch (err) {
-            console.error('Error loading reference data:', err);
             setErrorMessage('Unable to load initial academic reference data.');
         } finally {
             setRefLoading(false);
@@ -114,7 +113,6 @@ export default function PerformanceReport() {
             const res = await api.get(`/assessments/consolidation?${params.toString()}`);
             setConsolidationData(res);
         } catch (err) {
-            console.error('Error fetching consolidation:', err);
             setErrorMessage(err.message || 'Unable to load consolidation records.');
         } finally {
             setLoadingData(false);
@@ -135,11 +133,12 @@ export default function PerformanceReport() {
         }
     }, [availableTerms, selectedTermId]);
 
-    // Available sections for chosen Grade & SY
+    // Available sections for chosen Grade & SY (strictly scoped to chosen Grade Level)
     const availableSections = useMemo(() => {
+        if (!selectedGradeId) return [];
         return sections.filter((s) => {
             const matchSY = !selectedSYId || String(s.school_year_id) === String(selectedSYId);
-            const matchGrade = !selectedGradeId || String(s.grade_level_id) === String(selectedGradeId);
+            const matchGrade = String(s.grade_level_id) === String(selectedGradeId);
             return matchSY && matchGrade;
         });
     }, [sections, selectedSYId, selectedGradeId]);
@@ -439,7 +438,7 @@ export default function PerformanceReport() {
                 }),
                 total_items: matchingRecords[0]?.total_items || 50,
                 least_learned_competency: stats.leastLearned,
-                remarks: stats.mps >= 75 ? 'Met Target' : 'Intervention Needed',
+                remarks: 'Complete',
             };
         };
 
@@ -534,7 +533,9 @@ export default function PerformanceReport() {
 
             return [{
                 id: `grade-subject-${selectedGradeId}-${selectedSubjectName}`,
-                title: `${gradeLabel.toUpperCase()} — ${selectedSubjectName.toUpperCase()}`,
+                title: selectedSectionId && activeSectionObj
+                    ? `${gradeLabel.toUpperCase()} - ${activeSectionObj.name.toUpperCase()} — ${selectedSubjectName.toUpperCase()}`
+                    : `${gradeLabel.toUpperCase()} — ${selectedSubjectName.toUpperCase()}`,
                 rowHeaderLabel: 'Section',
                 records: sortedRecords,
                 summary: computeStats(sortedRecords),
@@ -564,7 +565,7 @@ export default function PerformanceReport() {
 
                 groups.push({
                     id: `sec-${section.id}`,
-                    title: `${gradeLabel.toUpperCase()} — SECTION ${section.name.toUpperCase()}`,
+                    title: `${gradeLabel.toUpperCase()} - ${section.name.toUpperCase()}`,
                     rowHeaderLabel: 'Subject',
                     records: sortedMatchingRecords,
                     summary: computeStats(sortedMatchingRecords),
@@ -626,10 +627,7 @@ export default function PerformanceReport() {
     const activeTermName = availableTerms.find((t) => String(t.id) === String(selectedTermId))?.name || 'Term';
 
     const activeSectionObj = availableSections.find((s) => String(s.id) === String(selectedSectionId));
-    const activeSectionGradeName = activeSectionObj?.grade_level?.name || (gradeLevels.find((g) => String(g.id) === String(activeSectionObj?.grade_level_id))?.name);
-    const activeSectionName = activeSectionObj
-        ? (isSchoolWide && activeSectionGradeName ? `${activeSectionGradeName} - ${activeSectionObj.name}` : activeSectionObj.name)
-        : 'All';
+    const activeSectionName = activeSectionObj?.name || 'All';
     const activeSubjectName = selectedSubjectName || 'All';
 
     const schoolYearOptions = schoolYears.map((sy) => ({ value: String(sy.id), label: sy.name }));
@@ -644,15 +642,17 @@ export default function PerformanceReport() {
         ];
     }, [gradeLevels]);
     const sectionOptions = useMemo(() => {
+        if (!selectedGradeId) {
+            return [{ value: '', label: 'Select Grade Level First' }];
+        }
         return [
             { value: '', label: 'All Sections' },
-            ...availableSections.map((s) => {
-                const gradeName = s.grade_level?.name || gradeLevels.find((g) => String(g.id) === String(s.grade_level_id))?.name;
-                const label = isSchoolWide && gradeName ? `${gradeName} - ${s.name}` : s.name;
-                return { value: String(s.id), label };
-            }),
+            ...availableSections.map((s) => ({
+                value: String(s.id),
+                label: s.name,
+            })),
         ];
-    }, [availableSections, isSchoolWide, gradeLevels]);
+    }, [availableSections, selectedGradeId]);
     const subjectOptions = [{ value: '', label: 'All Subjects' }, ...availableSubjectNames.map((n) => ({ value: n, label: n }))];
 
     const hasActiveFilters = Boolean(selectedGradeId || selectedSectionId || selectedSubjectName);
@@ -660,17 +660,22 @@ export default function PerformanceReport() {
     // Dynamic Title Generation based on active filters
     const autoReportTitle = useMemo(() => {
         const typeLabel = assessmentType === 'diagnostic' ? 'Diagnostic Assessment' : 'Term Examination';
+        const sectionName = activeSectionObj?.name || '';
+        const gradeSectionPrefix = selectedSectionId && sectionName
+            ? `${currentGradeLabel} - ${sectionName}`
+            : currentGradeLabel;
+
         if (selectedSubjectName && selectedGradeId) {
-            return `${currentGradeLabel} — ${selectedSubjectName} ${typeLabel} Consolidated Report`;
+            return `${gradeSectionPrefix} — ${selectedSubjectName} ${typeLabel} Consolidated Report`;
         }
         if (selectedSubjectName && !selectedGradeId) {
             return `School-Wide — ${selectedSubjectName} ${typeLabel} Consolidated Report`;
         }
         if (selectedGradeId) {
-            return `${currentGradeLabel} ${typeLabel} Consolidated Report`;
+            return `${gradeSectionPrefix} ${typeLabel} Consolidated Report`;
         }
         return `School-Wide ${typeLabel} Consolidated Report`;
-    }, [assessmentType, selectedSubjectName, selectedGradeId, currentGradeLabel]);
+    }, [assessmentType, selectedSubjectName, selectedGradeId, currentGradeLabel, selectedSectionId, activeSectionObj]);
 
     return (
         <div className="flex w-full flex-col gap-5">
@@ -685,12 +690,6 @@ export default function PerformanceReport() {
                         <span>S.Y. {activeSYName}</span>
                         <span>•</span>
                         <span>{activeTermName}</span>
-                        {selectedSectionId && (
-                            <>
-                                <span>•</span>
-                                <span className="font-semibold text-slate-700">Section: {activeSectionName}</span>
-                            </>
-                        )}
                     </div>
                 </div>
 
@@ -741,7 +740,9 @@ export default function PerformanceReport() {
                                 className="absolute top-3 right-3 flex size-6 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition text-xs font-bold"
                                 title="Close"
                             >
-                                ✕
+                                <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
 
                             {/* Assessment Type Segmented Control */}
@@ -838,7 +839,7 @@ export default function PerformanceReport() {
                                 </select>
                             </div>
 
-                            {/* Section Drill-Down */}
+                            {/* Section Drill-Down (Enabled only when a Grade Level is selected) */}
                             <div className="mt-3 space-y-1">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
@@ -857,13 +858,16 @@ export default function PerformanceReport() {
                                 <select
                                     value={selectedSectionId}
                                     onChange={(e) => setSelectedSectionId(e.target.value)}
-                                    disabled={refLoading || sectionOptions.length <= 1}
-                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                    disabled={refLoading || !selectedGradeId || availableSections.length === 0}
+                                    className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 transition focus:border-[#0071e3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:opacity-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                                 >
                                     {sectionOptions.map((opt) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
+                                {!selectedGradeId && (
+                                    <p className="text-[10px] text-slate-400">Select a Grade Level first to filter by section.</p>
+                                )}
                             </div>
 
                             {/* Subject Drill-Down */}
@@ -1032,7 +1036,7 @@ export default function PerformanceReport() {
             {/* REPORT TABLES & DATA FEED */}
             {loadingData ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border border-slate-200 bg-white shadow-2xs">
-                    <LoadingIndicator type="dot-circle" size="md" label="Loading consolidated performance records…" />
+                    <LoadingIndicator type="dot-circle" size="md" label="Loading..." />
                 </div>
             ) : reportTableGroups.length === 0 ? (
                 <div className="report-table-block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
@@ -1042,7 +1046,7 @@ export default function PerformanceReport() {
                                 {/* Unified Table Title: Part of table, Green background, White text, Center aligned */}
                                 <tr className="bg-[#1e5622] text-white">
                                     <th
-                                        colSpan={16}
+                                        colSpan={18}
                                         className="border border-green-800 px-4 py-3 text-center text-sm md:text-base font-extrabold uppercase tracking-wide text-white"
                                     >
                                         {autoReportTitle}
@@ -1058,11 +1062,12 @@ export default function PerformanceReport() {
                                     <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Mean</th>
                                     <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">SD</th>
                                     <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center whitespace-nowrap bg-[#17441a]">MPS</th>
-                                    <th colSpan="7" className="border border-green-800 px-2 py-2 text-center bg-[#133816] tracking-normal font-semibold">
+                                    <th colSpan="8" className="border border-green-800 px-2 py-2 text-center bg-[#133816] tracking-normal font-semibold">
                                         Mastery Level Distribution (No. of Examinees)
                                     </th>
                                     <th rowSpan="2" className="border border-green-800 px-3 py-3 min-w-[180px]">Least Learned Competency</th>
                                     <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center bg-[#256a29] whitespace-nowrap">Remarks</th>
+                                    <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap bg-[#17441a]">Diff</th>
                                 </tr>
                                 <tr className="bg-[#246528] text-white text-[10px] font-semibold">
                                     <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Mastered<br /><span className="font-mono opacity-80">96-100%</span></th>
@@ -1072,11 +1077,12 @@ export default function PerformanceReport() {
                                     <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Low<br /><span className="font-mono opacity-80">15-34%</span></th>
                                     <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Very Low<br /><span className="font-mono opacity-80">5-14%</span></th>
                                     <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">No Mastery<br /><span className="font-mono opacity-80">0-4%</span></th>
+                                    <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap bg-[#17441a] font-bold">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colSpan={16} className="py-14 text-center text-slate-500 bg-white">
+                                    <td colSpan={18} className="py-14 text-center text-slate-500 bg-white">
                                         <div className="flex flex-col items-center justify-center gap-1.5">
                                             <div className="size-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-1">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1110,7 +1116,7 @@ export default function PerformanceReport() {
                                             {/* Unified Table Title: Part of table, Green background, White text, Center aligned */}
                                             <tr className="bg-[#1e5622] text-white">
                                                 <th
-                                                    colSpan={16}
+                                                    colSpan={18}
                                                     className="border border-green-800 px-4 py-3 text-center text-sm md:text-base font-extrabold uppercase tracking-wide text-white"
                                                 >
                                                     {group.title}
@@ -1126,11 +1132,12 @@ export default function PerformanceReport() {
                                                 <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">Mean</th>
                                                 <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap">SD</th>
                                                 <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center whitespace-nowrap bg-[#17441a]">MPS</th>
-                                                <th colSpan="7" className="border border-green-800 px-2 py-2 text-center bg-[#133816] tracking-normal font-semibold">
+                                                <th colSpan="8" className="border border-green-800 px-2 py-2 text-center bg-[#133816] tracking-normal font-semibold">
                                                     Mastery Level Distribution (No. of Examinees)
                                                 </th>
                                                 <th rowSpan="2" className="border border-green-800 px-3 py-3 min-w-[180px]">Least Learned Competency</th>
                                                 <th rowSpan="2" className="border border-green-800 px-3 py-3 text-center bg-[#256a29] whitespace-nowrap">Remarks</th>
+                                                <th rowSpan="2" className="border border-green-800 px-2.5 py-3 text-center whitespace-nowrap bg-[#17441a]">Diff</th>
                                             </tr>
                                             <tr className="bg-[#246528] text-white text-[10px] font-semibold">
                                                 <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Mastered<br /><span className="font-mono opacity-80">96-100%</span></th>
@@ -1140,6 +1147,7 @@ export default function PerformanceReport() {
                                                 <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Low<br /><span className="font-mono opacity-80">15-34%</span></th>
                                                 <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">Very Low<br /><span className="font-mono opacity-80">5-14%</span></th>
                                                 <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap">No Mastery<br /><span className="font-mono opacity-80">0-4%</span></th>
+                                                <th className="border border-green-800 px-2 py-1.5 text-center whitespace-nowrap bg-[#17441a] font-bold">Total</th>
                                             </tr>
                                         </thead>
 
@@ -1154,6 +1162,19 @@ export default function PerformanceReport() {
                                                             ? (record.grade_level?.display_name || record.grade_level?.name || `Grade ${record.grade_level?.level}`)
                                                             : (record.subject?.name || 'Subject'))
                                                 );
+
+                                                const cases = Number(record.no_of_entries || 0);
+                                                const masteryTotal =
+                                                    (dist.mastered || 0) +
+                                                    (dist.closelyApproximating || 0) +
+                                                    (dist.movingTowards || 0) +
+                                                    (dist.average || 0) +
+                                                    (dist.low || 0) +
+                                                    (dist.veryLow || 0) +
+                                                    (dist.noMastery || 0);
+                                                const diff = cases - masteryTotal;
+                                                const isComplete = cases > 0 && diff === 0;
+                                                const isIncomplete = cases > 0 && diff !== 0;
 
                                                 return (
                                                     <tr key={record.id} className="odd:bg-white even:bg-slate-50/70 hover:bg-emerald-50/30 transition text-sm">
@@ -1188,23 +1209,35 @@ export default function PerformanceReport() {
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-red-800 bg-red-50/25 text-sm">{dist.veryLow}</td>
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-slate-800 bg-slate-50/50 text-sm">{dist.noMastery}</td>
 
+                                                        {/* Total Column (sum of 7 mastery levels) */}
+                                                        <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-slate-900 bg-slate-100/70 text-sm">
+                                                            {cases > 0 ? masteryTotal : 0}
+                                                        </td>
+
                                                         <td className="border-r border-slate-200 px-3 py-3 text-slate-800 text-sm">
                                                             {record.least_learned_competency || <span className="text-slate-400 italic">None specified</span>}
                                                         </td>
                                                         <td className="border-r border-slate-200 px-3 py-3 text-center whitespace-nowrap">
-                                                            {(() => {
-                                                                const isMet = record.remarks === 'Met Target' || (!record.remarks && mps >= 75);
-                                                                const remarksText = record.remarks || (mps >= 75 ? 'Met Target' : 'Intervention Needed');
-                                                                return (
-                                                                    <span className={`rounded-full px-3 py-1 text-xs font-bold border ${
-                                                                        isMet
-                                                                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                                                                            : 'bg-amber-100 text-amber-800 border-amber-200'
-                                                                    }`}>
-                                                                        {remarksText}
-                                                                    </span>
-                                                                );
-                                                            })()}
+                                                            <span className={`rounded-full px-3 py-1 text-xs font-bold border ${
+                                                                isComplete
+                                                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                                                    : isIncomplete
+                                                                        ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                                                        : 'bg-slate-100 text-slate-500 border-slate-200'
+                                                            }`}>
+                                                                {isComplete ? 'Complete' : (isIncomplete ? 'Incomplete' : '—')}
+                                                            </span>
+                                                        </td>
+
+                                                        {/* Diff Column (No. of Cases - Total, at the very end after Remarks) */}
+                                                        <td className={`border-r border-slate-200 px-2 py-3 text-center font-bold text-sm ${
+                                                            cases === 0
+                                                                ? 'text-slate-400 bg-slate-50/50'
+                                                                : diff === 0
+                                                                    ? 'text-slate-700 bg-slate-50/50'
+                                                                    : 'text-rose-700 bg-rose-50 font-extrabold'
+                                                        }`}>
+                                                            {cases > 0 ? diff : '—'}
                                                         </td>
                                                     </tr>
                                                 );
@@ -1216,6 +1249,19 @@ export default function PerformanceReport() {
                                             {(() => {
                                                 const tSummary = group.summary || computeStats(group.records);
                                                 const isMet = tSummary.mps >= 75;
+                                                const footerCases = Number(tSummary.totalExaminees || 0);
+                                                const footerMasteryTotal =
+                                                    (tSummary.mastery?.mastered || 0) +
+                                                    (tSummary.mastery?.closelyApproximating || 0) +
+                                                    (tSummary.mastery?.movingTowards || 0) +
+                                                    (tSummary.mastery?.average || 0) +
+                                                    (tSummary.mastery?.low || 0) +
+                                                    (tSummary.mastery?.veryLow || 0) +
+                                                    (tSummary.mastery?.noMastery || 0);
+                                                const footerDiff = footerCases - footerMasteryTotal;
+                                                const footerIsComplete = footerCases > 0 && footerDiff === 0;
+                                                const footerIsIncomplete = footerCases > 0 && footerDiff !== 0;
+
                                                 return (
                                                     <tr className="hover:bg-slate-200/60 transition">
                                                         <td className="whitespace-nowrap border-r border-slate-200 px-3 py-3 font-extrabold uppercase text-slate-900 tracking-wider">
@@ -1263,17 +1309,35 @@ export default function PerformanceReport() {
                                                             {tSummary.mastery?.noMastery || 0}
                                                         </td>
 
+                                                        {/* Footer Total Column */}
+                                                        <td className="border-r border-slate-200 px-2 py-3 text-center font-extrabold text-slate-900 bg-slate-200/80 text-sm">
+                                                            {footerCases > 0 ? footerMasteryTotal : 0}
+                                                        </td>
+
                                                         <td className="border-r border-slate-200 px-3 py-3 text-slate-700 text-xs font-semibold">
                                                             {tSummary.leastLearned || <span className="text-slate-400 italic">—</span>}
                                                         </td>
                                                         <td className="border-r border-slate-200 px-3 py-3 text-center whitespace-nowrap">
                                                             <span className={`rounded-full px-3 py-1 text-xs font-extrabold border shadow-2xs ${
-                                                                isMet
+                                                                footerIsComplete
                                                                     ? 'bg-emerald-600 text-white border-emerald-700'
-                                                                    : 'bg-amber-600 text-white border-amber-700'
+                                                                    : footerIsIncomplete
+                                                                        ? 'bg-rose-600 text-white border-rose-700'
+                                                                        : 'bg-slate-200 text-slate-600 border-slate-300'
                                                             }`}>
-                                                                {isMet ? 'Met Target' : 'Intervention Needed'}
+                                                                {footerIsComplete ? 'Complete' : (footerIsIncomplete ? 'Incomplete' : '—')}
                                                             </span>
+                                                        </td>
+
+                                                        {/* Footer Diff Column (at the very end after Remarks) */}
+                                                        <td className={`border-r border-slate-200 px-2 py-3 text-center font-extrabold text-sm ${
+                                                            footerCases === 0
+                                                                ? 'text-slate-500 bg-slate-200/50'
+                                                                : footerDiff === 0
+                                                                    ? 'text-slate-800 bg-slate-200/50'
+                                                                    : 'text-rose-700 bg-rose-100 font-black'
+                                                        }`}>
+                                                            {footerCases > 0 ? footerDiff : '—'}
                                                         </td>
                                                     </tr>
                                                 );

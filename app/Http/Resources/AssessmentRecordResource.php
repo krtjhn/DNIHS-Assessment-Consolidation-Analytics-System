@@ -1,71 +1,42 @@
 <?php
 
-// Declare strict PHP syntax for JSON API resource transformation
-
 namespace App\Http\Resources;
 
-// Import incoming HTTP request contract
 use Illuminate\Http\Request;
-// Import base Laravel JSON resource class for data serialization
 use Illuminate\Http\Resources\Json\JsonResource;
 
-// AssessmentRecordResource transforms Eloquent assessment models into standard JSON payload structures
+// Transform an assessment record model into a clean JSON response
 class AssessmentRecordResource extends JsonResource
 {
-    // Transform the resource instance into an associative array for JSON response
+    // Convert the assessment record into an array
     public function toArray(Request $request): array
     {
-        // Return structured key-value payload with explicit type casting and loaded relation inclusion
         return [
-            // Unique database primary key identifier of the assessment record
-            'id' => $this->id,
-            // Foreign key identifying the academic school year
-            'school_year_id' => $this->school_year_id,
-            // Foreign key identifying the academic term
-            'term_id' => $this->term_id,
-            // Foreign key identifying the junior high grade level (7, 8, 9, or 10)
-            'grade_level_id' => $this->grade_level_id,
-            // Foreign key identifying the classroom section
-            'section_id' => $this->section_id,
-            // Foreign key identifying the academic subject
-            'subject_id' => $this->subject_id,
-            // Foreign key identifying the teacher who conducted the assessment
-            'teacher_id' => $this->teacher_id,
-            // Examination milestone type (e.g., 'diagnostic', 'term_exam')
-            'type' => $this->type,
-            // Maximum test items casting to integer to prevent string transmission
-            'total_items' => (int) $this->total_items,
-            // Student raw score list stored and serialized as a JSON numeric array
-            'raw_scores' => $this->raw_scores,
-            // Count of participating students casting to integer
-            'no_of_entries' => (int) $this->no_of_entries,
-            // Calculated sample arithmetic mean casting to float
-            'mean' => (float) $this->mean,
-            // Calculated Mean Percentage Score percentage casting to float
-            'mps' => (float) $this->mps,
-            // Calculated population standard deviation casting to float
-            'sd' => (float) $this->sd,
-            // Peak student score achieved casting to float
-            'highest_score' => (float) $this->highest_score,
-            // Lowest student score recorded casting to float
-            'lowest_score' => (float) $this->lowest_score,
-            // Curriculum competency item identified as least mastered by students
-            'least_learned_competency' => $this->least_learned_competency,
-            // DepEd standardized qualitative performance remark (e.g., 'Moving Towards Mastery')
-            'remarks' => $this->remarks,
-            // Conditionally include teacher relation data if eagerly loaded by controller query
-            'teacher' => $this->whenLoaded('teacher'),
-            // Conditionally include section relation data if eagerly loaded
-            'section' => $this->whenLoaded('section'),
-            // Conditionally include subject relation data if eagerly loaded
-            'subject' => $this->whenLoaded('subject'),
-            // Conditionally include grade level relation data if eagerly loaded
-            'grade_level' => $this->whenLoaded('gradeLevel'),
-            // Conditionally include term relation data if eagerly loaded
-            'term' => $this->whenLoaded('term'),
-            // Format record creation and update timestamps to standard ISO datetime strings
-            'created_at' => $this->created_at?->toDateTimeString(),
-            'updated_at' => $this->updated_at?->toDateTimeString(),
+            'id' => $this->id, // Primary key of the assessment record
+            'school_year_id' => $this->school_year_id, // Associated school year id
+            'term_id' => $this->term_id, // Academic term id (e.g. 1st, 2nd, or 3rd term)
+            'grade_level_id' => $this->grade_level_id, // Grade level id (Grade 7 to 10)
+            'section_id' => $this->section_id, // Section id
+            'subject_id' => $this->subject_id, // Subject id
+            'teacher_id' => $this->teacher_id, // Id of the teacher who encoded this record
+            'type' => $this->type, // Assessment type: diagnostic or term_exam
+            'total_items' => (int) $this->total_items, // Total exam items cast as integer
+            'raw_scores' => $this->raw_scores, // Array of student exam scores
+            'no_of_entries' => (int) $this->no_of_entries, // Count of students who took the exam
+            'mean' => (float) $this->mean, // Calculated arithmetic average score
+            'mps' => (float) $this->mps, // Mean Percentage Score percentage
+            'sd' => (float) $this->sd, // Population standard deviation
+            'highest_score' => (float) $this->highest_score, // Highest score achieved in class
+            'lowest_score' => (float) $this->lowest_score, // Lowest score recorded in class
+            'least_learned_competency' => $this->least_learned_competency, // Competency item needing review
+            'remarks' => $this->remarks, // Qualitative completion or mastery remarks
+            'teacher' => $this->whenLoaded('teacher'), // Teacher relation when loaded
+            'section' => $this->whenLoaded('section'), // Section relation when loaded
+            'subject' => $this->whenLoaded('subject'), // Subject relation when loaded
+            'grade_level' => $this->whenLoaded('gradeLevel'), // Grade level relation when loaded
+            'term' => $this->whenLoaded('term'), // Term relation when loaded
+            'created_at' => $this->created_at?->toDateTimeString(), // Record creation timestamp
+            'updated_at' => $this->updated_at?->toDateTimeString(), // Record last updated timestamp
         ];
     }
 }

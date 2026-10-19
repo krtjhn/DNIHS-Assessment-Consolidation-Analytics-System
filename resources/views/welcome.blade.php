@@ -33,7 +33,7 @@
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])
 </head>
 <body class="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] antialiased selection:bg-[#0071E3] selection:text-white">
-    <!-- + Root element kung saan nag-ma-mount ang React SPA -->
+    <!-- Root mount point for the React single-page application -->
     <div id="root"></div>
 </body>
 </html>

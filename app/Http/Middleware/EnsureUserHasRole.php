@@ -1,63 +1,56 @@
 <?php
 
-// Declare strict PHP syntax for role authorization middleware
-
 namespace App\Http\Middleware;
 
-// Import Closure class to pass request down the middleware execution pipeline
 use Closure;
-// Import incoming HTTP request contract
 use Illuminate\Http\Request;
-// Import Symfony HTTP response contract
 use Symfony\Component\HttpFoundation\Response;
 
-// EnsureUserHasRole intercepts incoming HTTP requests to enforce Role-Based Access Control (RBAC)
+// Check if the logged-in user has at least one of the required roles
 class EnsureUserHasRole
 {
-    // Handle incoming HTTP request and verify authenticated user possesses at least one authorized role
+    // Handle the incoming request and check user roles
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        // Retrieve the currently authenticated user instance via Sanctum token
-        $user = $request->user();
+        $user = $request->user(); // Get currently authenticated user instance
 
-        // Reject immediately if no authenticated user session or token exists
+        // Deny access if the user is not logged in
         if (! $user) {
-            // Return HTTP 401 Unauthorized response
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json(['message' => 'Unauthenticated.'], 401); // 401 Unauthorized response
         }
 
-        // Initialize authorization flag tracking whether user matches any allowed role
-        $hasAnyRole = false;
+        $hasAnyRole = false; // Initialize role match flag
 
-        // Iterate through all specified authorized role arguments passed to middleware
+        // Check each role passed to the middleware (supports commas or pipes like 'teacher,system_admin')
         foreach ($roles as $role) {
-            // Split multiple roles separated by commas or pipe symbols (e.g., 'admin,teacher' or 'admin|teacher')
-            $splitRoles = preg_split('/[,|]/', $role);
+            $splitRoles = preg_split('/[,|]/', $role); // Split by comma or pipe
 
-            // Check each parsed role slug
             foreach ($splitRoles as $r) {
-                // Determine whether user possesses this specific role via User::hasRole()
                 if ($user->hasRole(trim($r))) {
-                    // Set authorization flag to true when match is found
-                    $hasAnyRole = true;
-                    // Break out of both outer and inner loops immediately on first valid role match
-                    break 2;
+                    $hasAnyRole = true; // Match found
+                    break 2; // Exit both loops immediately
                 }
             }
         }
 
-        // If the authenticated user does not possess any of the authorized roles
+        // Return a 403 error if the user does not have any allowed role
         if (! $hasAnyRole) {
-            // Join authorized roles with human-readable 'or' conjunction for error diagnostics
-            $roleList = implode(' or ', $roles);
+            $flattenedRoles = []; // Collect individual role names for error message
+            foreach ($roles as $role) {
+                foreach (preg_split('/[,|]/', $role) as $r) {
+                    $trimmed = trim($r); // Trim whitespace
+                    if ($trimmed !== '') {
+                        $flattenedRoles[] = $trimmed; // Add non-empty role name
+                    }
+                }
+            }
+            $roleList = implode(' or ', array_unique($flattenedRoles)); // Format readable role list
 
-            // Return HTTP 403 Forbidden response explaining role restriction
             return response()->json([
-                'message' => "Access denied. Only {$roleList} accounts are authorized for this action.",
+                'message' => "Access denied. Only {$roleList} accounts are authorized for this action.", // 403 Forbidden message
             ], 403);
         }
 
-        // Allow authorized request to proceed to next middleware or target controller action
-        return $next($request);
+        return $next($request); // Allow request to proceed to the controller
     }
 }

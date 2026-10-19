@@ -127,8 +127,7 @@ export const api = {
                 endpoint.includes('/school-years') ||
                 endpoint.includes('/terms') ||
                 endpoint.includes('/sections') ||
-                endpoint.includes('/assignments') ||
-                endpoint.includes('/teacher-assignments')
+                endpoint.includes('/assignments')
             ) {
                 clearApiCache();
             }

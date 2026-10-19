@@ -12,124 +12,102 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-// Authentication Controller managing user self-registration, Sanctum token issuance, and account lifecycle states
+// Handles user registration, login, logout, and profile checks
 class AuthController extends Controller
 {
-    // Register a new faculty account with pending administrator approval status
+    // Register a new teacher account awaiting administrator approval
     public function register(RegisterRequest $request): JsonResponse
     {
-        // Extract validated registration attributes (name, institutional email, confirmed password)
-        $validated = $request->validated();
+        $validated = $request->validated(); // Get validated registration data
 
-        // Create the user account with inactive status and pending approval flag
+        // Create the teacher account with pending status
         $user = User::create([
-            // Full name of faculty member
-            'name' => $validated['name'],
-            // Official DepEd institutional email address
-            'email' => $validated['email'],
-            // Securely hash password using bcrypt before saving
-            'password' => Hash::make($validated['password']),
-            // Inactive by default until approved by school administrator
-            'is_active' => false,
-            // Explicit pending approval lifecycle state
-            'approval_status' => 'pending',
+            'name' => $validated['name'], // Teacher full name
+            'email' => $validated['email'], // Teacher email address
+            'password' => Hash::make($validated['password']), // Securely hash password
+            'is_active' => false, // Inactive until admin approves
+            'approval_status' => 'pending', // Pending approval status
         ]);
 
-        // Query the standard teacher role from the database
-        $role = Role::where('name', 'teacher')->first();
+        // Assign the teacher role
+        $role = Role::where('name', 'teacher')->first(); // Fetch teacher role model
         if ($role) {
-            // Attach teacher role to user in role_user pivot table
-            $user->roles()->attach($role->id);
+            $user->roles()->attach($role->id); // Attach teacher role in pivot table
         }
 
-        // Return 201 Created response notifying applicant of pending administrative review
         return response()->json([
-            // Success confirmation message
-            'message' => 'Registration submitted successfully. Your account is pending administrator approval before you can sign in.',
-            // Client flag indicating login requires administrator clearance
-            'requires_approval' => true,
-            // Basic applicant profile summary
+            'message' => 'Registration submitted successfully. Your account is pending administrator approval before you can sign in.', // Success message
+            'requires_approval' => true, // Flag indicating approval is required
             'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'approval_status' => 'pending',
+                'id' => $user->id, // User id
+                'name' => $user->name, // Full name
+                'email' => $user->email, // Email address
+                'approval_status' => 'pending', // Pending status
             ],
         ], 201);
     }
 
-    // Authenticate user credentials and issue Laravel Sanctum Bearer token
+    // Authenticate user credentials and return an API token
     public function login(LoginRequest $request): JsonResponse
     {
-        // Extract validated credentials from LoginRequest
-        $validated = $request->validated();
+        $validated = $request->validated(); // Retrieve validated login credentials
 
-        // Find user by institutional email address
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::where('email', $validated['email'])->first(); // Find user by email
 
-        // Verify that the user exists and the provided plaintext password matches the stored bcrypt hash
+        // Check if user exists and password is correct
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
-            // Throw standard validation exception resulting in HTTP 422 Unprocessable Entity
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials do not match our records.'],
+                'email' => ['The provided credentials do not match our records.'], // Authentication failure
             ]);
         }
 
-        // Safeguard: Check if account registration is still awaiting administrator approval
+        // Check if registration is still pending approval
         if ($user->approval_status === 'pending') {
             return response()->json([
-                'message' => 'Your account registration is currently pending administrator approval. Please wait for an administrator to activate your account.',
+                'message' => 'Your account registration is currently pending administrator approval. Please wait for an administrator to activate your account.', // Pending message
             ], 403);
         }
 
-        // Safeguard: Check if account registration was explicitly rejected by the administrator
+        // Check if registration was rejected
         if ($user->approval_status === 'rejected') {
             return response()->json([
-                'message' => 'Your account registration was not approved. Please contact the school administrator.',
+                'message' => 'Your account registration was not approved. Please contact the school administrator.', // Rejected message
             ], 403);
         }
 
-        // Safeguard: Check if account has been suspended or deactivated
+        // Check if account has been deactivated
         if (! $user->is_active) {
             return response()->json([
-                'message' => 'Your account has been deactivated. Please contact the administrator.',
+                'message' => 'Your account has been deactivated. Please contact the administrator.', // Deactivated message
             ], 403);
         }
 
-        // Generate personal access token using Laravel Sanctum for API authorization
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Create access token
+        $token = $user->createToken('auth_token')->plainTextToken; // Issue Sanctum bearer token
 
-        // Return HTTP 200 response with Bearer token and user profile including assigned roles
         return response()->json([
-            // Login confirmation message
-            'message' => 'Login successful.',
-            // Sanctum plaintext bearer token
-            'access_token' => $token,
-            // Standard OAuth token type
-            'token_type' => 'Bearer',
-            // Authenticated user model with loaded roles
-            'user' => $user->load('roles'),
+            'message' => 'Login successful.', // Success confirmation
+            'access_token' => $token, // Sanctum bearer token string
+            'token_type' => 'Bearer', // Bearer authorization scheme
+            'user' => $user->load('roles'), // Return user profile with roles loaded
         ]);
     }
 
-    // Revoke the user's current personal access token upon logout
+    // Revoke the user token on logout
     public function logout(Request $request): JsonResponse
     {
-        // Delete current active access token from personal_access_tokens table
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()->delete(); // Invalidate active Sanctum token
 
-        // Return confirmation of successful session termination
         return response()->json([
-            'message' => 'Logged out successfully.',
+            'message' => 'Logged out successfully.', // Logout confirmation
         ]);
     }
 
-    // Return the profile and role details of the currently authenticated user
+    // Return the profile of the logged-in user
     public function me(Request $request): JsonResponse
     {
-        // Return authenticated user model with eager-loaded role permissions
         return response()->json([
-            'user' => $request->user()->load('roles'),
+            'user' => $request->user()->load('roles'), // Return current user with roles
         ]);
     }
 }

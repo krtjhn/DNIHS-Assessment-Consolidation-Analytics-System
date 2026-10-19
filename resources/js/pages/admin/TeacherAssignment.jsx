@@ -218,11 +218,13 @@ function AddClassForm({
                 {/* Class Already Taken Banner */}
                 {currentConflict && (
                     <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900 font-medium flex items-center gap-2.5">
-                        <span className="text-sm leading-none shrink-0 font-bold text-rose-700">⛔</span>
+                        <svg className="size-4 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
                         <div>
-                            <strong>Bawal: Nakuha na ang klaseng ito.</strong> Kasalukuyan itong hawak ni{' '}
-                            <span className="font-bold underline">{currentConflict.teacher?.name || 'ibang guro'}</span>.
-                            Hindi na maaaring i-assign ang klaseng may nakatalaga na. Paki-remove muna ang existing assignment sa ibaba kung nais itong ilipat.
+                            <strong>Conflict: Class is already assigned.</strong> This class is currently allocated to{' '}
+                            <span className="font-bold underline">{currentConflict.teacher?.name || 'another faculty member'}</span>.
+                            Classes with an active faculty assignment cannot be reassigned. Please remove the existing assignment below if you wish to transfer this class.
                         </div>
                     </div>
                 )}
@@ -507,7 +509,7 @@ export default function TeacherAssignment() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center p-12">
-                <LoadingIndicator type="dot-circle" size="md" label="Loading faculty matrix…" />
+                <LoadingIndicator type="dot-circle" size="md" label="Loading..." />
             </div>
         );
     }
@@ -566,7 +568,9 @@ export default function TeacherAssignment() {
                         onClick={() => setNotice(null)}
                         className="p-1 rounded hover:opacity-75 focus-visible:outline-none"
                     >
-                        ✕
+                        <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
             )}

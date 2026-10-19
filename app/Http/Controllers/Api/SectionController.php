@@ -10,80 +10,67 @@ use App\Models\Section;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-// Section Controller managing class sections, grade-level allocations, and historical assessment retention safeguards
+// Manages class sections and ensures sections with scores cannot be deleted
 class SectionController extends Controller
 {
-    // List all sections filtered optionally by school year or grade level
+    // List all sections with optional filters for school year and grade level
     public function index(Request $request): JsonResponse
     {
-        // Build section query with eager-loaded gradeLevel and schoolYear relationships
-        $query = Section::with(['gradeLevel', 'schoolYear'])
-            // Filter by school year if provided in query string
-            ->when($request->filled('school_year_id'), fn ($q) => $q->where('school_year_id', $request->school_year_id))
-            // Filter by grade level if provided in query string
-            ->when($request->filled('grade_level_id'), fn ($q) => $q->where('grade_level_id', $request->grade_level_id));
+        $query = Section::with(['gradeLevel', 'schoolYear']) // Eager load related grade level and school year
+            ->when($request->filled('school_year_id'), fn ($q) => $q->where('school_year_id', $request->school_year_id)) // Filter by school year
+            ->when($request->filled('grade_level_id'), fn ($q) => $q->where('grade_level_id', $request->grade_level_id)); // Filter by grade level
 
-        // Execute query ordered hierarchically by grade level and alphabetically by section name
-        $sections = $query->orderBy('grade_level_id')->orderBy('name')->get();
+        $sections = $query->orderBy('grade_level_id')->orderBy('name')->get(); // Sort sections by grade then name
 
-        // Return formatted collection of sections wrapped in SectionResource
         return response()->json([
-            'data' => SectionResource::collection($sections),
+            'data' => SectionResource::collection($sections), // Format collection through SectionResource
         ]);
     }
 
-    // Create a new section under a specific grade level and school year
+    // Create a new section
     public function store(StoreSectionRequest $request): JsonResponse
     {
-        // Persist validated section data into the database
-        $section = Section::create($request->validated());
+        $section = Section::create($request->validated()); // Create new section record
 
-        // Return 201 Created response with newly created section and loaded relationships
         return response()->json([
-            'message' => 'Section created successfully.',
-            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
+            'message' => 'Section created successfully.', // Creation confirmation
+            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])), // Return formatted resource
         ], 201);
     }
 
-    // View specific section details and academic relationships
+    // View details of a single section
     public function show(Section $section): JsonResponse
     {
-        // Return single section resource with loaded grade level and school year models
         return response()->json([
-            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
+            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])), // Return formatted resource
         ]);
     }
 
-    // Update section name or active status
+    // Update section details
     public function update(UpdateSectionRequest $request, Section $section): JsonResponse
     {
-        // Update section attributes using validated input from UpdateSectionRequest
-        $section->update($request->validated());
+        $section->update($request->validated()); // Save updated attributes
 
-        // Return success response with updated section resource
         return response()->json([
-            'message' => 'Section updated successfully.',
-            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])),
+            'message' => 'Section updated successfully.', // Update confirmation
+            'data' => new SectionResource($section->load(['gradeLevel', 'schoolYear'])), // Return updated resource
         ]);
     }
 
-    // Delete section, preventing deletion if historical assessment records exist
+    // Delete a section only if it has no recorded scores
     public function destroy(Section $section): JsonResponse
     {
-        // Integrity safeguard: Check if section contains existing student assessment score sheets
+        // Stop deletion if students already have scores recorded in this section
         if ($section->assessmentRecords()->exists()) {
-            // Reject deletion with HTTP 422 to protect historical academic records from accidental data loss
             return response()->json([
-                'message' => 'Cannot delete section because it contains recorded assessment scores. Archive or deactivate the section instead to preserve historical records.',
+                'message' => 'Cannot delete section because it contains recorded assessment scores. Archive or deactivate the section instead to preserve historical records.', // Data integrity guard
             ], 422);
         }
 
-        // Permanently delete section if no assessment records depend on it
-        $section->delete();
+        $section->delete(); // Soft delete the section
 
-        // Return success message confirming deletion
         return response()->json([
-            'message' => 'Section deleted successfully.',
+            'message' => 'Section deleted successfully.', // Deletion confirmation
         ]);
     }
 }

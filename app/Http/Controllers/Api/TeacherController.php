@@ -12,171 +12,145 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-// Teacher Controller managing faculty provisioning, registration approval workflow, and account deactivation
+// Manages teacher accounts, approvals, rejections, and deactivations
 class TeacherController extends Controller
 {
-    // List faculty accounts, filter by active status, and calculate active teaching loads count
+    // List teacher accounts with optional inactive filter and active load count
     public function index(Request $request): JsonResponse
     {
-        // Check if the administrator requested to include inactive/pending faculty members
-        $includeInactive = $request->boolean('include_inactive');
+        $includeInactive = $request->boolean('include_inactive'); // Parse include_inactive boolean query param
 
-        // Query users with the teacher role
         $teachers = User::query()
-            // Restrict query to users assigned the teacher role
-            ->whereHas('roles', fn ($query) => $query->where('name', 'teacher'))
-            // If include_inactive is false, filter only active and approved accounts
-            ->when(! $includeInactive, fn ($query) => $query->where('is_active', true)->where('approval_status', 'approved'))
-            // Eagerly compute the count of currently active teaching assignments per teacher
+            ->whereHas('roles', fn ($query) => $query->where('name', 'teacher')) // Filter users with teacher role
+            ->when(! $includeInactive, fn ($query) => $query->where('is_active', true)->where('approval_status', 'approved')) // Default active and approved
             ->withCount([
-                'teachingAssignments as active_loads_count' => fn ($query) => $query->active(),
+                'teachingAssignments as active_loads_count' => fn ($query) => $query->active(), // Count active class assignments
             ])
-            // Sort faculty list alphabetically by name
-            ->orderBy('name')
-            // Select only necessary attributes for account management
-            ->get(['id', 'name', 'email', 'is_active', 'approval_status', 'approved_at', 'created_at']);
+            ->orderBy('name') // Sort alphabetically by teacher name
+            ->get(['id', 'name', 'email', 'email_verified_at', 'is_active', 'approval_status', 'approved_at', 'created_at']); // Specific columns
 
-        // Return faculty accounts list
         return response()->json([
-            'data' => $teachers,
+            'data' => $teachers, // Return teacher list
         ]);
     }
 
-    // Directly provision a new faculty account with immediate approval and activation
+    // Directly create an active teacher account as administrator
     public function store(StoreTeacherRequest $request): JsonResponse
     {
-        // Extract validated teacher attributes from StoreTeacherRequest
-        $validated = $request->validated();
+        $validated = $request->validated(); // Get validated payload
 
-        // Create faculty user account with pre-approved and active status
         $teacher = User::create([
-            // Full name of faculty member
-            'name' => $validated['name'],
-            // Institutional email address
-            'email' => $validated['email'],
-            // Hash password securely using bcrypt
-            'password' => Hash::make($validated['password']),
-            // Set account to active immediately
-            'is_active' => true,
-            // Mark approval status as approved
-            'approval_status' => 'approved',
-            // Record current timestamp as approval date
-            'approved_at' => now(),
+            'name' => $validated['name'], // Teacher full name
+            'email' => $validated['email'], // Teacher email
+            'password' => Hash::make($validated['password']), // Securely hash password
+            'is_active' => true, // Directly activate account
+            'approval_status' => 'approved', // Pre-approve account
+            'approved_at' => now(), // Approval timestamp
+            'email_verified_at' => now(), // Verification timestamp
         ]);
 
-        // Find standard teacher role in database
-        $teacherRole = Role::where('name', 'teacher')->first();
+        $teacherRole = Role::where('name', 'teacher')->first(); // Fetch teacher role model
         if ($teacherRole) {
-            // Assign teacher role in role_user pivot table
-            $teacher->roles()->attach($teacherRole->id);
+            $teacher->roles()->attach($teacherRole->id); // Attach role in pivot table
         }
 
-        // Return 201 Created response containing newly provisioned teacher model
         return response()->json([
-            'message' => 'Faculty member account provisioned successfully.',
-            'data' => $teacher->load('roles'),
+            'message' => 'Faculty member account provisioned successfully.', // Success message
+            'data' => $teacher->load('roles'), // Return user with roles
         ], 201);
     }
 
-    // Approve a pending self-registered faculty account
+    // Approve a pending self-registered teacher
     public function approve(User $teacher): JsonResponse
     {
-        // Safeguard: Verify target user possesses the teacher role
         if (! $teacher->hasRole('teacher')) {
             return response()->json([
-                'message' => 'Only teacher registrations can be approved.',
+                'message' => 'Only teacher registrations can be approved.', // Validation error
             ], 422);
         }
 
-        // Update account to approved and active status with approval timestamp
         $teacher->update([
-            'approval_status' => 'approved',
-            'approved_at' => now(),
-            'is_active' => true,
+            'approval_status' => 'approved', // Mark approved
+            'approved_at' => now(), // Record approval timestamp
+            'is_active' => true, // Enable login access
+            'email_verified_at' => $teacher->email_verified_at ?? now(), // Verify email
         ]);
 
-        // Return success response confirming account activation
         return response()->json([
-            'message' => "Registration for {$teacher->name} has been approved and activated.",
-            'data' => $teacher,
+            'message' => "Registration for {$teacher->name} has been approved and activated.", // Approval confirmation
+            'data' => $teacher, // Return updated model
         ]);
     }
 
-    // Reject a pending self-registration request
+    // Reject a pending self-registered teacher
     public function reject(User $teacher): JsonResponse
     {
-        // Safeguard: Ensure user is a teacher and cannot reject an administrator
+        // Do not allow rejecting an administrator
         if (! $teacher->hasRole('teacher') || $teacher->hasRole('system_admin')) {
             return response()->json([
-                'message' => 'Only teacher registrations can be rejected.',
+                'message' => 'Only teacher registrations can be rejected.', // Guard against admin rejection
             ], 422);
         }
 
-        // Update account state to rejected and deactivated
         $teacher->update([
-            'approval_status' => 'rejected',
-            'is_active' => false,
+            'approval_status' => 'rejected', // Mark rejected
+            'is_active' => false, // Ensure account cannot log in
         ]);
 
-        // Return confirmation that the applicant was rejected
         return response()->json([
-            'message' => "Registration for {$teacher->name} was rejected.",
-            'data' => $teacher,
+            'message' => "Registration for {$teacher->name} was rejected.", // Rejection confirmation
+            'data' => $teacher, // Return updated model
         ]);
     }
 
-    // Reactivate a previously deactivated faculty account
+    // Reactivate a deactivated teacher account
     public function reactivate(User $teacher): JsonResponse
     {
-        // Safeguard: Ensure only faculty accounts can be reactivated
         if (! $teacher->hasRole('teacher')) {
             return response()->json([
-                'message' => 'Only teacher accounts can be reactivated.',
+                'message' => 'Only teacher accounts can be reactivated.', // Guard check
             ], 422);
         }
 
-        // Restore active status and preserve or set approval timestamp
         $teacher->update([
-            'is_active' => true,
-            'approval_status' => 'approved',
-            'approved_at' => $teacher->approved_at ?? now(),
+            'is_active' => true, // Restore active status
+            'approval_status' => 'approved', // Ensure approved status
+            'approved_at' => $teacher->approved_at ?? now(), // Preserve or set approval date
+            'email_verified_at' => $teacher->email_verified_at ?? now(), // Preserve or set email verification
         ]);
 
-        // Return confirmation that account was successfully restored
         return response()->json([
-            'message' => "Teacher account for {$teacher->name} was restored successfully.",
-            'data' => $teacher,
+            'message' => "Teacher account for {$teacher->name} was restored successfully.", // Restoration confirmation
+            'data' => $teacher, // Return updated model
         ]);
     }
 
-    // Deactivate a faculty account while strictly preserving all historical student assessment records
+    // Deactivate a teacher account while preserving their past score sheets
     public function destroy(User $teacher): JsonResponse
     {
-        // Safeguard: Prevent deleting system administrators or non-teacher accounts
+        // Do not allow deactivating an administrator
         if (! $teacher->hasRole('teacher') || $teacher->hasRole('system_admin')) {
             return response()->json([
-                'message' => 'Only teacher accounts without administrator access can be removed.',
+                'message' => 'Only teacher accounts without administrator access can be removed.', // Guard check
             ], 422);
         }
 
-        // Execute deactivation procedures within a database transaction
         DB::transaction(function () use ($teacher): void {
-            // End all active teaching assignments by timestamping effective_until date
+            // End all active teaching assignments
             TeachingAssignment::query()
                 ->where('user_id', $teacher->id)
                 ->active()
-                ->update(['effective_until' => now()->toDateString()]);
+                ->update(['effective_until' => now()->toDateString()]); // Close assignments
 
-            // Revoke all existing Sanctum API access tokens to terminate active sessions
-            $teacher->tokens()->delete();
+            // Log out the user by deleting all active tokens
+            $teacher->tokens()->delete(); // Revoke Sanctum tokens
 
-            // Mark user account as inactive
-            $teacher->update(['is_active' => false]);
+            // Mark account as inactive
+            $teacher->update(['is_active' => false]); // Disable account login
         });
 
-        // Return confirmation explaining that historical assessment score records remain intact
         return response()->json([
-            'message' => 'Teacher account removed. Historical assessment records were preserved.',
+            'message' => 'Teacher account removed. Historical assessment records were preserved.', // Confirmation
         ]);
     }
 }

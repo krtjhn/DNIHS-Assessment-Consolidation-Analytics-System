@@ -4,222 +4,173 @@ namespace App\Services;
 
 use Illuminate\Support\Collection;
 
-// Service responsible for all DepEd statistical calculations and performance mastery classifications
+// Handles DepEd score calculations and mastery level classifications
 class StatsCalculatorService
 {
-    // Compute examination statistics, Mean Percentage Score (MPS), standard deviation, and DepEd 7-level mastery classification
+    // Calculate assessment stats: Mean, MPS, Standard Deviation, and DepEd Mastery Level
     public function calculate(array $scores, int|float $totalItems = 50): array
     {
-        // Filter input array to extract only valid numeric student scores, ignoring empty or null submissions
-        $validScores = array_values(array_filter($scores, fn ($s) => is_numeric($s)));
+        // Filter out non-numeric values
+        $validScores = array_values(array_filter($scores, fn ($s) => is_numeric($s))); // Keep only numeric scores
+        $n = count($validScores); // Count number of valid examinees
 
-        // Count total number of valid examinees who took the test
-        $n = count($validScores);
-
-        // Guard clause: Return zeroed baseline metrics if no valid examinee scores were provided
+        // Return empty stats if no valid scores are given
         if ($n === 0) {
             return [
-                // Set examinee count to 0 when list is empty
-                'no_of_entries' => 0,
-                // Default arithmetic mean to 0.0
-                'mean' => 0.0,
-                // Default Mean Percentage Score to 0.0%
-                'mps' => 0.0,
-                // Default standard deviation to 0.0
-                'sd' => 0.0,
-                // Default highest score recorded to 0.0
-                'highest_score' => 0.0,
-                // Default lowest score recorded to 0.0
-                'lowest_score' => 0.0,
-                // Preserve the designated total test items for the assessment
-                'total_items' => (int) $totalItems,
-                // Assign Pending mastery status pending student score encoding
-                'mastery_level' => 'Pending',
+                'no_of_entries' => 0, // Zero examinees
+                'mean' => 0.0, // Zero mean
+                'mps' => 0.0, // Zero MPS
+                'sd' => 0.0, // Zero standard deviation
+                'highest_score' => 0.0, // Zero high score
+                'lowest_score' => 0.0, // Zero low score
+                'total_items' => (int) $totalItems, // Target item count
+                'mastery_level' => 'Pending', // Pending mastery status
             ];
         }
 
-        // Ensure totalItems is a positive non-zero float to prevent division-by-zero errors in MPS calculation
-        $totalItems = (float) $totalItems > 0 ? (float) $totalItems : 50.0;
+        // Avoid division by zero by ensuring total items is at least 50 if zero or negative
+        $totalItems = (float) $totalItems > 0 ? (float) $totalItems : 50.0; // Fallback to 50 items
 
-        // Calculate arithmetic mean: sum of all examinee scores divided by total number of examinees (x̄ = Σx / N)
-        $mean = array_sum($validScores) / $n;
+        // Formula: Mean = Sum of all scores / Number of students
+        $mean = array_sum($validScores) / $n; // Arithmetic mean
 
-        // Calculate Mean Percentage Score (MPS): (arithmetic mean / total test items) * 100%
-        $mps = ($mean / $totalItems) * 100.0;
+        // Formula: Mean Percentage Score (MPS) = (Mean / Total Items) * 100
+        $mps = ($mean / $totalItems) * 100.0; // DepEd MPS percentage
 
-        // Calculate population variance: sum of squared differences from the mean divided by N (σ² = Σ(x - x̄)² / N)
+        // Formula: Population Variance = Sum of squared differences from the mean / N
         $variance = array_reduce(
             $validScores,
             fn ($carry, $x) => $carry + ($x - $mean) ** 2,
             0.0
-        ) / $n;
+        ) / $n; // Population variance
 
-        // Calculate population standard deviation: square root of population variance (σ = √σ²)
-        $sd = sqrt($variance);
+        // Formula: Population Standard Deviation = Square root of variance
+        $sd = sqrt($variance); // Standard deviation
 
-        // Map computed MPS percentage to official DepEd 7-level mastery descriptor
-        $masteryLevel = $this->classifyMasteryLevel($mps);
+        // Get the official DepEd 7-bracket verbal interpretation
+        $masteryLevel = $this->classifyMasteryLevel($mps); // Mastery classification
 
-        // Return structured associative array of rounded statistics conforming to DepEd assessment standards
         return [
-            // Total number of students who completed the assessment
-            'no_of_entries' => $n,
-            // Arithmetic mean rounded to two decimal places
-            'mean' => round($mean, 2),
-            // Mean Percentage Score rounded to two decimal places
-            'mps' => round($mps, 2),
-            // Population standard deviation rounded to two decimal places
-            'sd' => round($sd, 2),
-            // Highest individual raw score attained among examinees
-            'highest_score' => round(max($validScores), 2),
-            // Lowest individual raw score attained among examinees
-            'lowest_score' => round(min($validScores), 2),
-            // Maximum total score possible on the examination
-            'total_items' => (int) $totalItems,
-            // Official DepEd verbal interpretation bracket for learner mastery
-            'mastery_level' => $masteryLevel,
+            'no_of_entries' => $n, // Number of students
+            'mean' => round($mean, 2), // Mean rounded to 2 decimal places
+            'mps' => round($mps, 2), // MPS rounded to 2 decimal places
+            'sd' => round($sd, 2), // SD rounded to 2 decimal places
+            'highest_score' => round(max($validScores), 2), // Maximum score achieved
+            'lowest_score' => round(min($validScores), 2), // Minimum score recorded
+            'total_items' => (int) $totalItems, // Total test items
+            'mastery_level' => $masteryLevel, // DepEd mastery descriptor
         ];
     }
 
-    // Determine official DepEd 7-level mastery verbal interpretation from Mean Percentage Score (MPS)
+    // Classify MPS percentage into official DepEd 7-level mastery descriptors
     public function classifyMasteryLevel(float $mps): string
     {
-        // Evaluate MPS against official Department of Education mastery benchmark brackets
         return match (true) {
-            // Scores between 96% and 100% represent full mastery of the competencies tested
-            $mps >= 96.0 => 'Mastered',
-            // Scores between 86% and 95.99% demonstrate near-complete mastery
-            $mps >= 86.0 => 'Closely Approximating Mastery',
-            // Scores between 66% and 85.99% demonstrate progressive learning approaching mastery
-            $mps >= 66.0 => 'Moving Towards Mastery',
-            // Scores between 35% and 65.99% represent average academic competence
-            $mps >= 35.0 => 'Average',
-            // Scores between 15% and 34.99% indicate low performance requiring instructional intervention
-            $mps >= 15.0 => 'Low',
-            // Scores between 5% and 14.99% represent very low competency requiring remedial instruction
-            $mps >= 5.0 => 'Very Low',
-            // Scores below 5% indicate critical lack of prerequisite knowledge
-            default => 'Absolutely No Mastery',
+            $mps >= 96.0 => 'Mastered', // 96.0% to 100.0%
+            $mps >= 86.0 => 'Closely Approximating Mastery', // 86.0% to 95.99%
+            $mps >= 66.0 => 'Moving Towards Mastery', // 66.0% to 85.99%
+            $mps >= 35.0 => 'Average', // 35.0% to 65.99%
+            $mps >= 15.0 => 'Low', // 15.0% to 34.99%
+            $mps >= 5.0 => 'Very Low', // 5.0% to 14.99%
+            default => 'Absolutely No Mastery', // Below 5.0%
         };
     }
 
-    // Compute consolidated statistics across multiple assessment records using mathematically sound pooled variance
+    // Calculate consolidated statistics across multiple class sections
     public function summarizeConsolidation(Collection $records): array
     {
-        // Count number of section assessment records included in this consolidation grouping
-        $count = $records->count();
+        $count = $records->count(); // Total section records encoded
+        $totalExaminees = (int) $records->sum('no_of_entries'); // Total student count across all sections
 
-        // Calculate grand total of all students tested across all included sections
-        $totalExaminees = (int) $records->sum('no_of_entries');
-
-        // Guard clause: Return zeroed summary metrics if collection is empty or has zero examinees
+        // Return empty summary if there are no records or students
         if ($count === 0 || $totalExaminees === 0) {
             return [
-                'total_sections_encoded' => $count,
-                'total_examinees' => 0,
-                'overall_mean' => 0.00,
-                'overall_mps' => 0.00,
-                'overall_sd' => 0.00,
-                'overall_mastery' => 'Absolutely No Mastery',
+                'total_sections_encoded' => $count, // Count of sections
+                'total_examinees' => 0, // Zero total students
+                'overall_mean' => 0.00, // Zero overall mean
+                'overall_mps' => 0.00, // Zero overall MPS
+                'overall_sd' => 0.00, // Zero overall SD
+                'overall_mastery' => 'Absolutely No Mastery', // Default zero-mastery descriptor
             ];
         }
 
-        // Initialize array to aggregate raw score vectors from individual records where available
-        $allRawScores = [];
+        // Collect all individual raw student scores when available
+        $allRawScores = []; // Array to hold all raw scores
 
-        // Loop through each assessment record in the collection
         foreach ($records as $record) {
-            // Decode raw score vector if stored as JSON string, or use directly if array
             $raw = is_array($record->raw_scores)
                 ? $record->raw_scores
-                : json_decode($record->raw_scores ?? '[]', true);
+                : json_decode($record->raw_scores ?? '[]', true); // Parse JSON raw scores
 
-            // Verify raw scores exist as an array before processing individual student entries
             if (is_array($raw)) {
-                // Collect valid numeric student scores into the consolidated vector
                 foreach ($raw as $score) {
                     if (is_numeric($score)) {
-                        $allRawScores[] = (float) $score;
+                        $allRawScores[] = (float) $score; // Append score to pooled array
                     }
                 }
             }
         }
 
-        // Method 1: If full raw score vectors are available for all examinees, perform exact population calculation
+        // Method 1: If full raw scores are available for every student, calculate exact overall mean and SD
         if (count($allRawScores) === $totalExaminees && $totalExaminees > 0) {
-            // Compute overall mean directly from the complete set of student scores
-            $overallMean = array_sum($allRawScores) / $totalExaminees;
+            $overallMean = array_sum($allRawScores) / $totalExaminees; // Exact pooled arithmetic mean
 
-            // Compute exact population variance across all examinee scores
             $variance = array_reduce(
                 $allRawScores,
                 fn ($carry, $score) => $carry + ($score - $overallMean) ** 2,
                 0.0
-            ) / $totalExaminees;
+            ) / $totalExaminees; // Exact pooled variance
 
-            // Compute overall standard deviation as square root of exact variance
-            $overallSd = sqrt($variance);
+            $overallSd = sqrt($variance); // Exact pooled standard deviation
+
+            // Compute overall weighted MPS from section MPS values
+            $sumWeightedMps = 0.0; // Weighted sum accumulator
+            foreach ($records as $r) {
+                $n = (int) ($r->no_of_entries ?? 0); // Student count for this section
+                $sumWeightedMps += (float) ($r->mps ?? 0.0) * ($n > 0 ? $n : 1); // Weighted MPS contribution
+            }
+            $overallMps = $totalExaminees > 0 ? ($sumWeightedMps / $totalExaminees) : 0.0; // Overall weighted MPS
         } else {
-            // Method 2: Use mathematically sound pooled weighted mean and pooled population variance
-            // Initialize accumulator for weighted sum of section means: Σ(mean_i * n_i)
-            $sumWeightedMean = 0.0;
+            // Method 2: Use mathematically sound pooled weighted mean, variance, and MPS in a single pass
+            $sumWeightedMean = 0.0; // Weighted mean accumulator
+            $sumWeightedMps  = 0.0; // Weighted MPS accumulator
             foreach ($records as $r) {
-                $n = (int) ($r->no_of_entries ?? 0);
-                $meanVal = (float) ($r->mean ?? 0.0);
-                $sumWeightedMean += $meanVal * ($n > 0 ? $n : 1);
-            }
-            // Overall weighted mean: Σ(mean_i * n_i) / Σn_i
-            $overallMean = $totalExaminees > 0 ? ($sumWeightedMean / $totalExaminees) : 0.0;
-
-            // Compute pooled variance accounting for both within-section variance and between-section dispersion:
-            // σ²_pooled = (1 / N) * Σ n_i * (σ_i² + (μ_i - μ)²)
-            $sumVarianceComponents = 0.0;
-            foreach ($records as $r) {
-                $n = (int) ($r->no_of_entries ?? 0);
-                $meanVal = (float) ($r->mean ?? 0.0);
-                $sdVal = (float) ($r->sd ?? 0.0);
-                $weight = $n > 0 ? $n : 1;
-
-                // Within-group variance: σ_i²
-                $varianceI = $sdVal ** 2;
-
-                // Between-group dispersion: (μ_i - μ)²
-                $betweenGroupI = ($meanVal - $overallMean) ** 2;
-
-                // Accumulate weighted combined variance component
-                $sumVarianceComponents += $weight * ($varianceI + $betweenGroupI);
+                $n = (int) ($r->no_of_entries ?? 0); // Student count
+                $weight = $n > 0 ? $n : 1; // Section weighting factor
+                $sumWeightedMean += (float) ($r->mean ?? 0.0) * $weight; // Weighted mean contribution
+                $sumWeightedMps  += (float) ($r->mps  ?? 0.0) * $weight; // Weighted MPS contribution
             }
 
-            // Divide accumulated components by total examinees to obtain exact pooled variance
-            $pooledVariance = $totalExaminees > 0 ? ($sumVarianceComponents / $totalExaminees) : 0.0;
+            // Weighted Mean = Sum(mean_i * n_i) / Total Students
+            $overallMean = $totalExaminees > 0 ? ($sumWeightedMean / $totalExaminees) : 0.0; // Weighted average score
+            $overallMps  = $totalExaminees > 0 ? ($sumWeightedMps  / $totalExaminees) : 0.0; // Weighted average percentage
 
-            // Standard deviation is the square root of pooled variance
-            $overallSd = sqrt($pooledVariance);
+            // Pooled Variance accounts for within-section variance and between-section difference
+            // Formula: (1 / N) * Sum( n_i * (sd_i^2 + (mean_i - overallMean)^2) )
+            $sumVarianceComponents = 0.0; // Variance accumulator
+            foreach ($records as $r) {
+                $n = (int) ($r->no_of_entries ?? 0); // Student count
+                $meanVal = (float) ($r->mean ?? 0.0); // Section mean
+                $sdVal   = (float) ($r->sd   ?? 0.0); // Section SD
+                $weight  = $n > 0 ? $n : 1; // Section weight
+
+                $varianceI = $sdVal ** 2; // Within-group variance
+                $betweenGroupI = ($meanVal - $overallMean) ** 2; // Between-group variance difference
+
+                $sumVarianceComponents += $weight * ($varianceI + $betweenGroupI); // Combined component
+            }
+
+            $pooledVariance = $totalExaminees > 0 ? ($sumVarianceComponents / $totalExaminees) : 0.0; // Pooled variance
+            $overallSd = sqrt($pooledVariance); // Pooled standard deviation
         }
 
-        // Calculate student-weighted overall Mean Percentage Score (MPS): Σ(mps_i * n_i) / Σn_i
-        $sumWeightedMps = 0.0;
-        foreach ($records as $r) {
-            $n = (int) ($r->no_of_entries ?? 0);
-            $mpsVal = (float) ($r->mps ?? 0.0);
-            $sumWeightedMps += $mpsVal * ($n > 0 ? $n : 1);
-        }
-        $overallMps = $totalExaminees > 0 ? ($sumWeightedMps / $totalExaminees) : 0.0;
-
-        // Return finalized consolidated statistical summary rounded for official reporting
         return [
-            // Total number of sections encoded in this report
-            'total_sections_encoded' => $count,
-            // Total student examinees included across all sections
-            'total_examinees' => $totalExaminees,
-            // Overall examinee-weighted arithmetic mean
-            'overall_mean' => round($overallMean, 2),
-            // Overall examinee-weighted Mean Percentage Score
-            'overall_mps' => round($overallMps, 2),
-            // Mathematically valid pooled standard deviation
-            'overall_sd' => round($overallSd, 2),
-            // Official DepEd verbal mastery classification for the consolidated group
-            'overall_mastery' => $this->classifyMasteryLevel($overallMps),
+            'total_sections_encoded' => $count, // Number of sections included
+            'total_examinees'        => $totalExaminees, // Total students evaluated
+            'overall_mean'           => round($overallMean, 2), // Overall mean to 2 decimals
+            'overall_mps'            => round($overallMps, 2), // Overall MPS to 2 decimals
+            'overall_sd'             => round($overallSd, 2), // Overall SD to 2 decimals
+            'overall_mastery'        => $this->classifyMasteryLevel($overallMps), // Consolidated mastery descriptor
         ];
     }
 }

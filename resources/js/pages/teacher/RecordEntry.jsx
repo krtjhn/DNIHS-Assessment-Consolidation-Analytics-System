@@ -3,6 +3,11 @@ import { api } from '../../api';
 import ScoreSheet from '../../components/ScoreSheet';
 import LoadingIndicator from '../../components/LoadingIndicator';
 
+// Build a consistent class display title from assignment or record data
+function buildClassTitle(gradeName, sectionName, subjectName) {
+    return `${gradeName} ${sectionName} - ${subjectName}`;
+}
+
 export default function RecordEntry({ user }) {
     const isTeacher = user?.roles?.some((r) => r.name === 'teacher');
 
@@ -61,7 +66,7 @@ export default function RecordEntry({ user }) {
             setTeacherAssignments(myClassesRes?.data || []);
             setExistingRecords(assessmentsRes.data || []);
         } catch (err) {
-            console.error('Error loading reference data:', err);
+            // ignore — loading state clears in finally
         } finally {
             setLoading(false);
         }
@@ -110,7 +115,7 @@ export default function RecordEntry({ user }) {
                 (assignment.section?.grade_level_id ? `Grade ${assignment.section.grade_level_id}` : 'Grade');
             const sectionName = assignment.section?.name || 'Section';
             const subjectName = assignment.subject?.name || 'Subject';
-            const classTitle = `${gradeName} ${sectionName} - ${subjectName}`;
+            const classTitle = buildClassTitle(gradeName, sectionName, subjectName);
 
             // Current Term Diagnostic Test
             const diagKey = `${activeTerm.id}-${assignment.section_id}-${assignment.subject_id}-diagnostic`;
@@ -158,7 +163,7 @@ export default function RecordEntry({ user }) {
                     (assignment.section?.grade_level_id ? `Grade ${assignment.section.grade_level_id}` : 'Grade');
                 const sectionName = assignment.section?.name || 'Section';
                 const subjectName = assignment.subject?.name || 'Subject';
-                const classTitle = `${gradeName} ${sectionName} - ${subjectName}`;
+                const classTitle = buildClassTitle(gradeName, sectionName, subjectName);
 
                 // Check Diagnostic Test for past term
                 const diagKey = `${pt.id}-${assignment.section_id}-${assignment.subject_id}-diagnostic`;
@@ -205,7 +210,7 @@ export default function RecordEntry({ user }) {
                 (r.section?.grade_level_id ? `Grade ${r.section.grade_level_id}` : 'Grade');
             const sectionName = r.section?.name || 'Section';
             const subjectName = r.subject?.name || 'Subject';
-            const classTitle = `${gradeName} ${sectionName} - ${subjectName}`;
+            const classTitle = buildClassTitle(gradeName, sectionName, subjectName);
             const foundTerm = r.term || refData.terms?.find((t) => t.id === r.term_id);
             const assessmentTitle =
                 r.type === 'diagnostic'

@@ -10,85 +10,76 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-// Eloquent Authenticatable Model representing system users (administrators and teachers)
+// Model for system users (teachers and administrators)
 class User extends Authenticatable
 {
-    // Traits: Sanctum token issuance, factory generation, notification delivery, and soft deletes
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes; // Traits for API tokens, factories, notifications, soft deletes
 
-    // Mass-assignable attributes permitted for create and update operations
     protected $fillable = [
-        // Full legal name of user
-        'name',
-        // Official institutional email address
-        'email',
-        // Encrypted password hash
-        'password',
-        // Active status flag: true for operational accounts, false for deactivated/pending accounts
-        'is_active',
-        // Account approval lifecycle state: pending, approved, or rejected
-        'approval_status',
-        // Timestamp when administrator approved the account
-        'approved_at',
+        'name', // Full name of user
+        'email', // Institutional or login email address
+        'password', // Hashed password string
+        'is_active', // Whether account is active (not deactivated)
+        'approval_status', // Account status: pending, approved, or rejected
+        'approved_at', // Date and time when admin approved account
+        'email_verified_at', // Email verification timestamp
     ];
 
-    // Hidden attributes excluded from serialized array and JSON representations
+    // Hide sensitive fields from JSON responses
     protected $hidden = [
-        // Hide password hash from API payloads
-        'password',
-        // Hide remember me authentication token
-        'remember_token',
+        'password', // Exclude password from serialized JSON
+        'remember_token', // Exclude remember token from serialized JSON
     ];
 
-    // Attribute type casting for date/time formatting, boolean flags, and password hashing
     protected function casts(): array
     {
         return [
-            // Cast email verification timestamp to Carbon datetime
-            'email_verified_at' => 'datetime',
-            // Automatically hash password attribute upon assignment
-            'password' => 'hashed',
-            // Cast is_active integer flag to boolean
-            'is_active' => 'boolean',
-            // Cast approval timestamp to Carbon datetime
-            'approved_at' => 'datetime',
+            'email_verified_at' => 'datetime', // Cast verification timestamp as Carbon datetime
+            'password' => 'hashed', // Automatically hash plain passwords on assignment
+            'is_active' => 'boolean', // Cast active flag as boolean
+            'approved_at' => 'datetime', // Cast approval timestamp as Carbon datetime
         ];
     }
 
-    // Relationship: Assigned roles connecting user to roles table through role_user pivot
+    // Roles assigned to this user
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class)->withTimestamps();
+        return $this->belongsToMany(Role::class)->withTimestamps(); // Many-to-many relationship with roles
     }
 
-    // Relationship: Active and historical teaching assignments allocated to this faculty member
+    // Teaching assignments for this teacher
     public function teachingAssignments(): HasMany
     {
-        return $this->hasMany(TeachingAssignment::class);
+        return $this->hasMany(TeachingAssignment::class); // Workload assignments for this teacher
     }
 
-    // Check whether the user is assigned a specific role by name
+    // Assessment records encoded by this teacher
+    public function assessmentRecords(): HasMany
+    {
+        return $this->hasMany(AssessmentRecord::class, 'teacher_id'); // Assessments submitted by this teacher
+    }
+
+    // Check if the user has a specific role (e.g. 'teacher' or 'system_admin')
     public function hasRole(string $roleName): bool
     {
-        // Inspect loaded roles collection to verify presence of role name
-        return $this->roles->contains('name', $roleName);
+        return $this->roles->contains('name', $roleName); // Check if loaded roles include role name
     }
 
-    // Eloquent local query scope to filter accounts with approved status
+    // Scope to get only approved accounts
     public function scopeApproved($query)
     {
-        return $query->where('approval_status', 'approved');
+        return $query->where('approval_status', 'approved'); // Scope query where approval_status is approved
     }
 
-    // Eloquent local query scope to filter accounts awaiting administrator approval
+    // Scope to get accounts waiting for admin approval
     public function scopePendingApproval($query)
     {
-        return $query->where('approval_status', 'pending');
+        return $query->where('approval_status', 'pending'); // Scope query where approval_status is pending
     }
 
-    // Quick boolean helper to check if this user account has been approved
+    // Check if account is approved
     public function isApproved(): bool
     {
-        return $this->approval_status === 'approved';
+        return $this->approval_status === 'approved'; // Return true if account is approved
     }
 }

@@ -6,104 +6,80 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-// Eloquent Model representing a completed examination score sheet and computed DepEd statistics
+// Model for student assessment score sheets and computed DepEd statistics
 class AssessmentRecord extends Model
 {
-    use SoftDeletes;
-    // Mass-assignable attributes permitted for create and update operations
+    use SoftDeletes; // Enable soft deletion to prevent permanent loss of score history
+
+    // Attributes that can be filled in bulk
     protected $fillable = [
-        // Foreign key to school_years table
-        'school_year_id',
-        // Foreign key to terms table
-        'term_id',
-        // Foreign key to grade_levels table
-        'grade_level_id',
-        // Foreign key to sections table
-        'section_id',
-        // Foreign key to subjects table
-        'subject_id',
-        // Foreign key to users table (faculty member who recorded the scores)
-        'teacher_id',
-        // Assessment type: diagnostic or term_exam
-        'type',
-        // Total possible examination score items
-        'total_items',
-        // Array of raw scores stored as JSON
-        'raw_scores',
-        // Count of student examinees
-        'no_of_entries',
-        // Computed arithmetic mean score
-        'mean',
-        // Computed Mean Percentage Score (MPS)
-        'mps',
-        // Computed population standard deviation
-        'sd',
-        // Highest attained score
-        'highest_score',
-        // Lowest attained score
-        'lowest_score',
-        // Academic competency identified for student remediation
-        'least_learned_competency',
-        // Teacher assessment remarks
-        'remarks',
+        'school_year_id', // Foreign key to school_years table
+        'term_id', // Foreign key to terms table
+        'grade_level_id', // Foreign key to grade_levels table
+        'section_id', // Foreign key to sections table
+        'subject_id', // Foreign key to subjects table
+        'teacher_id', // Foreign key to users table for the teacher
+        'type', // Assessment milestone: diagnostic or term_exam
+        'total_items', // Maximum exam score possible
+        'raw_scores', // JSON array of student scores
+        'no_of_entries', // Total number of examinees
+        'mean', // Arithmetic average of scores
+        'mps', // Mean Percentage Score
+        'sd', // Standard deviation
+        'highest_score', // Highest score achieved
+        'lowest_score', // Lowest score achieved
+        'least_learned_competency', // Topic requiring remedial instruction
+        'remarks', // Qualitative remarks: Complete or Incomplete
     ];
 
-    // Attribute type casting: auto-deserialize JSON and format decimal stats to native PHP floats
+    // Cast attributes to native PHP types
     protected function casts(): array
     {
         return [
-            // Cast raw_scores JSON column to native PHP array
-            'raw_scores' => 'array',
-            // Cast decimal mean to float
-            'mean' => 'float',
-            // Cast decimal MPS to float
-            'mps' => 'float',
-            // Cast decimal standard deviation to float
-            'sd' => 'float',
-            // Cast highest score to float
-            'highest_score' => 'float',
-            // Cast lowest score to float
-            'lowest_score' => 'float',
-            // Cast total items count to integer
-            'total_items' => 'integer',
-            // Cast student entries count to integer
-            'no_of_entries' => 'integer',
+            'raw_scores' => 'array', // Convert JSON string to PHP array automatically
+            'mean' => 'float', // Cast arithmetic average as float
+            'mps' => 'float', // Cast Mean Percentage Score as float
+            'sd' => 'float', // Cast standard deviation as float
+            'highest_score' => 'float', // Cast high score as float
+            'lowest_score' => 'float', // Cast low score as float
+            'total_items' => 'integer', // Cast item count as integer
+            'no_of_entries' => 'integer', // Cast student count as integer
         ];
     }
 
-    // Relationship: The faculty member who encoded this assessment record
+    // Teacher who encoded the score sheet
     public function teacher(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->belongsTo(User::class, 'teacher_id'); // Link to user model
     }
 
-    // Relationship: The class section that completed this assessment
+    // Section that took the test
     public function section(): BelongsTo
     {
-        return $this->belongsTo(Section::class);
+        return $this->belongsTo(Section::class); // Link to section model
     }
 
-    // Relationship: The curriculum subject assessed
+    // Subject assessed
     public function subject(): BelongsTo
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(Subject::class); // Link to subject model
     }
 
-    // Relationship: The grade level corresponding to this assessment
+    // Grade level of the assessment
     public function gradeLevel(): BelongsTo
     {
-        return $this->belongsTo(GradeLevel::class);
+        return $this->belongsTo(GradeLevel::class); // Link to grade level model
     }
 
-    // Relationship: The academic term when this test was administered
+    // Academic term (1st, 2nd, 3rd)
     public function term(): BelongsTo
     {
-        return $this->belongsTo(Term::class);
+        return $this->belongsTo(Term::class); // Link to term model
     }
 
-    // Relationship: The academic school year of this assessment
+    // School year of the assessment
     public function schoolYear(): BelongsTo
     {
-        return $this->belongsTo(SchoolYear::class);
+        return $this->belongsTo(SchoolYear::class); // Link to school year model
     }
 }

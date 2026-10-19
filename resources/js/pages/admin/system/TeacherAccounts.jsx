@@ -412,7 +412,9 @@ export default function TeacherAccounts() {
                             className="text-slate-400 hover:text-slate-600 p-1"
                             aria-label="Dismiss notice"
                         >
-                            ✕
+                            <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </motion.div>
                 )}
@@ -495,7 +497,7 @@ export default function TeacherAccounts() {
                 <div className="overflow-x-auto">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-12">
-                            <LoadingIndicator type="dot-circle" size="md" label="Loading faculty accounts…" />
+                            <LoadingIndicator type="dot-circle" size="md" label="Loading..." />
                         </div>
                     ) : (
                         <table className="w-full border-collapse text-left text-xs">

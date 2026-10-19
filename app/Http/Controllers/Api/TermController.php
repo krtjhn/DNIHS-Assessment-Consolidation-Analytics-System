@@ -10,72 +10,61 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-// Term Controller managing academic terms (1st, 2nd, 3rd), active term transitions, and calendar lockout states
+// Manages academic terms (1st, 2nd, 3rd) and their status
 class TermController extends Controller
 {
-    // List terms filtered optionally by school year ID
+    // List terms with optional school year filter
     public function index(Request $request): JsonResponse
     {
-        // Build term query with eager-loaded parent school year
-        $query = Term::with('schoolYear');
+        $query = Term::with('schoolYear'); // Eager load parent school year
 
-        // Apply school year filter when requested
         if ($request->filled('school_year_id')) {
-            $query->where('school_year_id', $request->school_year_id);
+            $query->where('school_year_id', $request->school_year_id); // Filter by school year
         }
 
-        // Order terms sequentially by term number (Term 1, Term 2, Term 3)
-        $terms = $query->orderBy('term_number')->get();
+        $terms = $query->orderBy('term_number')->get(); // Sort chronologically by term number
 
-        // Return collection of terms as JSON response
         return response()->json([
-            'data' => $terms,
+            'data' => $terms, // Return terms array
         ]);
     }
 
-    // Retrieve single term record with associated school year
+    // View details of a single term
     public function show(Term $term): JsonResponse
     {
-        // Return term resource with loaded schoolYear relation
         return response()->json([
-            'data' => $term->load('schoolYear'),
+            'data' => $term->load('schoolYear'), // Return term model with school year loaded
         ]);
     }
 
-    // Update term status: pending (locked), active (open for encoding), or completed (locked/concluded)
+    // Update term status (pending, active, or completed)
     public function updateStatus(UpdateTermStatusRequest $request, Term $term): JsonResponse
     {
-        // Extract validated status attribute from UpdateTermStatusRequest
-        $validated = $request->validated();
+        $validated = $request->validated(); // Get validated payload
 
-        // Execute status transition inside a database transaction
         DB::transaction(function () use ($validated, $term) {
-            // Calendar Invariant: When activating a term, automatically mark any currently active term in the same school year as completed
+            // When opening a term, automatically mark any previously active term as completed
             if ($validated['status'] === 'active') {
-                $this->completeOtherActiveTerms($term);
+                $this->completeOtherActiveTerms($term); // Close concurrent active terms
             }
 
-            // Update the term's status attribute
-            $term->update($validated);
+            $term->update($validated); // Save updated status
         });
 
-        Cache::store('file')->forget('academic_reference_data');
+        Cache::store('file')->forget('academic_reference_data'); // Clear cached reference data
 
-        // Return confirmation of status update along with reloaded relationship data
         return response()->json([
-            'message' => "Term status updated to {$term->status}.",
-            'data' => $term->load('schoolYear'),
+            'message' => "Term status updated to {$term->status}.", // Status update confirmation
+            'data' => $term->load('schoolYear'), // Return updated term
         ]);
     }
 
-    // Mark other active terms in the same school year as completed to preserve single-active term invariant
+    // Close any other active terms in the same school year
     protected function completeOtherActiveTerms(Term $term): void
     {
-        // Query other terms within the same school year that are currently marked active
         Term::where('school_year_id', $term->school_year_id)
             ->where('status', 'active')
             ->where('id', '!=', $term->id)
-            // Transition their status to completed
-            ->update(['status' => 'completed']);
+            ->update(['status' => 'completed']); // Set status to completed
     }
 }

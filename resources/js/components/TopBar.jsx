@@ -10,12 +10,12 @@ export default function TopBar({
     onOpenMobileSidebar,
 }) {
     const pageDetails = {
-        records: { title: 'Record Entry', eyebrow: 'Academic Records' },
-        consolidation: { title: 'Consolidated Reports', eyebrow: 'Analytics & Reporting' },
-        sections: { title: 'Section Management', eyebrow: 'Administration' },
-        assignments: { title: 'Class Assignments', eyebrow: 'Faculty Workload' },
-        calendar: { title: 'School Calendar', eyebrow: 'Academic Settings' },
-        teachers: { title: 'Teacher Accounts', eyebrow: 'User Administration' },
+        records: { title: 'Record Entry' },
+        consolidation: { title: 'Consolidated Reports' },
+        sections: { title: 'Section Management' },
+        assignments: { title: 'Class Assignments' },
+        calendar: { title: 'School Calendar' },
+        teachers: { title: 'Teacher Accounts' },
     };
 
     const currentPage = pageDetails[activeTab] || pageDetails.records;
@@ -60,9 +60,6 @@ export default function TopBar({
                             exit={{ opacity: 0, y: 4 }}
                             transition={{ duration: 0.18, ease: 'easeOut' }}
                         >
-                            <div className="truncate text-[10px] font-semibold uppercase tracking-wider text-[#0071e3]">
-                                {currentPage.eyebrow}
-                            </div>
                             <h1 className="truncate text-base font-semibold tracking-tight text-slate-900 md:text-[17px]">
                                 {currentPage.title}
                             </h1>
@@ -76,12 +73,12 @@ export default function TopBar({
                 <motion.div
                     whileHover={{ scale: 1.03 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="inline-flex cursor-default items-center gap-2 rounded-full border border-slate-200/90 bg-slate-50 px-3.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs"
+                    className="inline-flex cursor-default items-center gap-2 rounded-full border border-slate-200/90 bg-slate-50 px-3.5 py-1 text-xs font-semibold text-slate-800 shadow-2xs"
                 >
-                    <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+                    <span className="flex size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
                     <span>SY {activeSYName}</span>
                     <span className="text-slate-300">•</span>
-                    <span className="text-[#0071e3]">{activeTermName}</span>
+                    <span className="font-semibold text-slate-800">{activeTermName}</span>
                 </motion.div>
             </div>
 

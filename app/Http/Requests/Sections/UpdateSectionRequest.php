@@ -6,30 +6,27 @@ use App\Models\Section;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-// Form Request handling validation and authorization for updating section attributes
+// Validates requests to update a class section
 class UpdateSectionRequest extends FormRequest
 {
-    // Authorize only system administrators to modify class sections
+    // Only administrators can edit sections
     public function authorize(): bool
     {
-        // Block non-administrator faculty members from updating sections
-        return $this->user() && $this->user()->hasRole('system_admin');
+        return $this->user() && $this->user()->hasRole('system_admin'); // Restrict to system_admin
     }
 
-    // Validation rules for updating section name and active status
+    // Rules for section updates
     public function rules(): array
     {
-        // Resolve target section model from route parameter
-        $section = $this->route('section');
-        $sectionModel = $section instanceof Section ? $section : Section::find($section);
+        $section = $this->route('section'); // Retrieve section parameter from route
+        $sectionModel = $section instanceof Section ? $section : Section::find($section); // Ensure model instance
 
-        // Extract school year and grade level IDs for composite uniqueness checking
-        $schoolYearId = $sectionModel?->school_year_id ?? $this->school_year_id;
-        $gradeLevelId = $sectionModel?->grade_level_id ?? $this->grade_level_id;
-        $sectionId = $sectionModel?->id ?? $section;
+        $schoolYearId = $sectionModel?->school_year_id ?? $this->school_year_id; // Scope school year id
+        $gradeLevelId = $sectionModel?->grade_level_id ?? $this->grade_level_id; // Scope grade level id
+        $sectionId = $sectionModel?->id ?? $section; // Current section id to ignore
 
         return [
-            // Ensure unique section name within the same grade and academic year, ignoring the section being updated
+            // Name must remain unique in the same grade and school year, ignoring the current record
             'name' => [
                 'required',
                 'string',
@@ -39,20 +36,17 @@ class UpdateSectionRequest extends FormRequest
                         ->where('school_year_id', $schoolYearId)
                         ->where('grade_level_id', $gradeLevelId)
                     )
-                    // Exclude current section ID from uniqueness check to permit saving without renaming
-                    ->ignore($sectionId),
+                    ->ignore($sectionId), // Ignore current section id during uniqueness check
             ],
-            // Optional boolean status indicating whether the section is active
-            'is_active' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'], // Optional active flag
         ];
     }
 
-    // Provide clear error message when duplicate section name is detected
+    // Custom error messages
     public function messages(): array
     {
         return [
-            // Specific feedback when renaming causes a naming collision within the same cohort
-            'name.unique' => 'A section with this name already exists in the same grade level and school year.',
+            'name.unique' => 'A section with this name already exists in the same grade level and school year.', // Duplicate section error
         ];
     }
 }

@@ -43,7 +43,7 @@ class TeacherAssignmentTest extends TestCase
     {
         $teacher = User::where('email', 'maria.santos@gmail.com')->first();
 
-        $response = $this->actingAs($teacher)->getJson('/api/my-assignments');
+        $response = $this->actingAs($teacher)->getJson('/api/my-classes');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['data']);
@@ -54,8 +54,13 @@ class TeacherAssignmentTest extends TestCase
         $admin = User::where('email', 'admin@gmail.com')->first();
         $teacher = User::where('email', 'maria.santos@gmail.com')->first();
         $sy = SchoolYear::active()->first();
-        $section = Section::first();
         $subject = Subject::first();
+        $section = Section::where('name', 'Pilot A')->first() ?? Section::create([
+            'school_year_id' => $sy->id,
+            'grade_level_id' => $subject->grade_level_id,
+            'name' => 'TestSec_' . uniqid(),
+            'is_active' => true,
+        ]);
 
         // 1. Initial assignment
         $response1 = $this->actingAs($admin)->postJson('/api/teaching-assignments', [

@@ -6,39 +6,33 @@ use App\Models\SchoolYear;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-// Form Request handling validation and authorization for modifying academic school year records
+// Validates requests to update an existing school year
 class UpdateSchoolYearRequest extends FormRequest
 {
-    // Authorize only system administrators to modify school years
+    // Only administrators can edit school years
     public function authorize(): bool
     {
-        // Enforce system_admin role requirement
-        return $this->user() && $this->user()->hasRole('system_admin');
+        return $this->user() && $this->user()->hasRole('system_admin'); // Restrict to system_admin
     }
 
-    // Validation rules for updating a school year
+    // Rules for school year updates
     public function rules(): array
     {
-        // Resolve school year model or ID from the active route parameter
         $schoolYearId = $this->route('school_year') instanceof SchoolYear
             ? $this->route('school_year')->id
-            : $this->route('school_year') ?? $this->route('id');
+            : $this->route('school_year') ?? $this->route('id'); // Resolve model ID from route
 
         return [
-            // Ensure unique school year designation while ignoring the current record ID
+            // Name must remain unique except for the current record
             'name' => [
                 'required',
                 'string',
                 'max:20',
-                // Ignore current school year ID to allow saving without modifying the name
-                Rule::unique('school_years', 'name')->ignore($schoolYearId),
+                Rule::unique('school_years', 'name')->ignore($schoolYearId), // Ignore current record
             ],
-            // Academic year start date
-            'start_date' => ['required', 'date'],
-            // Academic year end date, must be chronologically after start_date
-            'end_date' => ['required', 'date', 'after:start_date'],
-            // Optional boolean indicating whether this school year is currently active
-            'is_active' => ['sometimes', 'boolean'],
+            'start_date' => ['required', 'date'], // School year start date
+            'end_date' => ['required', 'date', 'after:start_date'], // Must occur after start_date
+            'is_active' => ['sometimes', 'boolean'], // Active year flag
         ];
     }
 }

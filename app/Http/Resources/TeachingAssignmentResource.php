@@ -1,87 +1,56 @@
 <?php
 
-// Declare strict PHP syntax for JSON API resource transformation
-
 namespace App\Http\Resources;
 
-// Import incoming HTTP request contract
 use Illuminate\Http\Request;
-// Import base Laravel JSON resource class for data serialization
 use Illuminate\Http\Resources\Json\JsonResource;
 
-// TeachingAssignmentResource transforms teaching assignment records with nested teacher, section, and subject data
+// Transform a teaching assignment model into a JSON response with related details
 class TeachingAssignmentResource extends JsonResource
 {
-    // Transform the resource model into an associative array for JSON transmission
+    // Convert the teaching assignment into an array
     public function toArray(Request $request): array
     {
-        // Return structured payload including nested relationships when eagerly loaded
         return [
-            // Unique database primary key identifier of the teaching assignment
-            'id' => $this->id,
-            // Foreign key identifying the assigned teacher user ID
-            'user_id' => $this->user_id,
-            // Foreign key identifying the active school year
-            'school_year_id' => $this->school_year_id,
-            // Foreign key identifying the assigned classroom section
-            'section_id' => $this->section_id,
-            // Foreign key identifying the assigned subject
-            'subject_id' => $this->subject_id,
-            // Date string when teaching assignment takes effect
-            'effective_from' => $this->effective_from,
-            // Date string when teaching assignment concludes (null if currently active)
-            'effective_until' => $this->effective_until,
-            // Foreign key of the administrator who created the assignment
-            'assigned_by' => $this->assigned_by,
-            // Conditionally include teacher user profile if eagerly loaded
+            'id' => $this->id, // Primary key of the teaching assignment
+            'user_id' => $this->user_id, // Assigned teacher user id
+            'school_year_id' => $this->school_year_id, // Target school year id
+            'section_id' => $this->section_id, // Assigned section id
+            'subject_id' => $this->subject_id, // Assigned subject id
+            'effective_from' => $this->effective_from, // Start date of assignment
+            'effective_until' => $this->effective_until, // End date of assignment (null if ongoing)
+            'assigned_by' => $this->assigned_by, // Admin user id who created assignment
+            // Include teacher profile details if loaded
             'teacher' => $this->whenLoaded('teacher', fn () => [
-                // Teacher user primary ID
-                'id' => $this->teacher->id,
-                // Teacher full name
-                'name' => $this->teacher->name,
-                // Teacher institutional email address
-                'email' => $this->teacher->email,
+                'id' => $this->teacher->id, // Teacher user id
+                'name' => $this->teacher->name, // Teacher full name
+                'email' => $this->teacher->email, // Teacher email address
             ]),
-            // Conditionally include classroom section details if eagerly loaded
+            // Include section and its grade level details if loaded
             'section' => $this->whenLoaded('section', fn () => [
-                // Section primary ID
-                'id' => $this->section->id,
-                // Section name label (e.g., 'Mabini')
-                'name' => $this->section->name,
-                // Grade level foreign key ID
-                'grade_level_id' => $this->section->grade_level_id,
-                // Nested grade level details when relation is loaded on the section
+                'id' => $this->section->id, // Section id
+                'name' => $this->section->name, // Section name
+                'grade_level_id' => $this->section->grade_level_id, // Grade level id
                 'grade_level' => $this->section->relationLoaded('gradeLevel') && $this->section->gradeLevel ? [
-                    // Grade level ID
-                    'id' => $this->section->gradeLevel->id,
-                    // Numeric grade level integer (7, 8, 9, or 10)
-                    'level' => $this->section->gradeLevel->level,
-                    // Formatted grade name (e.g., 'Grade 7')
-                    'display_name' => $this->section->gradeLevel->display_name,
-                    // Internal name string
-                    'name' => $this->section->gradeLevel->name,
+                    'id' => $this->section->gradeLevel->id, // Grade level id
+                    'level' => $this->section->gradeLevel->level, // Grade number (7, 8, 9, 10)
+                    'display_name' => $this->section->gradeLevel->display_name, // Formatted grade name
+                    'name' => $this->section->gradeLevel->name, // Internal grade name
                 ] : null,
             ]),
-            // Conditionally include academic subject details if eagerly loaded
+            // Include subject details if loaded
             'subject' => $this->whenLoaded('subject', fn () => [
-                // Subject primary ID
-                'id' => $this->subject->id,
-                // Subject course title (e.g., 'Mathematics 7')
-                'name' => $this->subject->name,
-                // Subject grade level foreign key ID
-                'grade_level_id' => $this->subject->grade_level_id,
+                'id' => $this->subject->id, // Subject id
+                'name' => $this->subject->name, // Subject name
+                'grade_level_id' => $this->subject->grade_level_id, // Subject grade level id
             ]),
-            // Conditionally include academic school year information if eagerly loaded
+            // Include school year details if loaded
             'school_year' => $this->whenLoaded('schoolYear', fn () => [
-                // School year primary ID
-                'id' => $this->schoolYear->id,
-                // School year label (e.g., '2025-2026')
-                'name' => $this->schoolYear->name,
-                // Active school year status boolean
-                'is_active' => (bool) $this->schoolYear->is_active,
+                'id' => $this->schoolYear->id, // School year id
+                'name' => $this->schoolYear->name, // School year name
+                'is_active' => (bool) $this->schoolYear->is_active, // Active school year flag
             ]),
-            // Format assignment creation timestamp to ISO datetime string
-            'created_at' => $this->created_at?->toDateTimeString(),
+            'created_at' => $this->created_at?->toDateTimeString(), // Record creation timestamp
         ];
     }
 }

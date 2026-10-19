@@ -4,30 +4,29 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-// Form Request handling validation and authorization for user login credentials
+// Validates login credentials
 class LoginRequest extends FormRequest
 {
-    // Public endpoint: Allow unauthenticated visitors to submit login credentials
+    // Anyone can attempt to log in
     public function authorize(): bool
     {
-        return true;
+        return true; // Public access
     }
 
-    // Validation rules for verifying email and password inputs
+    // Rules for email and password inputs
     public function rules(): array
     {
         return [
-            // User institutional email address must be provided
-            'email' => ['required', 'string', 'email'],
-            // User plaintext password must be provided
-            'password' => ['required', 'string'],
+            'email' => ['required', 'string', 'email'], // Valid user email address
+            'password' => ['required', 'string'], // User password
         ];
     }
 
+    // Custom error messages
     public function messages(): array
     {
         return [
-            'email.email' => 'Please provide a valid email address.',
+            'email.email' => 'Please provide a valid email address.', // Invalid email format message
         ];
     }
 }

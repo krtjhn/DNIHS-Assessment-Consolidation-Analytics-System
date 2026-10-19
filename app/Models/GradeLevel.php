@@ -5,35 +5,38 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// Eloquent Model representing academic grade levels (e.g. Grade 7, Grade 8, Grade 9, Grade 10)
+// Model for academic grade levels (Grade 7 through 10)
 class GradeLevel extends Model
 {
-    // Mass-assignable attributes
     protected $fillable = [
-        // Numeric grade level indicator (7, 8, 9, 10)
-        'level',
-        // Official display name (e.g. Grade 7)
-        'display_name',
+        'level', // Numeric grade level (7, 8, 9, 10)
+        'display_name', // Formatted display label (e.g. Grade 7)
     ];
 
-    // Accessor attributes automatically appended to array/JSON serialization
-    protected $appends = ['name'];
+    // Append computed 'name' attribute to JSON output
+    protected $appends = ['name']; // Expose name attribute automatically
 
-    // Accessor returning the formatted grade level name
+    // Return the display name or default to 'Grade X'
     public function getNameAttribute(): string
     {
-        return $this->display_name ?? "Grade {$this->level}";
+        return $this->display_name ?? "Grade {$this->level}"; // Fallback to Grade + level
     }
 
-    // Relationship: Class sections organized under this grade level
+    // Class sections belonging to this grade level
     public function sections(): HasMany
     {
-        return $this->hasMany(Section::class);
+        return $this->hasMany(Section::class); // Has many section records
     }
 
-    // Relationship: DepEd curriculum subjects taught at this grade level
+    // Subjects taught at this grade level
     public function subjects(): HasMany
     {
-        return $this->hasMany(Subject::class);
+        return $this->hasMany(Subject::class); // Has many subject records
+    }
+
+    // Assessment records recorded for this grade level
+    public function assessmentRecords(): HasMany
+    {
+        return $this->hasMany(AssessmentRecord::class); // Has many assessment records
     }
 }

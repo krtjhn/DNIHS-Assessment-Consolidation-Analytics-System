@@ -7,30 +7,24 @@ use App\Models\GradeLevel;
 use App\Models\SchoolYear;
 use App\Models\Subject;
 use Illuminate\Http\JsonResponse;
-
 use Illuminate\Support\Facades\Cache;
 
-// Academic Reference Controller providing foundational metadata for frontend dropdowns and filter panels
+// Provides reference data like grade levels, subjects, and school years for UI dropdowns
 class AcademicReferenceController extends Controller
 {
-    // Aggregate and provide reference datasets for grade levels, curriculum subjects, and school years
+    // Return all reference data needed by frontend forms and filters
     public function referenceData(): JsonResponse
     {
-        // Cache foundational reference datasets on disk for 1 hour to prevent multiple round-trips to Supabase
+        // Cache data for 1 hour to improve load speed
         $data = Cache::store('file')->remember('academic_reference_data', 3600, function () {
             return [
-                // Grade levels sorted sequentially (Grade 7 through 10)
-                'grade_levels' => GradeLevel::orderBy('level')->get()->toArray(),
-                // Active DepEd curriculum subjects sorted alphabetically
-                'subjects' => Subject::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code', 'grade_level_id', 'is_active'])->toArray(),
-                // All recorded school years with their corresponding terms
-                'school_years' => SchoolYear::with('terms')->orderBy('id', 'desc')->get()->toArray(),
-                // The currently active school year with its corresponding active/pending terms
-                'active_sy' => SchoolYear::active()->with('terms')->first()?->toArray(),
+                'grade_levels' => GradeLevel::orderBy('level')->get()->toArray(), // Junior high grade levels (7 to 10)
+                'subjects' => Subject::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code', 'grade_level_id', 'is_active'])->toArray(), // Active subjects list
+                'school_years' => SchoolYear::with('terms')->orderBy('id', 'desc')->get()->toArray(), // School years with terms
+                'active_sy' => SchoolYear::active()->with('terms')->first()?->toArray(), // Currently active school year
             ];
         });
 
-        // Return structured JSON response combining all reference lists needed by frontend filters
-        return response()->json($data);
+        return response()->json($data); // Return reference data JSON response
     }
 }
