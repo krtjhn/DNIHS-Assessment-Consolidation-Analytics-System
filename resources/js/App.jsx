@@ -231,7 +231,7 @@ export default function App() {
     const activeTermName = activeTerm?.name || (activeSY?.terms?.find((t) => t.status === 'active')?.name) || '1st Term';
 
     return (
-        <div className="min-h-screen bg-[#f5f5f7] text-slate-900 font-sans antialiased selection:bg-[#0071e3] selection:text-white">
+        <div className="min-h-screen bg-white text-slate-900 font-sans antialiased selection:bg-[#0071e3] selection:text-white">
             {
                 // Institutional left navigation sidebar
             }
