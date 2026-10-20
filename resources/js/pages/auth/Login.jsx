@@ -75,7 +75,7 @@ export default function Login({ onLoginSuccess }) {
     };
 
     return (
-        <main className="fixed inset-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex items-center justify-center bg-[#f5f5f7] p-3 sm:p-4 text-[#1d1d1f] antialiased">
+        <main className="fixed inset-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex items-center justify-center bg-white p-3 sm:p-4 text-[#1d1d1f] antialiased">
             <div className="w-full max-w-[380px] sm:max-w-[400px] my-auto flex flex-col items-center">
                 {
                     // Institutional logo and system branding
@@ -108,9 +108,8 @@ export default function Login({ onLoginSuccess }) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className={`w-full rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 ${
-                        isRegistering ? 'p-5 sm:p-6' : 'p-5 sm:py-7 sm:px-6'
-                    }`}
+                    className={`w-full rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 ${isRegistering ? 'p-5 sm:p-6' : 'p-5 sm:py-7 sm:px-6'
+                        }`}
                 >
                     {
                         // Header title and subtext
