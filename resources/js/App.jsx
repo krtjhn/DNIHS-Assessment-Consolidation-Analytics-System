@@ -241,6 +241,7 @@ export default function App() {
                 isAdmin={isAdmin}
                 onLogout={handleLogout}
                 isCollapsed={isCollapsed}
+                onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
                 isMobileOpen={isMobileOpen}
                 onCloseMobile={() => setIsMobileOpen(false)}
             />
@@ -261,7 +262,6 @@ export default function App() {
                     activeTab={activeTab}
                     activeSYName={activeSYName}
                     activeTermName={activeTermName}
-                    onToggleSidebar={() => setIsCollapsed((prev) => !prev)}
                     onOpenMobileSidebar={() => setIsMobileOpen(true)}
                 />
 

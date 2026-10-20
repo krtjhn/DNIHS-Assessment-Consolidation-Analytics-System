@@ -27,6 +27,25 @@ function NavIcon({ name, className = 'size-5' }) {
     return <IconComponent className={className} strokeWidth={1.85} aria-hidden="true" />;
 }
 
+// Sidebar toggle icon matching Apple HIG panel-left design
+export function SidebarToggleIcon({ className = 'size-5' }) {
+    return (
+        <svg
+            className={className}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+        >
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <line x1="8.5" y1="7.5" x2="8.5" y2="16.5" strokeWidth="2.2" />
+        </svg>
+    );
+}
+
 // Navigation routes for Teacher role
 const teacherNavItems = [
     { id: 'records', label: 'Record Entry', icon: 'records' },
@@ -48,6 +67,7 @@ export default function Sidebar({
     isAdmin,
     onLogout,
     isCollapsed,
+    onToggleCollapse,
     isMobileOpen,
     onCloseMobile,
 }) {
@@ -81,35 +101,62 @@ export default function Sidebar({
                 } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
             >
                 {
-                    // Brand header with institutional seal and title
+                    // Brand header with seal, institutional title, and toggle icon button
                 }
                 <div
                     className={`flex h-16 shrink-0 items-center border-b border-slate-100 transition-all ${
-                        isCollapsed ? 'justify-center px-0' : 'gap-2.5 px-3.5'
+                        isCollapsed ? 'justify-center px-0' : 'justify-between gap-2 px-3.5'
                     }`}
                 >
-                    <motion.img
-                        src={schoolLogo}
-                        alt="Dayap National Integrated High School seal"
-                        className="size-9 shrink-0 object-contain"
-                        whileHover={{ rotate: 10, scale: 1.05 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
-                    />
-                    {!isCollapsed && (
-                        <motion.div
-                            initial={{ opacity: 0, x: -6 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -6 }}
-                            transition={{ duration: 0.15 }}
-                            className="min-w-0 flex-1"
+                    {isCollapsed ? (
+                        <motion.button
+                            type="button"
+                            onClick={onToggleCollapse}
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.94 }}
+                            className="flex size-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40 cursor-pointer"
+                            aria-label="Expand sidebar"
+                            title="Expand sidebar"
                         >
-                            <div className="text-sm font-bold tracking-tight text-slate-900 leading-tight">
-                                DNIHS
+                            <SidebarToggleIcon className="size-5" />
+                        </motion.button>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <motion.img
+                                    src={schoolLogo}
+                                    alt="Dayap National Integrated High School seal"
+                                    className="size-9 shrink-0 object-contain"
+                                    whileHover={{ rotate: 10, scale: 1.05 }}
+                                    transition={{ type: 'spring', stiffness: 300 }}
+                                />
+                                <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-bold tracking-tight text-slate-900 leading-tight">
+                                        DNIHS
+                                    </div>
+                                    <div className="text-[10px] font-medium text-slate-500 leading-tight mt-0.5 truncate">
+                                        Assessment Consolidation & Analytics System
+                                    </div>
+                                </div>
                             </div>
-                            <div className="text-[10px] font-medium text-slate-500 leading-tight mt-0.5">
-                                Assessment Consolidation & Analytics System
-                            </div>
-                        </motion.div>
+                            <motion.button
+                                type="button"
+                                onClick={() => {
+                                    if (isMobileOpen) {
+                                        onCloseMobile?.();
+                                    } else {
+                                        onToggleCollapse?.();
+                                    }
+                                }}
+                                whileHover={{ scale: 1.06 }}
+                                whileTap={{ scale: 0.94 }}
+                                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40 cursor-pointer"
+                                aria-label="Collapse sidebar"
+                                title="Collapse sidebar"
+                            >
+                                <SidebarToggleIcon className="size-5" />
+                            </motion.button>
+                        </>
                     )}
                 </div>
 

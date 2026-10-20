@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { SidebarToggleIcon } from './Sidebar.jsx';
 
 export default function TopBar({
     user,
     activeTab,
     activeSYName = '2025-2026',
     activeTermName = '1st Term',
-    onToggleSidebar,
     onOpenMobileSidebar,
 }) {
     const pageDetails = {
@@ -23,32 +23,18 @@ export default function TopBar({
     return (
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xs md:px-6">
             {
-                // Left section: mobile hamburger, desktop collapse toggle, and animated page title
+                // Left section: mobile drawer trigger and animated page title
             }
             <div className="flex min-w-0 items-center gap-3">
                 <motion.button
                     type="button"
                     onClick={onOpenMobileSidebar}
                     whileTap={{ scale: 0.92 }}
-                    className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40 md:hidden"
+                    className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40 md:hidden cursor-pointer"
                     aria-label="Open navigation menu"
+                    title="Open navigation menu"
                 >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                        <path d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </motion.button>
-
-                <motion.button
-                    type="button"
-                    onClick={onToggleSidebar}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="hidden size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]/40 md:flex"
-                    aria-label="Toggle sidebar navigation"
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                        <path d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
+                    <SidebarToggleIcon className="size-5" />
                 </motion.button>
 
                 <div className="min-w-0">
