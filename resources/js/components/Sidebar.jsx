@@ -134,8 +134,9 @@ export default function Sidebar({
                                     <div className="text-sm font-bold tracking-tight text-slate-900 leading-tight">
                                         DNIHS
                                     </div>
-                                    <div className="text-[10px] font-medium text-slate-500 leading-tight mt-0.5 truncate">
-                                        Assessment Consolidation & Analytics System
+                                    // subtitle: removed "Assessment" word so text fits without truncation
+                                    <div className="text-[10px] font-medium text-slate-500 leading-tight mt-0.5 whitespace-normal">
+                                        Consolidation & Analytics System
                                     </div>
                                 </div>
                             </div>
