@@ -187,8 +187,8 @@ export default function SectionList() {
                     grade_level_id: String(refsRes.grade_levels?.[0]?.id || '1'),
                 }));
             }
-        } catch (err) {
-            console.error('Failed to load sections data:', err);
+        } catch {
+            // Fail gracefully if sections data cannot be retrieved
         } finally {
             setLoading(false);
         }
@@ -252,8 +252,13 @@ export default function SectionList() {
 
     return (
         <div className="space-y-6">
-            {/* Sections Table Card with integrated controls */}
+            {
+                // Sections directory card
+            }
             <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+                {
+                    // Card header with school year selector and Add Section trigger
+                }
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 p-4">
                     <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
                         All Sections ({filteredSections.length})
@@ -291,6 +296,9 @@ export default function SectionList() {
                     </div>
                 </div>
 
+                {
+                    // Tabular roster of class sections
+                }
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                         <thead>
@@ -332,7 +340,9 @@ export default function SectionList() {
                 </div>
             </div>
 
-            {/* Add Section Modal */}
+            {
+                // Add Section modal dialog
+            }
             <AddSectionModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}

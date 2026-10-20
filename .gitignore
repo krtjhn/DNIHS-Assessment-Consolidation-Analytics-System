@@ -35,3 +35,4 @@ yarn-error.log*
 /coverage
 /test-results
 /dist
+docs/BACKEND_API_ARCHITECTURE.md

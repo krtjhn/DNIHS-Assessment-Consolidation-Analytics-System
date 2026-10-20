@@ -137,7 +137,6 @@ function AddClassForm({
             </h4>
             <form onSubmit={onSubmit} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* Grade Level */}
                     <div>
                         <label htmlFor="grade-select" className="block text-[11px] font-semibold text-slate-600 mb-1">
                             Grade Level
@@ -162,7 +161,6 @@ function AddClassForm({
                         </select>
                     </div>
 
-                    {/* Section */}
                     <div>
                         <label htmlFor="section-select" className="block text-[11px] font-semibold text-slate-600 mb-1">
                             Section
@@ -184,7 +182,6 @@ function AddClassForm({
                         </select>
                     </div>
 
-                    {/* Subject */}
                     <div>
                         <label htmlFor="subject-select" className="block text-[11px] font-semibold text-slate-600 mb-1">
                             Subject
@@ -215,7 +212,6 @@ function AddClassForm({
                     </div>
                 </div>
 
-                {/* Class Already Taken Banner */}
                 {currentConflict && (
                     <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900 font-medium flex items-center gap-2.5">
                         <svg className="size-4 shrink-0 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -362,8 +358,7 @@ export default function TeacherAssignment() {
                 setSelectedSYId(syId);
                 await fetchAssignments(syId);
             }
-        } catch (err) {
-            console.error('Failed to load initial data:', err);
+        } catch {
             setNotice({ type: 'error', text: 'Failed to load assignment reference data.' });
         } finally {
             setLoading(false);
@@ -375,8 +370,7 @@ export default function TeacherAssignment() {
         try {
             const res = await api.get(`/teaching-assignments?school_year_id=${syId}`);
             setAssignments(res.data || []);
-        } catch (err) {
-            console.error('Error fetching assignments:', err);
+        } catch {
             setNotice({ type: 'error', text: 'Failed to fetch teaching assignments.' });
         }
     }
@@ -516,7 +510,9 @@ export default function TeacherAssignment() {
 
     return (
         <div className="flex flex-col gap-4 w-full">
-            {/* Top Toolbar: SY Selector & Refresh */}
+            {
+                // Toolbar: Academic year selector and refresh button
+            }
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3 shadow-2xs">
                 <div className="text-xs font-semibold text-slate-500">
                     Teaching load allocation across grade levels and sections
@@ -553,7 +549,9 @@ export default function TeacherAssignment() {
                 </div>
             </div>
 
-            {/* Flash Notice */}
+            {
+                // Status feedback notification banner
+            }
             {notice && (
                 <div
                     className={`flex items-center justify-between rounded-xl border p-3.5 text-xs font-semibold transition-all ${
@@ -575,9 +573,13 @@ export default function TeacherAssignment() {
                 </div>
             )}
 
-            {/* Two-Pane Workspace Grid */}
+            {
+                // Two-pane workspace: Teacher directory sidebar and Class assignment workspace
+            }
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 items-start">
-                {/* Left Pane: Faculty List */}
+                {
+                    // Left pane: Faculty member directory
+                }
                 <TeacherListSidebar
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
@@ -588,11 +590,12 @@ export default function TeacherAssignment() {
                     selectedSYId={selectedSYId}
                 />
 
-                {/* Right Pane: Selected Teacher's Workload Sheet */}
+                {
+                    // Right pane: Teacher profile header, class assignment form, and schedule table
+                }
                 <div className="lg:col-span-8 xl:col-span-9 rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
                     {selectedTeacher ? (
                         <>
-                            {/* Teacher Profile Banner */}
                             <div className="p-4 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="size-10 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center font-bold text-sm shadow-2xs">
@@ -612,7 +615,6 @@ export default function TeacherAssignment() {
                                 </span>
                             </div>
 
-                            {/* Add Class Form */}
                             <AddClassForm
                                 teacher={selectedTeacher}
                                 addGradeId={addGradeId}
@@ -631,7 +633,6 @@ export default function TeacherAssignment() {
                                 onSubmit={handleAssignClass}
                             />
 
-                            {/* Assigned Classes Table */}
                             <TeachingScheduleTable
                                 teacherAssignments={teacherAssignments}
                                 actionLoading={actionLoading}

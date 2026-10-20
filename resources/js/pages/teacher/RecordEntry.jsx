@@ -15,8 +15,6 @@ export default function RecordEntry({ user }) {
         grade_levels: [],
         school_years: [],
         terms: [],
-        subjects: [],
-        sections: [],
         active_sy: null,
     });
     const [teacherAssignments, setTeacherAssignments] = useState([]);
@@ -271,7 +269,6 @@ export default function RecordEntry({ user }) {
     if (currentStep === 'score_grid') {
         return (
             <ScoreSheet
-                user={user}
                 selectedTerm={selectedTerm}
                 selectedSY={activeSY}
                 selectedGrade={selectedGrade}
@@ -295,7 +292,9 @@ export default function RecordEntry({ user }) {
 
     return (
         <div className="space-y-2">
-            {/* Google Classroom To-Do Navigation Tabs */}
+            {
+                // Tab filter bar: Assigned (current term), Missing (past terms), and Done (completed)
+            }
             <div className="flex items-center gap-6 border-b border-slate-200">
                 <button
                     type="button"
@@ -349,10 +348,15 @@ export default function RecordEntry({ user }) {
                 </button>
             </div>
 
-            {/* Borderless List Content */}
+            {
+                // Assessment tasks list container
+            }
             <div className="divide-y divide-slate-100">
                 {loading ? (
                     <div className="space-y-1.5 py-1">
+                        {
+                            // Skeleton loading placeholders
+                        }
                         {[1, 2, 3].map((i) => (
                             <div
                                 key={i}
@@ -371,6 +375,9 @@ export default function RecordEntry({ user }) {
                     </div>
                 ) : (
                     <>
+                        {
+                            // Assigned assessments for active academic term
+                        }
                         {activeTab === 'assigned' && (
                             <>
                                 {assignedTasks.length > 0 ? (
@@ -405,6 +412,9 @@ export default function RecordEntry({ user }) {
                             </>
                         )}
 
+                        {
+                            // Missing assessments from past closed terms
+                        }
                         {activeTab === 'missing' && (
                             <>
                                 {missingTasks.length > 0 ? (
@@ -439,6 +449,9 @@ export default function RecordEntry({ user }) {
                             </>
                         )}
 
+                        {
+                            // Completed assessment records
+                        }
                         {activeTab === 'done' && (
                             <>
                                 {doneTasks.length > 0 ? (

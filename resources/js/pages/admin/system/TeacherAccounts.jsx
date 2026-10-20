@@ -377,7 +377,9 @@ export default function TeacherAccounts() {
 
     return (
         <div className="flex flex-col gap-5 w-full">
-            {/* Feedback Notice Toast */}
+            {
+                // Status feedback notification banner
+            }
             <AnimatePresence>
                 {notice && (
                     <motion.div
@@ -420,11 +422,17 @@ export default function TeacherAccounts() {
                 )}
             </AnimatePresence>
 
-            {/* Main Content Card: Filter Bar + Faculty Roster Table */}
+            {
+                // Faculty directory card container
+            }
             <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden flex flex-col">
-                {/* Control Bar: Status Segments + Live Search + Add Button */}
+                {
+                    // Toolbar: Status filter tabs, search field, and Add Faculty button
+                }
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 p-4">
-                    {/* Status Segments */}
+                    {
+                        // Status filter tabs: All, Pending, Active, Removed
+                    }
                     <div role="tablist" aria-label="Faculty status filter" className="inline-flex rounded-xl bg-slate-200/60 p-1 text-xs">
                         {[
                             { id: 'all', label: `All (${teachers.length})` },
@@ -462,7 +470,6 @@ export default function TeacherAccounts() {
                         })}
                     </div>
 
-                    {/* Live Search Input & Add Action */}
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <div className="relative w-full sm:w-64">
                             <input
@@ -493,7 +500,6 @@ export default function TeacherAccounts() {
                     </div>
                 </div>
 
-                {/* Faculty Table */}
                 <div className="overflow-x-auto">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-12">
@@ -520,7 +526,6 @@ export default function TeacherAccounts() {
 
                                         return (
                                             <tr key={teacher.id} className="hover:bg-slate-50/60 transition-colors">
-                                                {/* Faculty Member Name & Avatar */}
                                                 <td className="py-3 px-4 font-semibold text-slate-900">
                                                     <div className="flex items-center gap-3">
                                                         <div className="size-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-200/80 shadow-2xs">
@@ -537,12 +542,10 @@ export default function TeacherAccounts() {
                                                     </div>
                                                 </td>
 
-                                                {/* Email Address */}
                                                 <td className="py-3 px-4 text-slate-600 font-mono text-[11px]">
                                                     {teacher.email}
                                                 </td>
 
-                                                {/* Active Loads Count */}
                                                 <td className="py-3 px-4 text-center">
                                                     {isActive ? (
                                                         <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-[#0071e3] border border-blue-200/70">
@@ -553,7 +556,6 @@ export default function TeacherAccounts() {
                                                     )}
                                                 </td>
 
-                                                {/* Status Badge */}
                                                 <td className="py-3 px-4">
                                                     {isPending ? (
                                                         <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100/90 px-2.5 py-0.5 text-[10px] font-bold text-amber-900 border border-amber-200">
@@ -576,7 +578,6 @@ export default function TeacherAccounts() {
                                                     )}
                                                 </td>
 
-                                                {/* Action Buttons */}
                                                 <td className="py-3 px-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         {isPending ? (
@@ -639,7 +640,9 @@ export default function TeacherAccounts() {
                 </div>
             </div>
 
-            {/* Modals */}
+            {
+                // Provision new teacher modal
+            }
             <AddTeacherModal
                 isOpen={isAddOpen}
                 onClose={() => setIsAddOpen(false)}
@@ -650,6 +653,9 @@ export default function TeacherAccounts() {
                 error={modalError}
             />
 
+            {
+                // Revoke teacher access confirmation modal
+            }
             <RevokeAccessModal
                 teacher={teacherToRevoke}
                 isOpen={Boolean(teacherToRevoke)}
@@ -658,6 +664,9 @@ export default function TeacherAccounts() {
                 saving={saving}
             />
 
+            {
+                // Reject teacher applicant confirmation modal
+            }
             <RejectApplicantModal
                 teacher={teacherToReject}
                 isOpen={Boolean(teacherToReject)}

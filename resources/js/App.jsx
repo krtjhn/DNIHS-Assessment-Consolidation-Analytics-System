@@ -232,25 +232,30 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] text-slate-900 font-sans antialiased selection:bg-[#0071e3] selection:text-white">
-            {/* Global Left Navigation Sidebar */}
+            {
+                // Institutional left navigation sidebar
+            }
             <Sidebar
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 isAdmin={isAdmin}
-                user={user}
                 onLogout={handleLogout}
                 isCollapsed={isCollapsed}
                 isMobileOpen={isMobileOpen}
                 onCloseMobile={() => setIsMobileOpen(false)}
             />
 
-            {/* Main Application Container with responsive padding matching sidebar width */}
+            {
+                // Responsive main shell adapting to collapsed/expanded sidebar widths
+            }
             <div
                 className={`min-h-screen flex flex-col transition-all duration-300 ${
                     isCollapsed ? 'md:pl-[72px]' : 'md:pl-64'
                 }`}
             >
-                {/* Institutional TopBar with SY status and Profile Chip */}
+                {
+                    // Header bar displaying active academic calendar and current user
+                }
                 <TopBar
                     user={user}
                     activeTab={activeTab}
@@ -260,43 +265,58 @@ export default function App() {
                     onOpenMobileSidebar={() => setIsMobileOpen(true)}
                 />
 
-                {/* Main Dynamic Workspace Area - Wide layout with high information density */}
+                {
+                    // Main view container retaining mounted state across visited tabs
+                }
                 <main className="flex-1 w-full px-3 sm:px-5 md:px-6 py-4">
-                    {/* Teachers: Record Entry */}
+                    {
+                        // Teacher Workspace: Assessment record entry and qualitative scoring
+                    }
                     {!isAdmin && visitedTabs.has('records') && (
                         <AnimatedTabPane isActive={activeTab === 'records'}>
                             <RecordEntry user={user} />
                         </AnimatedTabPane>
                     )}
-                    {/* Admin: Consolidated Performance Reports */}
+
+                    {
+                        // Admin Workspace: Consolidated school-wide and sectional reports
+                    }
                     {isAdmin && visitedTabs.has('consolidation') && (
                         <AnimatedTabPane isActive={activeTab === 'consolidation'}>
                             <PerformanceReport />
                         </AnimatedTabPane>
                     )}
 
-                    {/* Admin: Sections Management */}
+                    {
+                        // Admin Workspace: Section management and academic rosters
+                    }
                     {isAdmin && visitedTabs.has('sections') && (
                         <AnimatedTabPane isActive={activeTab === 'sections'}>
                             <SectionList />
                         </AnimatedTabPane>
                     )}
 
-                    {/* Admin: Teacher Class Assignments */}
+                    {
+                        // Admin Workspace: Teaching assignments and class allocation
+                    }
                     {isAdmin && visitedTabs.has('assignments') && (
                         <AnimatedTabPane isActive={activeTab === 'assignments'}>
                             <TeacherAssignment />
                         </AnimatedTabPane>
                     )}
 
-                    {/* Admin: School Calendar */}
+                    {
+                        // Admin Workspace: School calendar and academic period management
+                    }
                     {isAdmin && visitedTabs.has('calendar') && (
                         <AnimatedTabPane isActive={activeTab === 'calendar'}>
                             <SchoolCalendar />
                         </AnimatedTabPane>
                     )}
 
-                    {/* Admin: Teacher Accounts */}
+                    {
+                        // Admin Workspace: Teacher account management and credentials
+                    }
                     {isAdmin && visitedTabs.has('teachers') && (
                         <AnimatedTabPane isActive={activeTab === 'teachers'}>
                             <TeacherAccounts />

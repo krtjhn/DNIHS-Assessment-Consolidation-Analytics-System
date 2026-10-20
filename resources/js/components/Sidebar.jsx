@@ -21,15 +21,18 @@ const iconMap = {
     logout: LogOut,
 };
 
+// Navigation icon mapper helper component
 function NavIcon({ name, className = 'size-5' }) {
     const IconComponent = iconMap[name] || ClipboardList;
     return <IconComponent className={className} strokeWidth={1.85} aria-hidden="true" />;
 }
 
+// Navigation routes for Teacher role
 const teacherNavItems = [
     { id: 'records', label: 'Record Entry', icon: 'records' },
 ];
 
+// Navigation routes for Administrator role
 const adminNavItems = [
     { id: 'consolidation', label: 'Consolidated Reports', icon: 'consolidation' },
     { id: 'sections', label: 'Section Management', icon: 'sections' },
@@ -38,11 +41,11 @@ const adminNavItems = [
     { id: 'teachers', label: 'Teacher Accounts', icon: 'teachers' },
 ];
 
+// Main Sidebar navigation component
 export default function Sidebar({
     activeTab,
     setActiveTab,
     isAdmin,
-    user,
     onLogout,
     isCollapsed,
     isMobileOpen,
@@ -52,7 +55,9 @@ export default function Sidebar({
 
     return (
         <>
-            {/* Mobile backdrop */}
+            {
+                // Mobile backdrop overlay
+            }
             <AnimatePresence>
                 {isMobileOpen && (
                     <motion.div
@@ -67,12 +72,17 @@ export default function Sidebar({
                 )}
             </AnimatePresence>
 
+            {
+                // Sidebar container with desktop collapsible toggle and mobile slide-in
+            }
             <aside
                 className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 ease-in-out ${
                     isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
             >
-                {/* School Logo & Title */}
+                {
+                    // Brand header with institutional seal and title
+                }
                 <div
                     className={`flex h-16 shrink-0 items-center border-b border-slate-100 transition-all ${
                         isCollapsed ? 'justify-center px-0' : 'gap-2.5 px-3.5'
@@ -103,7 +113,9 @@ export default function Sidebar({
                     )}
                 </div>
 
-                {/* Navigation Links */}
+                {
+                    // Navigation links list
+                }
                 <nav className="flex-1 overflow-y-auto p-3 space-y-1">
                     {navItems.map((item) => {
                         const isActive = activeTab === item.id;
@@ -152,7 +164,9 @@ export default function Sidebar({
                     })}
                 </nav>
 
-                {/* Footer Sign Out */}
+                {
+                    // Sign-out action button
+                }
                 <div className="border-t border-slate-100 p-2 sm:p-3">
                     <motion.button
                         type="button"

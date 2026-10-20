@@ -22,9 +22,10 @@ export default function TopBar({
 
     return (
         <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xs md:px-6">
-            {/* Left: Sidebar Toggles & Active Page Title */}
+            {
+                // Left section: mobile hamburger, desktop collapse toggle, and animated page title
+            }
             <div className="flex min-w-0 items-center gap-3">
-                {/* Mobile Menu Toggle Button */}
                 <motion.button
                     type="button"
                     onClick={onOpenMobileSidebar}
@@ -37,7 +38,6 @@ export default function TopBar({
                     </svg>
                 </motion.button>
 
-                {/* Desktop Sidebar Collapse Toggle */}
                 <motion.button
                     type="button"
                     onClick={onToggleSidebar}
@@ -68,7 +68,9 @@ export default function TopBar({
                 </div>
             </div>
 
-            {/* Center: Active Academic Year and Active Term Badge */}
+            {
+                // Center section: active academic calendar badge (School Year & Term)
+            }
             <div className="hidden min-w-0 flex-1 justify-center lg:flex">
                 <motion.div
                     whileHover={{ scale: 1.03 }}
@@ -82,7 +84,9 @@ export default function TopBar({
                 </motion.div>
             </div>
 
-            {/* Right: Authenticated User Greeting */}
+            {
+                // Right section: authenticated user account badge
+            }
             <div className="flex shrink-0 items-center text-xs sm:text-sm text-slate-600">
                 <span>Welcome,&nbsp;</span>
                 <span className="font-bold text-slate-900 truncate max-w-[220px] sm:max-w-none">

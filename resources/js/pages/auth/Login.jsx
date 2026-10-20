@@ -77,7 +77,9 @@ export default function Login({ onLoginSuccess }) {
     return (
         <main className="fixed inset-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex items-center justify-center bg-[#f5f5f7] p-3 sm:p-4 text-[#1d1d1f] antialiased">
             <div className="w-full max-w-[380px] sm:max-w-[400px] my-auto flex flex-col items-center">
-                {/* School Seal & Branding */}
+                {
+                    // Institutional logo and system branding
+                }
                 <motion.div
                     initial={{ opacity: 0, y: -10, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -99,7 +101,9 @@ export default function Login({ onLoginSuccess }) {
                     </p>
                 </motion.div>
 
-                {/* Sign-In / Register Card */}
+                {
+                    // Authentication card container
+                }
                 <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -108,6 +112,9 @@ export default function Login({ onLoginSuccess }) {
                         isRegistering ? 'p-5 sm:p-6' : 'p-5 sm:py-7 sm:px-6'
                     }`}
                 >
+                    {
+                        // Header title and subtext
+                    }
                     <motion.div
                         key={isRegistering ? 'reg-header' : 'login-header'}
                         initial={{ opacity: 0, y: 4 }}
@@ -125,8 +132,14 @@ export default function Login({ onLoginSuccess }) {
                         </p>
                     </motion.div>
 
+                    {
+                        // Credentials and registration form
+                    }
                     <form onSubmit={handleSubmit} className={`flex flex-col ${isRegistering ? 'gap-2.5 sm:gap-3' : 'gap-3 sm:gap-3.5'}`}>
                         <AnimatePresence initial={false}>
+                            {
+                                // Full Name input (registration mode only)
+                            }
                             {isRegistering && (
                                 <motion.div
                                     key="reg-name-field"
@@ -154,7 +167,9 @@ export default function Login({ onLoginSuccess }) {
                             )}
                         </AnimatePresence>
 
-                        {/* Email Field */}
+                        {
+                            // Email address input
+                        }
                         <div>
                             <label htmlFor="login-email" className="block text-[11px] font-medium text-slate-700 mb-1">
                                 Email address
@@ -173,7 +188,9 @@ export default function Login({ onLoginSuccess }) {
                             </div>
                         </div>
 
-                        {/* Password Field */}
+                        {
+                            // Password input with visibility toggle
+                        }
                         <div>
                             <label htmlFor="login-password" className="block text-[11px] font-medium text-slate-700 mb-1">
                                 Password
@@ -218,6 +235,9 @@ export default function Login({ onLoginSuccess }) {
                             </div>
                         </div>
 
+                        {
+                            // Password confirmation input with visibility toggle (registration mode only)
+                        }
                         <AnimatePresence initial={false}>
                             {isRegistering && (
                                 <motion.div
@@ -272,7 +292,9 @@ export default function Login({ onLoginSuccess }) {
                             )}
                         </AnimatePresence>
 
-                        {/* Registration Pending Notice */}
+                        {
+                            // Approval pending notice
+                        }
                         <AnimatePresence>
                             {notice && (
                                 <motion.div
@@ -294,7 +316,9 @@ export default function Login({ onLoginSuccess }) {
                             )}
                         </AnimatePresence>
 
-                        {/* Error Banner with Subtle Shake */}
+                        {
+                            // Error banner
+                        }
                         <AnimatePresence>
                             {error && (
                                 <motion.div
@@ -315,7 +339,9 @@ export default function Login({ onLoginSuccess }) {
                             )}
                         </AnimatePresence>
 
-                        {/* Submit Button */}
+                        {
+                            // Submit action button with loading state
+                        }
                         <motion.button
                             type="submit"
                             disabled={loading}
@@ -335,7 +361,9 @@ export default function Login({ onLoginSuccess }) {
                         </motion.button>
                     </form>
 
-                    {/* Mode Toggle Link */}
+                    {
+                        // Switcher link between Sign In and Registration
+                    }
                     <div className={`${isRegistering ? 'mt-3.5 pt-2.5' : 'mt-4.5 sm:mt-5 pt-3 sm:pt-3.5'} border-t border-slate-100 text-center`}>
                         <button
                             type="button"
@@ -349,6 +377,9 @@ export default function Login({ onLoginSuccess }) {
                     </div>
                 </motion.div>
 
+                {
+                    // Institutional division credit
+                }
                 <div className="mt-2 text-center text-[10px] sm:text-[11px] text-slate-400">
                     Department of Education • Division of Laguna
                 </div>

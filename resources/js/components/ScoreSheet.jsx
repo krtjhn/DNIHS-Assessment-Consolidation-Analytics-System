@@ -215,7 +215,9 @@ export default function ScoreSheet({
 
     return (
         <div className="space-y-6">
-            {/* Top Bar / Breadcrumb */}
+            {
+                // Action header: navigation back button, report title, and save/delete controls
+            }
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
                 <div className="flex items-center gap-3">
                     <button
@@ -297,7 +299,6 @@ export default function ScoreSheet({
                 </div>
             </div>
 
-            {/* Locked Term Banner */}
             {isLocked && (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600 font-medium flex items-center gap-2">
                     <svg className="size-4 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,7 +310,6 @@ export default function ScoreSheet({
                 </div>
             )}
 
-            {/* Feedback alert */}
             <AnimatePresence>
                 {feedback && (
                     <motion.div
@@ -329,9 +329,13 @@ export default function ScoreSheet({
                 )}
             </AnimatePresence>
 
-            {/* Main Content Area: Compact Excel-like Score Table + Qualitative Analysis */}
+            {
+                // Score encoding workspace: Raw score grid and qualitative analysis
+            }
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Compact Excel-like Student Score Encoding Table */}
+                {
+                    // Student raw score encoding table
+                }
                 <div className="lg:col-span-7 rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
                     <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/40">
                         <div>
@@ -424,7 +428,9 @@ export default function ScoreSheet({
                     </div>
                 </div>
 
-                {/* Qualitative Item Analysis Card */}
+                {
+                    // Qualitative item analysis (Least Learned Competency)
+                }
                 <div className="lg:col-span-5 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs space-y-4">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">Qualitative Item Analysis</h3>
                     <div className="space-y-4">

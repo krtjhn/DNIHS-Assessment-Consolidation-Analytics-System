@@ -619,7 +619,6 @@ export default function PerformanceReport() {
     }, [filteredRecords]);
 
     // Active Display Names & Scoping
-    const isSchoolWide = !selectedGradeId;
     const currentGradeObj = gradeLevels.find((g) => String(g.id) === String(selectedGradeId));
     const currentGradeLabel = currentGradeObj ? (currentGradeObj.display_name || currentGradeObj.name) : 'School-wide (All Grades)';
 
@@ -627,8 +626,6 @@ export default function PerformanceReport() {
     const activeTermName = availableTerms.find((t) => String(t.id) === String(selectedTermId))?.name || 'Term';
 
     const activeSectionObj = availableSections.find((s) => String(s.id) === String(selectedSectionId));
-    const activeSectionName = activeSectionObj?.name || 'All';
-    const activeSubjectName = selectedSubjectName || 'All';
 
     const schoolYearOptions = schoolYears.map((sy) => ({ value: String(sy.id), label: sy.name }));
     const termOptions = availableTerms.map((t) => ({ value: String(t.id), label: t.name }));
@@ -679,9 +676,10 @@ export default function PerformanceReport() {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            {/* Header Card: Centered Clean Title & Subtitle with Anchored Filter Button */}
+            {
+                // Report title and filter trigger header
+            }
             <div className="no-print relative flex flex-col sm:flex-row items-center justify-between sm:justify-center gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
-                {/* Centered Clean Title & Subtitle (No logos, No icons, No badges, Non-redundant) */}
                 <div className="text-center min-w-0 sm:px-24">
                     <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
                         {autoReportTitle}
@@ -693,7 +691,9 @@ export default function PerformanceReport() {
                     </div>
                 </div>
 
-                {/* Right: Filter Toggle Button with Anchored Rectangular Popover Modal */}
+                {
+                    // Filter popover trigger button and dropdown menu
+                }
                 <div className="sm:absolute sm:right-4 sm:top-1/2 sm:-translate-y-1/2 shrink-0" ref={filterPopoverRef}>
                     <motion.button
                         type="button"
@@ -720,7 +720,6 @@ export default function PerformanceReport() {
                         )}
                     </motion.button>
 
-                    {/* Rectangular Filter Popover Anchored Directly Below Button */}
                     <AnimatePresence>
                         {showFilters && (
                             <motion.div
@@ -733,7 +732,6 @@ export default function PerformanceReport() {
                                 transition={{ type: 'spring', stiffness: 450, damping: 30 }}
                                 className="absolute right-0 top-full mt-2.5 z-50 w-[320px] sm:w-[380px] rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xl ring-1 ring-slate-900/5 text-left"
                             >
-                            {/* Close button */}
                             <button
                                 type="button"
                                 onClick={() => setShowFilters(false)}
@@ -745,7 +743,6 @@ export default function PerformanceReport() {
                                 </svg>
                             </button>
 
-                            {/* Assessment Type Segmented Control */}
                             <div className="space-y-1.5 pr-6">
                                 <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                                     Assessment Type
@@ -776,7 +773,6 @@ export default function PerformanceReport() {
                                 </div>
                             </div>
 
-                            {/* School Year & Term */}
                             <div className="mt-3 grid grid-cols-2 gap-2.5">
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
@@ -811,7 +807,6 @@ export default function PerformanceReport() {
                                 </div>
                             </div>
 
-                            {/* Grade Level Selection */}
                             <div className="mt-3 space-y-1">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
@@ -839,7 +834,6 @@ export default function PerformanceReport() {
                                 </select>
                             </div>
 
-                            {/* Section Drill-Down (Enabled only when a Grade Level is selected) */}
                             <div className="mt-3 space-y-1">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
@@ -870,7 +864,6 @@ export default function PerformanceReport() {
                                 )}
                             </div>
 
-                            {/* Subject Drill-Down */}
                             <div className="mt-3 space-y-1">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
@@ -898,7 +891,6 @@ export default function PerformanceReport() {
                                 </select>
                             </div>
 
-                            {/* Modal Footer */}
                             <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                                 {hasActiveFilters ? (
                                     <button
@@ -929,7 +921,9 @@ export default function PerformanceReport() {
             </div>
         </div>
 
-        {/* Error Message */}
+        {
+            // Error notification alert banner
+        }
         <AnimatePresence>
             {errorMessage && (
                 <motion.div
@@ -945,24 +939,23 @@ export default function PerformanceReport() {
             )}
         </AnimatePresence>
 
-            {/* EXECUTIVE SUMMARY KPI PANELS: MEAN, SD, MPS, MASTERY DISTRIBUTION */}
+            {
+                // Executive KPI metrics panel: Mean, Standard Deviation, MPS, and Mastery Classification
+            }
             {filteredRecords.length > 0 && !loadingData && (
                 <div className="no-print grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    {/* 1. OVERALL MEAN */}
                     <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Overall Mean</div>
                         <div className="mt-1 text-2xl font-extrabold text-slate-800">{summary.overallMean.toFixed(2)}</div>
                         <div className="mt-0.5 text-[10px] text-slate-400 font-medium">Average Score</div>
                     </div>
 
-                    {/* 2. STANDARD DEVIATION */}
                     <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Standard Deviation</div>
                         <div className="mt-1 text-2xl font-extrabold text-slate-800">{summary.overallSd.toFixed(2)}</div>
                         <div className="mt-0.5 text-[10px] text-slate-400 font-medium">Dispersion (SD)</div>
                     </div>
 
-                    {/* 3. OVERALL MPS */}
                     <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs flex flex-col justify-between">
                         <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Overall MPS</div>
                         <div className={`mt-1 text-2xl font-extrabold ${summary.overallMps >= 75 ? 'text-emerald-700' : 'text-amber-700'}`}>
@@ -971,7 +964,6 @@ export default function PerformanceReport() {
                         <div className="mt-0.5 text-[10px] text-slate-500 font-medium">DepEd Target: 75.00%</div>
                     </div>
 
-                    {/* 4. OVERALL MASTERY LEVEL RESULT */}
                     {(() => {
                         const mps = summary.overallMps || 0;
                         let label = 'Absolutely No Mastery';
@@ -1033,17 +1025,19 @@ export default function PerformanceReport() {
                 </div>
             )}
 
-            {/* REPORT TABLES & DATA FEED */}
+            {
+                // Report data loading state
+            }
             {loadingData ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-20 rounded-2xl border border-slate-200 bg-white shadow-2xs">
                     <LoadingIndicator type="dot-circle" size="md" label="Loading..." />
                 </div>
             ) : reportTableGroups.length === 0 ? (
+                // Official DepEd 18-column consolidated report table (empty state)
                 <div className="report-table-block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse text-left text-xs">
                             <thead>
-                                {/* Unified Table Title: Part of table, Green background, White text, Center aligned */}
                                 <tr className="bg-[#1e5622] text-white">
                                     <th
                                         colSpan={18}
@@ -1109,11 +1103,9 @@ export default function PerformanceReport() {
                             key={group.id}
                             className="report-table-block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs"
                         >
-                                {/* Table Body */}
                                 <div className="overflow-x-auto">
                                     <table className="w-full border-collapse text-left text-xs">
                                         <thead>
-                                            {/* Unified Table Title: Part of table, Green background, White text, Center aligned */}
                                             <tr className="bg-[#1e5622] text-white">
                                                 <th
                                                     colSpan={18}
@@ -1200,7 +1192,6 @@ export default function PerformanceReport() {
                                                             {mps.toFixed(2)}%
                                                         </td>
 
-                                                        {/* 7 Mastery Columns */}
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-emerald-800 bg-emerald-50/25 text-sm">{dist.mastered}</td>
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-emerald-800 bg-emerald-50/25 text-sm">{dist.closelyApproximating}</td>
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-sky-800 bg-sky-50/25 text-sm">{dist.movingTowards}</td>
@@ -1209,7 +1200,6 @@ export default function PerformanceReport() {
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-red-800 bg-red-50/25 text-sm">{dist.veryLow}</td>
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-slate-800 bg-slate-50/50 text-sm">{dist.noMastery}</td>
 
-                                                        {/* Total Column (sum of 7 mastery levels) */}
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-bold text-slate-900 bg-slate-100/70 text-sm">
                                                             {cases > 0 ? masteryTotal : 0}
                                                         </td>
@@ -1229,7 +1219,6 @@ export default function PerformanceReport() {
                                                             </span>
                                                         </td>
 
-                                                        {/* Diff Column (No. of Cases - Total, at the very end after Remarks) */}
                                                         <td className={`border-r border-slate-200 px-2 py-3 text-center font-bold text-sm ${
                                                             cases === 0
                                                                 ? 'text-slate-400 bg-slate-50/50'
@@ -1244,7 +1233,6 @@ export default function PerformanceReport() {
                                             })}
                                         </tbody>
 
-                                        {/* Table Total / General Average Footer */}
                                         <tfoot className="border-t-2 border-slate-300 bg-slate-100/90 font-bold text-xs text-slate-800">
                                             {(() => {
                                                 const tSummary = group.summary || computeStats(group.records);
@@ -1286,7 +1274,6 @@ export default function PerformanceReport() {
                                                             {Number(tSummary.mps || 0).toFixed(2)}%
                                                         </td>
 
-                                                        {/* 7 Mastery Columns */}
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-extrabold text-emerald-900 bg-emerald-100/40 text-sm">
                                                             {tSummary.mastery?.mastered || 0}
                                                         </td>
@@ -1309,7 +1296,6 @@ export default function PerformanceReport() {
                                                             {tSummary.mastery?.noMastery || 0}
                                                         </td>
 
-                                                        {/* Footer Total Column */}
                                                         <td className="border-r border-slate-200 px-2 py-3 text-center font-extrabold text-slate-900 bg-slate-200/80 text-sm">
                                                             {footerCases > 0 ? footerMasteryTotal : 0}
                                                         </td>
@@ -1329,7 +1315,6 @@ export default function PerformanceReport() {
                                                             </span>
                                                         </td>
 
-                                                        {/* Footer Diff Column (at the very end after Remarks) */}
                                                         <td className={`border-r border-slate-200 px-2 py-3 text-center font-extrabold text-sm ${
                                                             footerCases === 0
                                                                 ? 'text-slate-500 bg-slate-200/50'

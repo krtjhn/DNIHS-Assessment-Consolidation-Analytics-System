@@ -254,8 +254,8 @@ export default function SchoolCalendar() {
                 const active = list.find((s) => s.is_active) || list[0];
                 setSelectedSchoolYearId(String(active.id));
             }
-        } catch (err) {
-            console.error('Error loading school years:', err);
+        } catch {
+            // Fail gracefully if school years cannot be fetched
         } finally {
             setLoading(false);
         }
@@ -362,7 +362,9 @@ export default function SchoolCalendar() {
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Flash Notice */}
+            {
+                // Status feedback notification banner
+            }
             <AnimatePresence>
                 {notice && (
                     <motion.div
@@ -382,7 +384,9 @@ export default function SchoolCalendar() {
                 )}
             </AnimatePresence>
 
-            {/* Active Terms Summary Card */}
+            {
+                // Active academic terms status overview (1st, 2nd, 3rd Terms)
+            }
             <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3.5 mb-4">
                     <div className="flex items-center gap-2">
@@ -413,7 +417,6 @@ export default function SchoolCalendar() {
                     </div>
                 </div>
 
-                {/* 3 Term Status Cards (Strictly sorted chronologically) */}
                 <div className="grid gap-3.5 sm:grid-cols-3">
                     {sortedTerms.map((term) => (
                         <TermCard
@@ -426,7 +429,9 @@ export default function SchoolCalendar() {
                 </div>
             </div>
 
-            {/* School Years Roster Table */}
+            {
+                // School years roster and creation trigger
+            }
             <div className="rounded-2xl border border-slate-200/90 bg-white shadow-2xs overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
                     <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
@@ -471,7 +476,9 @@ export default function SchoolCalendar() {
                 </div>
             </div>
 
-            {/* Add School Year Modal */}
+            {
+                // Create School Year modal dialog
+            }
             <AddSchoolYearModal
                 isOpen={isAddSYOpen}
                 onClose={() => setIsAddSYOpen(false)}

@@ -11,7 +11,7 @@ export default function Modal({
     maxWidth = 'max-w-md',
     ariaLabelledBy = 'modal-dialog-title',
 }) {
-    // Handle Escape key to close
+    // Close dialog when Escape key is pressed
     useEffect(() => {
         if (!isOpen) return;
         const handleKeyDown = (e) => {
@@ -32,7 +32,9 @@ export default function Modal({
                     aria-labelledby={ariaLabelledBy}
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
                 >
-                    {/* Backdrop */}
+                    {
+                        // Backdrop blur overlay
+                    }
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -43,7 +45,9 @@ export default function Modal({
                         aria-hidden="true"
                     />
 
-                    {/* Modal Card */}
+                    {
+                        // Modal dialog card
+                    }
                     <motion.div
                         initial={{ opacity: 0, scale: 0.94, y: 12 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -57,6 +61,9 @@ export default function Modal({
                         className={`relative w-full ${maxWidth} rounded-2xl bg-white p-6 shadow-2xl border border-slate-200/80 z-10`}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {
+                            // Modal header with optional icon and title
+                        }
                         {title && (
                             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 mb-4">
                                 <div className="flex items-center gap-2.5">
@@ -86,6 +93,9 @@ export default function Modal({
                                 </button>
                             </div>
                         )}
+                        {
+                            // Modal body content
+                        }
                         {children}
                     </motion.div>
                 </div>
