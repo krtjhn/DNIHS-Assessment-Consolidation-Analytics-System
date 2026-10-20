@@ -251,7 +251,7 @@ export default function App() {
             }
             <div
                 className={`min-h-screen flex flex-col transition-all duration-300 ${
-                    isCollapsed ? 'md:pl-[72px]' : 'md:pl-64'
+                    isCollapsed ? 'md:pl-[72px]' : 'md:pl-72'
                 }`}
             >
                 {

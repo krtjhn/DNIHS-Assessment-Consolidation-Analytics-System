@@ -98,13 +98,13 @@ export default function Sidebar({
             <aside
                 className={`fixed top-0 bottom-0 left-0 z-40 flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 ease-in-out ${
                     isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-                } ${isCollapsed ? 'w-[72px]' : 'w-64'}`}
+                } ${isCollapsed ? 'w-[72px]' : 'w-72'}`}
             >
                 {
                     // Brand header with seal, institutional title, and toggle icon button
                 }
                 <div
-                    className={`flex h-16 shrink-0 items-center border-b border-slate-100 transition-all ${
+                    className={`flex h-16 shrink-0 items-center transition-all ${
                         isCollapsed ? 'justify-center px-0' : 'justify-between gap-2 px-3.5'
                     }`}
                 >
@@ -214,7 +214,7 @@ export default function Sidebar({
                 {
                     // Sign-out action button
                 }
-                <div className="border-t border-slate-100 p-2 sm:p-3">
+                <div className="p-2 sm:p-3">
                     <motion.button
                         type="button"
                         onClick={onLogout}
