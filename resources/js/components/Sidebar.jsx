@@ -179,14 +179,14 @@ export default function Sidebar({
                                 whileTap={{ scale: 0.97 }}
                                 className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors duration-150 ${
                                     isActive
-                                        ? 'text-white'
+                                        ? 'text-[#0071e3]'
                                         : 'text-slate-700 hover:bg-slate-100/70 hover:text-slate-900'
                                 } ${isCollapsed ? 'justify-center px-0' : ''}`}
                             >
                                 {isActive && (
                                     <motion.div
                                         layoutId="sidebar-active-indicator"
-                                        className="absolute inset-0 rounded-xl bg-[#0071e3] shadow-sm shadow-blue-500/25"
+                                        className="absolute inset-0 rounded-xl bg-[#0071e3]/15"
                                         transition={{
                                             type: 'spring',
                                             stiffness: 450,
