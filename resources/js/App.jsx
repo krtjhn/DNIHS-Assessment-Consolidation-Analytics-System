@@ -221,109 +221,132 @@ export default function App() {
         );
     }
 
-    // Unauthenticated state: Institutional Login Portal
-    if (!user || !token) {
-        return <Login onLoginSuccess={handleLoginSuccess} />;
-    }
-
-    const isAdmin = Boolean(user.roles?.some((r) => r.name === 'system_admin'));
+    const isAdmin = Boolean(user?.roles?.some((r) => r.name === 'system_admin'));
     const activeSYName = activeSY?.name || '2025–2026';
     const activeTermName = activeTerm?.name || (activeSY?.terms?.find((t) => t.status === 'active')?.name) || '1st Term';
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 font-sans antialiased selection:bg-[#0071e3] selection:text-white">
-            {
-                // Institutional left navigation sidebar
-            }
-            <Sidebar
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                isAdmin={isAdmin}
-                onLogout={handleLogout}
-                isCollapsed={isCollapsed}
-                onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
-                isMobileOpen={isMobileOpen}
-                onCloseMobile={() => setIsMobileOpen(false)}
-                activeSYName={activeSYName}
-                activeTermName={activeTermName}
-            />
-
-            {
-                // Responsive main shell adapting to collapsed/expanded sidebar widths
-            }
-            <div
-                className={`min-h-screen flex flex-col transition-all duration-300 ${
-                    isCollapsed ? 'md:pl-[72px]' : 'md:pl-72'
-                }`}
-            >
-                {
-                    // Header bar displaying active page title and authenticated user
-                }
-                <TopBar
-                    user={user}
-                    activeTab={activeTab}
-                    onOpenMobileSidebar={() => setIsMobileOpen(true)}
-                />
-
-                {
-                    // Main view container retaining mounted state across visited tabs
-                }
-                <main className="flex-1 w-full px-3 sm:px-5 md:px-6 py-4">
+        <AnimatePresence mode="wait">
+            {!user || !token ? (
+                // Unauthenticated state: Institutional Login Portal with iOS lockscreen dismiss motion
+                <motion.div
+                    key="portal-auth-login"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, scale: 0.97, filter: 'blur(3px)' }}
+                    transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+                >
+                    <Login onLoginSuccess={handleLoginSuccess} />
+                </motion.div>
+            ) : (
+                // Authenticated state: Institutional Dashboard with iOS spring bloom entrance
+                <motion.div
+                    key="portal-auth-dashboard"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="min-h-screen bg-white text-slate-900 font-sans antialiased selection:bg-[#0071e3] selection:text-white"
+                >
                     {
-                        // Teacher Workspace: Assessment record entry and qualitative scoring
+                        // Institutional left navigation sidebar
                     }
-                    {!isAdmin && visitedTabs.has('records') && (
-                        <AnimatedTabPane isActive={activeTab === 'records'}>
-                            <RecordEntry user={user} />
-                        </AnimatedTabPane>
-                    )}
+                    <Sidebar
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        isAdmin={isAdmin}
+                        onLogout={handleLogout}
+                        isCollapsed={isCollapsed}
+                        onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
+                        isMobileOpen={isMobileOpen}
+                        onCloseMobile={() => setIsMobileOpen(false)}
+                        activeSYName={activeSYName}
+                        activeTermName={activeTermName}
+                    />
 
                     {
-                        // Admin Workspace: Consolidated school-wide and sectional reports
+                        // Responsive main shell adapting to collapsed/expanded sidebar widths
                     }
-                    {isAdmin && visitedTabs.has('consolidation') && (
-                        <AnimatedTabPane isActive={activeTab === 'consolidation'}>
-                            <PerformanceReport />
-                        </AnimatedTabPane>
-                    )}
+                    <div
+                        className={`min-h-screen flex flex-col transition-all duration-300 ${
+                            isCollapsed ? 'md:pl-[72px]' : 'md:pl-72'
+                        }`}
+                    >
+                        {
+                            // Header bar displaying active page title and authenticated user
+                        }
+                        <TopBar
+                            user={user}
+                            activeTab={activeTab}
+                            onOpenMobileSidebar={() => setIsMobileOpen(true)}
+                        />
 
-                    {
-                        // Admin Workspace: Section management and academic rosters
-                    }
-                    {isAdmin && visitedTabs.has('sections') && (
-                        <AnimatedTabPane isActive={activeTab === 'sections'}>
-                            <SectionList />
-                        </AnimatedTabPane>
-                    )}
+                        {
+                            // Main view container with iOS-style spring entrance bloom
+                        }
+                        <motion.main
+                            initial={{ opacity: 0, y: 18, scale: 0.985 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }}
+                            className="flex-1 w-full px-3 sm:px-5 md:px-6 py-4"
+                        >
+                            {
+                                // Teacher Workspace: Assessment record entry and qualitative scoring
+                            }
+                            {!isAdmin && visitedTabs.has('records') && (
+                                <AnimatedTabPane isActive={activeTab === 'records'}>
+                                    <RecordEntry user={user} />
+                                </AnimatedTabPane>
+                            )}
 
-                    {
-                        // Admin Workspace: Teaching assignments and class allocation
-                    }
-                    {isAdmin && visitedTabs.has('assignments') && (
-                        <AnimatedTabPane isActive={activeTab === 'assignments'}>
-                            <TeacherAssignment />
-                        </AnimatedTabPane>
-                    )}
+                            {
+                                // Admin Workspace: Consolidated school-wide and sectional reports
+                            }
+                            {isAdmin && visitedTabs.has('consolidation') && (
+                                <AnimatedTabPane isActive={activeTab === 'consolidation'}>
+                                    <PerformanceReport />
+                                </AnimatedTabPane>
+                            )}
 
-                    {
-                        // Admin Workspace: School calendar and academic period management
-                    }
-                    {isAdmin && visitedTabs.has('calendar') && (
-                        <AnimatedTabPane isActive={activeTab === 'calendar'}>
-                            <SchoolCalendar />
-                        </AnimatedTabPane>
-                    )}
+                            {
+                                // Admin Workspace: Section management and academic rosters
+                            }
+                            {isAdmin && visitedTabs.has('sections') && (
+                                <AnimatedTabPane isActive={activeTab === 'sections'}>
+                                    <SectionList />
+                                </AnimatedTabPane>
+                            )}
 
-                    {
-                        // Admin Workspace: Teacher account management and credentials
-                    }
-                    {isAdmin && visitedTabs.has('teachers') && (
-                        <AnimatedTabPane isActive={activeTab === 'teachers'}>
-                            <TeacherAccounts />
-                        </AnimatedTabPane>
-                    )}
-                </main>
-            </div>
-        </div>
+                            {
+                                // Admin Workspace: Teaching assignments and class allocation
+                            }
+                            {isAdmin && visitedTabs.has('assignments') && (
+                                <AnimatedTabPane isActive={activeTab === 'assignments'}>
+                                    <TeacherAssignment />
+                                </AnimatedTabPane>
+                            )}
+
+                            {
+                                // Admin Workspace: School calendar and academic period management
+                            }
+                            {isAdmin && visitedTabs.has('calendar') && (
+                                <AnimatedTabPane isActive={activeTab === 'calendar'}>
+                                    <SchoolCalendar />
+                                </AnimatedTabPane>
+                            )}
+
+                            {
+                                // Admin Workspace: Teacher account management and credentials
+                            }
+                            {isAdmin && visitedTabs.has('teachers') && (
+                                <AnimatedTabPane isActive={activeTab === 'teachers'}>
+                                    <TeacherAccounts />
+                                </AnimatedTabPane>
+                            )}
+                        </motion.main>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

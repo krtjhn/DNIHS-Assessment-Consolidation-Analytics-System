@@ -124,7 +124,12 @@ export default function Sidebar({
                         </motion.button>
                     ) : (
                         <>
-                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 26, delay: 0.02 }}
+                                className="flex items-center gap-2.5 min-w-0 flex-1"
+                            >
                                 <motion.img
                                     src={schoolLogo}
                                     alt="Dayap National Integrated High School seal"
@@ -140,7 +145,7 @@ export default function Sidebar({
                                         Consolidation & Analytics System
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                             <motion.button
                                 type="button"
                                 onClick={() => {
@@ -166,7 +171,7 @@ export default function Sidebar({
                     // Navigation links list
                 }
                 <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-                    {navItems.map((item) => {
+                    {navItems.map((item, index) => {
                         const isActive = activeTab === item.id;
                         return (
                             <motion.button
@@ -177,6 +182,14 @@ export default function Sidebar({
                                     onCloseMobile?.();
                                 }}
                                 title={item.label}
+                                initial={{ opacity: 0, x: -12 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{
+                                    type: 'spring',
+                                    stiffness: 300,
+                                    damping: 24,
+                                    delay: 0.04 + index * 0.035,
+                                }}
                                 whileHover={{ x: isCollapsed ? 0 : 3 }}
                                 whileTap={{ scale: 0.97 }}
                                 className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors duration-150 ${
@@ -216,7 +229,12 @@ export default function Sidebar({
                 {
                     // Active academic term and school year indicator
                 }
-                <div className="p-2 sm:p-3">
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 26, delay: 0.22 }}
+                    className="p-2 sm:p-3"
+                >
                     {!isCollapsed && (
                         <div className="px-3 pb-2 text-[11px] text-slate-500 font-medium select-none truncate">
                             <span>SY {activeSYName}</span>
@@ -246,7 +264,7 @@ export default function Sidebar({
                             </motion.span>
                         )}
                     </motion.button>
-                </div>
+                </motion.div>
             </aside>
         </>
     );

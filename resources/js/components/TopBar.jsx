@@ -19,7 +19,12 @@ export default function TopBar({
     const currentPage = pageDetails[activeTab] || pageDetails.records;
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-100 bg-white/95 px-4 backdrop-blur-xs md:px-6">
+        <motion.header
+            initial={{ y: -16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 28, delay: 0.04 }}
+            className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-100 bg-white/95 px-4 backdrop-blur-xs md:px-6"
+        >
             {
                 // Left section: mobile drawer trigger and animated page title
             }
@@ -61,6 +66,6 @@ export default function TopBar({
                     {user?.name || 'User'}
                 </span>
             </div>
-        </header>
+        </motion.header>
     );
 }
