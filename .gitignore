@@ -36,3 +36,9 @@ yarn-error.log*
 /test-results
 /dist
 docs/BACKEND_API_ARCHITECTURE.md
+
+# Unused / Dummy seeders (Core master data is provisioned via migrations)
+/database/seeders/AcademicSeeder.php
+/database/seeders/UserSeeder.php
+/database/seeders/RoleSeeder.php
+
