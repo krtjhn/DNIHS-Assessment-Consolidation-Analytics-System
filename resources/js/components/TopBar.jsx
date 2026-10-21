@@ -19,7 +19,7 @@ export default function TopBar({
     const currentPage = pageDetails[activeTab] || pageDetails.records;
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-xs md:px-6">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-100 bg-white/95 px-4 backdrop-blur-xs md:px-6">
             {
                 // Left section: mobile drawer trigger and animated page title
             }
