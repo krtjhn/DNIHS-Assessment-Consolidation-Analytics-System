@@ -6,47 +6,91 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-// Seeder for creating the default system administrator user account
+// Seeder for creating the default system administrator and sample teacher accounts
 class UserSeeder extends Seeder
 {
-    // Create the default administrator account if it does not exist
+    // Populate administrator and sample faculty accounts
     public function run(): void
     {
         $now = now();
-        $adminRole = DB::table('roles')->where('name', 'system_admin')->first(); // Fetch system admin role record
+        $adminRole = DB::table('roles')->where('name', 'system_admin')->first();
+        $teacherRole = DB::table('roles')->where('name', 'teacher')->first();
 
-        // Check if admin account already exists
-        $admin = DB::table('users')->where('email', 'admin@gmail.com')->first(); // Look up user by admin email
+        // 1. Seed or update default System Administrator
+        $admin = DB::table('users')->where('email', 'admin@gmail.com')->first();
         if (! $admin) {
-            // Check for legacy email and update it if found
-            $legacyAdmin = DB::table('users')->where('email', 'admin@dayapnhs.edu.ph')->first(); // Look up legacy institutional email
-            if ($legacyAdmin) {
-                DB::table('users')->where('id', $legacyAdmin->id)->update([
-                    'email' => 'admin@gmail.com', // Migrate legacy email to standard email
-                    'email_verified_at' => $now, // Mark email as verified
-                    'updated_at' => $now, // Update timestamp
+            $adminId = DB::table('users')->insertGetId([
+                'name' => 'System Administrator',
+                'email' => 'admin@gmail.com',
+                'email_verified_at' => $now,
+                'password' => Hash::make('Admin@2024!'),
+                'is_active' => true,
+                'approval_status' => 'approved',
+                'approved_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            if ($adminRole) {
+                DB::table('role_user')->insert([
+                    'user_id' => $adminId,
+                    'role_id' => $adminRole->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
-            } else {
-                // Insert new admin user record
-                $adminId = DB::table('users')->insertGetId([
-                    'name' => 'System Administrator', // Administrator full name
-                    'email' => 'admin@gmail.com', // Administrator email
-                    'email_verified_at' => $now, // Mark email as verified
-                    'password' => Hash::make('Admin@2024!'), // Securely hash default admin password
-                    'is_active' => true, // Enable account immediately
-                    'approval_status' => 'approved', // Pre-approve default administrator account
-                    'approved_at' => $now, // Set approval date
-                    'created_at' => $now, // Record creation timestamp
-                    'updated_at' => $now, // Record update timestamp
+            }
+        }
+
+        // 2. Seed Sample Approved Teachers (used by system and automated tests)
+        $sampleTeachers = [
+            [
+                'name' => 'Maria Santos',
+                'email' => 'maria.santos@gmail.com',
+                'password' => Hash::make('Teacher@2024!'),
+                'is_active' => true,
+                'approval_status' => 'approved',
+                'approved_at' => $now,
+            ],
+            [
+                'name' => 'Juan Dela Cruz',
+                'email' => 'juan.delacruz@gmail.com',
+                'password' => Hash::make('Teacher@2024!'),
+                'is_active' => true,
+                'approval_status' => 'approved',
+                'approved_at' => $now,
+            ],
+            // Sample pending applicant teacher (for demonstrating Admin Approval feature)
+            [
+                'name' => 'Pedro Penduko',
+                'email' => 'pedro.penduko@gmail.com',
+                'password' => Hash::make('Teacher@2024!'),
+                'is_active' => false,
+                'approval_status' => 'pending',
+                'approved_at' => null,
+            ],
+        ];
+
+        foreach ($sampleTeachers as $tData) {
+            $existing = DB::table('users')->where('email', $tData['email'])->first();
+            if (! $existing) {
+                $teacherId = DB::table('users')->insertGetId([
+                    'name' => $tData['name'],
+                    'email' => $tData['email'],
+                    'email_verified_at' => $now,
+                    'password' => $tData['password'],
+                    'is_active' => $tData['is_active'],
+                    'approval_status' => $tData['approval_status'],
+                    'approved_at' => $tData['approved_at'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
 
-                // Attach the system_admin role to the user
-                if ($adminRole) {
+                if ($teacherRole) {
                     DB::table('role_user')->insert([
-                        'user_id' => $adminId, // Link created admin user
-                        'role_id' => $adminRole->id, // Link system_admin role id
-                        'created_at' => $now, // Pivot table creation timestamp
-                        'updated_at' => $now, // Pivot table update timestamp
+                        'user_id' => $teacherId,
+                        'role_id' => $teacherRole->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
                     ]);
                 }
             }
