@@ -677,14 +677,14 @@ export default function PerformanceReport() {
     return (
         <div className="flex w-full flex-col gap-5">
             {
-                // Report title and filter trigger header
+                // Flat report title and filter trigger toolbar
             }
-            <div className="no-print relative flex flex-col sm:flex-row items-center justify-between sm:justify-center gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-2xs">
-                <div className="text-center min-w-0 sm:px-24">
+            <div className="no-print flex items-center justify-between gap-3 px-1">
+                <div className="min-w-0">
                     <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
                         {autoReportTitle}
                     </h2>
-                    <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-500 font-medium pt-0.5">
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 font-medium pt-0.5">
                         <span>S.Y. {activeSYName}</span>
                         <span>•</span>
                         <span>{activeTermName}</span>
@@ -694,27 +694,27 @@ export default function PerformanceReport() {
                 {
                     // Filter popover trigger button and dropdown menu
                 }
-                <div className="sm:absolute sm:right-4 sm:top-1/2 sm:-translate-y-1/2 shrink-0" ref={filterPopoverRef}>
+                <div className="relative shrink-0" ref={filterPopoverRef}>
                     <motion.button
                         type="button"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.97 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setShowFilters((prev) => !prev)}
-                        className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3.5 text-xs font-bold transition-colors shadow-2xs ${
+                        className={`relative flex size-9 items-center justify-center rounded-xl border transition-colors cursor-pointer ${
                             showFilters
-                                ? 'border-[#0071e3] bg-[#0071e3] text-white shadow-blue-500/20'
-                                : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                                ? 'border-[#0071e3] bg-[#0071e3] text-white shadow-sm shadow-blue-500/20'
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 shadow-2xs'
                         }`}
-                        title={showFilters ? 'Hide filter controls' : 'Show filter controls'}
+                        title={showFilters ? 'Close filters' : 'Open filters'}
+                        aria-label="Filter report records"
                         aria-expanded={showFilters}
                     >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                         </svg>
-                        <span>{showFilters ? 'Hide Filters' : 'Filters'}</span>
                         {hasActiveFilters && !showFilters && (
                             <span
-                                className="flex size-2 rounded-full bg-[#0071e3]"
+                                className="absolute -top-0.5 -right-0.5 flex size-2.5 rounded-full bg-[#0071e3] ring-2 ring-white"
                                 title="Active filters applied"
                             />
                         )}
