@@ -219,7 +219,7 @@ export default function Sidebar({
                 <div className="p-2 sm:p-3">
                     {!isCollapsed && (
                         <div className="px-3 pb-2 text-[11px] text-slate-500 font-medium select-none truncate">
-                            <span className="font-semibold text-slate-700">SY {activeSYName}</span>
+                            <span>SY {activeSYName}</span>
                             <span className="mx-1.5 text-slate-300">•</span>
                             <span>{activeTermName}</span>
                         </div>
