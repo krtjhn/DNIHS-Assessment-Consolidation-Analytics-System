@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\StatsCalculatorService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -339,3 +340,10 @@ Artisan::command('test-data:clear {--sy=2025-2026} {--term=1} {--with-sections}'
 
     $this->info('[OK] Database test records have been safely cleared.');
 })->purpose('Safely clear test assessment records for a specific School Year and Term');
+
+// Automated database backup schedule (Runs nightly at 2:00 AM with overlapping protection)
+Schedule::command('db:backup')
+    ->dailyAt('02:00')
+    ->withoutOverlapping()
+    ->runInBackground();
+

@@ -42,3 +42,8 @@ docs/BACKEND_API_ARCHITECTURE.md
 /database/seeders/UserSeeder.php
 /database/seeders/RoleSeeder.php
 
+# Database backup runtime dumps (Keep dnihs_proven_backup.sql as proven baseline)
+/database/backups/dnihs_backup_*.sql
+/database/backups/dnihs_backup_*.sql.sha256
+
+
