@@ -32,7 +32,7 @@
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])
 </head>
-<body class="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] antialiased selection:bg-[#0071E3] selection:text-white">
+<body class="min-h-screen bg-white text-[#1D1D1F] antialiased selection:bg-[#0071E3] selection:text-white">
     <!-- Root mount point for the React single-page application -->
     <div id="root"></div>
 </body>
