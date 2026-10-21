@@ -5,8 +5,6 @@ import { SidebarToggleIcon } from './Sidebar.jsx';
 export default function TopBar({
     user,
     activeTab,
-    activeSYName = '2025-2026',
-    activeTermName = '1st Term',
     onOpenMobileSidebar,
 }) {
     const pageDetails = {
@@ -52,22 +50,6 @@ export default function TopBar({
                         </motion.div>
                     </AnimatePresence>
                 </div>
-            </div>
-
-            {
-                // Center section: active academic calendar badge (School Year & Term)
-            }
-            <div className="hidden min-w-0 flex-1 justify-center lg:flex">
-                <motion.div
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="inline-flex cursor-default items-center gap-2 rounded-full border border-slate-200/90 bg-slate-50 px-3.5 py-1 text-xs font-semibold text-slate-800 shadow-2xs"
-                >
-                    <span className="flex size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-                    <span>SY {activeSYName}</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="font-semibold text-slate-800">{activeTermName}</span>
-                </motion.div>
             </div>
 
             {

@@ -70,6 +70,8 @@ export default function Sidebar({
     onToggleCollapse,
     isMobileOpen,
     onCloseMobile,
+    activeSYName = '2025–2026',
+    activeTermName = '1st Term',
 }) {
     const navItems = isAdmin ? adminNavItems : teacherNavItems;
 
@@ -212,9 +214,16 @@ export default function Sidebar({
                 </nav>
 
                 {
-                    // Sign-out action button
+                    // Active academic term and school year indicator
                 }
                 <div className="p-2 sm:p-3">
+                    {!isCollapsed && (
+                        <div className="px-3 pb-2 text-[11px] text-slate-500 font-medium select-none truncate">
+                            <span className="font-semibold text-slate-700">SY {activeSYName}</span>
+                            <span className="mx-1.5 text-slate-300">•</span>
+                            <span>{activeTermName}</span>
+                        </div>
+                    )}
                     <motion.button
                         type="button"
                         onClick={onLogout}

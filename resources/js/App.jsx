@@ -244,6 +244,8 @@ export default function App() {
                 onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
                 isMobileOpen={isMobileOpen}
                 onCloseMobile={() => setIsMobileOpen(false)}
+                activeSYName={activeSYName}
+                activeTermName={activeTermName}
             />
 
             {
@@ -255,13 +257,11 @@ export default function App() {
                 }`}
             >
                 {
-                    // Header bar displaying active academic calendar and current user
+                    // Header bar displaying active page title and authenticated user
                 }
                 <TopBar
                     user={user}
                     activeTab={activeTab}
-                    activeSYName={activeSYName}
-                    activeTermName={activeTermName}
                     onOpenMobileSidebar={() => setIsMobileOpen(true)}
                 />
 
