@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations to apply audited performance indexes and integrity constraints.
-     */
+    // Run the migrations to apply audited performance indexes and integrity constraints
     public function up(): void
     {
         // 1. Index on users.approval_status for fast teacher approval querying
@@ -43,9 +41,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    // Reverse the migrations
     public function down(): void
     {
         Schema::table('assessment_records', function (Blueprint $table): void {

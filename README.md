@@ -70,6 +70,7 @@ For in-depth architectural proofs, benchmarks, and disaster recovery procedures,
 
 | Document | File Path | Focus Area |
 | :--- | :--- | :--- |
+| **Individual Questioning & Line-by-Line Code Reviewer** | [`docs/INDIVIDUAL_QUESTIONING_AND_LINE_BY_LINE_CODE_REVIEWER.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/INDIVIDUAL_QUESTIONING_AND_LINE_BY_LINE_CODE_REVIEWER.md) | Complete line-by-line code walkthrough, design trade-offs, live "What If" coding scenarios, and 4-member defense guide |
 | **Master Architecture & Defense Guide** | [`docs/DATABASE_ARCHITECTURE_AND_DEFENSE.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/DATABASE_ARCHITECTURE_AND_DEFENSE.md) | Mermaid ERD, Data Dictionary, 3NF Proof, and 12-Question Panel Defense Cheat Sheet |
 | **EXPLAIN ANALYZE Performance Report** | [`docs/EXPLAIN_ANALYZE_REPORT.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/EXPLAIN_ANALYZE_REPORT.md) | PostgreSQL query execution plans, cost models, and index verification evidence |
 | **Disaster Recovery & Backup Guide** | [`docs/BACKUP_AND_RESTORE_GUIDE.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/BACKUP_AND_RESTORE_GUIDE.md) | Backup storage layout, SHA-256 verification, and Windows Task Scheduler setup |
@@ -183,7 +184,7 @@ erDiagram
     roles {
         bigint id PK
         varchar name UK
-        varchar description
+        varchar display_name
         timestamp created_at
         timestamp updated_at
     }
@@ -211,8 +212,6 @@ erDiagram
         smallint term_number
         varchar name
         varchar status
-        date start_date
-        date end_date
         timestamp created_at
         timestamp updated_at
     }
@@ -220,7 +219,7 @@ erDiagram
     grade_levels {
         bigint id PK
         smallint level UK
-        varchar name
+        varchar display_name
         timestamp created_at
         timestamp updated_at
     }
@@ -285,13 +284,24 @@ erDiagram
 
     assessment_audit_logs {
         bigint id PK
-        bigint assessment_record_id FK
+        bigint assessment_id FK
         varchar action
-        jsonb old_values
-        jsonb new_values
-        bigint changed_by FK
-        timestamp changed_at
-        varchar ip_address
+        decimal old_mean
+        decimal new_mean
+        decimal old_mps
+        decimal new_mps
+        decimal old_sd
+        decimal new_sd
+        decimal old_highest_score
+        decimal new_highest_score
+        decimal old_lowest_score
+        decimal new_lowest_score
+        integer old_no_of_entries
+        integer new_no_of_entries
+        varchar old_remarks
+        varchar new_remarks
+        bigint teacher_id FK
+        timestamp created_at
     }
 ```
 

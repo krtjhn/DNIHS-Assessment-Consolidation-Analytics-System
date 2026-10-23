@@ -7,10 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations to harden database design for Decision Support System (DSS)
-     * multi-year analytics, substitute teacher support, and strict historical data retention.
-     */
+    // Run the migrations to harden database design for Decision Support System (DSS)
     public function up(): void
     {
         // 1. Add 'code' to subjects table for standard curriculum indexing (NO redundant department)
@@ -99,9 +96,7 @@ return new class extends Migration
         } catch (\Throwable $e) {}
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    // Reverse the migrations
     public function down(): void
     {
         // 4. Revert assessment_records teacher_id foreign key
