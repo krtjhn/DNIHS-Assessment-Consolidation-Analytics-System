@@ -84,18 +84,31 @@ return [
             ]) : [],
         ],
 
+        // PostgreSQL enterprise connection settings for DNIHS Decision Support System
         'pgsql' => [
+            // Database driver utilizing PHP PDO PostgreSQL extension
             'driver' => 'pgsql',
+            // Optional direct connection URL string
             'url' => env('DB_URL'),
+            // Database server hostname or Supabase connection pooler endpoint
             'host' => env('DB_HOST', '127.0.0.1'),
+            // PostgreSQL service port (5432 for standard/transaction pooler, 6543 for session pooler)
             'port' => env('DB_PORT', '5432'),
+            // Active database catalog name
             'database' => env('DB_DATABASE', 'laravel'),
+            // Database user account or Supabase pooled tenant username
             'username' => env('DB_USERNAME', 'root'),
+            // Password credential for database role authentication
             'password' => env('DB_PASSWORD', ''),
+            // Character encoding set to UTF-8 for comprehensive special character support
             'charset' => env('DB_CHARSET', 'utf8'),
+            // Table prefix (empty for direct, standard relational table names)
             'prefix' => '',
+            // Automatically prefix index names with table names for namespace safety
             'prefix_indexes' => true,
+            // Schema search path locked strictly to public to prevent search path hijacking
             'search_path' => 'public',
+            // Wire encryption mode: 'require' enforces TLS 1.3 encryption in transit
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
