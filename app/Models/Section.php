@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -49,11 +48,5 @@ class Section extends Model
     public function teachingAssignments(): HasMany
     {
         return $this->hasMany(TeachingAssignment::class); // Teaching assignment loads
-    }
-
-    // Query scope to get only active sections
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('is_active', true); // Filter sections where is_active is true
     }
 }

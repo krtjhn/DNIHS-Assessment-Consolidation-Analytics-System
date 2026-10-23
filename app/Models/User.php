@@ -64,22 +64,4 @@ class User extends Authenticatable
     {
         return $this->roles->contains('name', $roleName); // Check if loaded roles include role name
     }
-
-    // Scope to get only approved accounts
-    public function scopeApproved($query)
-    {
-        return $query->where('approval_status', 'approved'); // Scope query where approval_status is approved
-    }
-
-    // Scope to get accounts waiting for admin approval
-    public function scopePendingApproval($query)
-    {
-        return $query->where('approval_status', 'pending'); // Scope query where approval_status is pending
-    }
-
-    // Check if account is approved
-    public function isApproved(): bool
-    {
-        return $this->approval_status === 'approved'; // Return true if account is approved
-    }
 }
