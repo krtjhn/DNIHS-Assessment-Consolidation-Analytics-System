@@ -27,7 +27,7 @@ class TeacherController extends Controller
                 'teachingAssignments as active_loads_count' => fn ($query) => $query->active(), // Count active class assignments
             ])
             ->orderBy('name') // Sort alphabetically by teacher name
-            ->get(['id', 'name', 'email', 'email_verified_at', 'is_active', 'approval_status', 'approved_at', 'created_at']); // Specific columns
+            ->get(['id', 'name', 'email', 'is_active', 'approval_status', 'approved_at', 'created_at']); // Specific columns
 
         return response()->json([
             'data' => $teachers, // Return teacher list
@@ -46,7 +46,6 @@ class TeacherController extends Controller
             'is_active' => true, // Directly activate account
             'approval_status' => 'approved', // Pre-approve account
             'approved_at' => now(), // Approval timestamp
-            'email_verified_at' => now(), // Verification timestamp
         ]);
 
         $teacherRole = Role::where('name', 'teacher')->first(); // Fetch teacher role model
@@ -73,7 +72,6 @@ class TeacherController extends Controller
             'approval_status' => 'approved', // Mark approved
             'approved_at' => now(), // Record approval timestamp
             'is_active' => true, // Enable login access
-            'email_verified_at' => $teacher->email_verified_at ?? now(), // Verify email
         ]);
 
         return response()->json([
@@ -116,7 +114,6 @@ class TeacherController extends Controller
             'is_active' => true, // Restore active status
             'approval_status' => 'approved', // Ensure approved status
             'approved_at' => $teacher->approved_at ?? now(), // Preserve or set approval date
-            'email_verified_at' => $teacher->email_verified_at ?? now(), // Preserve or set email verification
         ]);
 
         return response()->json([

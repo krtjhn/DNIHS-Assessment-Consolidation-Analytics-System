@@ -53,7 +53,6 @@ erDiagram
         string password
         string approval_status
         boolean is_active
-        timestamp email_verified_at
         timestamp created_at
         timestamp updated_at
         timestamp deleted_at
@@ -72,7 +71,6 @@ erDiagram
         bigint user_id FK
         bigint role_id FK
         timestamp created_at
-        timestamp updated_at
     }
 
     SCHOOL_YEARS {
@@ -203,7 +201,6 @@ Stores user credentials, access approval states, and soft deletion flags.
 | `password` | `VARCHAR(255)` | NO | None | Bcrypt-hashed password string ($2\text{y}\$12\$...). |
 | `approval_status` | `VARCHAR(50)` | NO | `DEFAULT 'pending'` | Administrative state (`pending`, `approved`, `rejected`). |
 | `is_active` | `BOOLEAN` | NO | `DEFAULT true` | Logical account activation switch. |
-| `email_verified_at`| `TIMESTAMP` | YES | None | Verification timestamp. |
 | `remember_token` | `VARCHAR(100)` | YES | None | Laravel session authentication remember-me token. |
 | `created_at` | `TIMESTAMP` | YES | None | Record creation audit timestamp. |
 | `updated_at` | `TIMESTAMP` | YES | None | Record update audit timestamp. |
@@ -232,8 +229,7 @@ Associative table linking users to roles (Many-to-Many).
 | `id` | `BIGINT` | NO | `PRIMARY KEY GENERATED ALWAYS` | Surrogate link key. |
 | `user_id` | `BIGINT` | NO | `FK -> users(id) ON DELETE CASCADE` | Associated user identity. |
 | `role_id` | `BIGINT` | NO | `FK -> roles(id) ON DELETE CASCADE` | Associated role identity. |
-| `created_at` | `TIMESTAMP` | YES | None | Link timestamp. |
-| `updated_at` | `TIMESTAMP` | YES | None | Link update timestamp. |
+| `created_at` | `TIMESTAMP` | NO | `DEFAULT CURRENT_TIMESTAMP` | Role assignment creation timestamp. |
 
 ---
 

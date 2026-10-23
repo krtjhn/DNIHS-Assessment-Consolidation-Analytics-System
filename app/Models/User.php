@@ -22,7 +22,6 @@ class User extends Authenticatable
         'is_active', // Whether account is active (not deactivated)
         'approval_status', // Account status: pending, approved, or rejected
         'approved_at', // Date and time when admin approved account
-        'email_verified_at', // Email verification timestamp
     ];
 
     // Hide sensitive fields from JSON responses
@@ -34,7 +33,6 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime', // Cast verification timestamp as Carbon datetime
             'password' => 'hashed', // Automatically hash plain passwords on assignment
             'is_active' => 'boolean', // Cast active flag as boolean
             'approved_at' => 'datetime', // Cast approval timestamp as Carbon datetime
@@ -44,7 +42,7 @@ class User extends Authenticatable
     // Roles assigned to this user
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class)->withTimestamps(); // Many-to-many relationship with roles
+        return $this->belongsToMany(Role::class)->withPivot('created_at'); // Relational link with assignment timestamp
     }
 
     // Teaching assignments for this teacher

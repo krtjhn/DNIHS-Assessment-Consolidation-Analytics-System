@@ -16,6 +16,6 @@ class Role extends Model
     // Users who have this role
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)->withTimestamps(); // Many-to-many relationship via role_user table
+        return $this->belongsToMany(User::class)->withPivot('created_at'); // Many-to-many relationship via role_user table
     }
 }
