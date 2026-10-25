@@ -88,7 +88,8 @@ return new class extends Migration
 
                     RETURN NEW;
                 END;
-                \$\$ LANGUAGE plpgsql;
+                \$\$ LANGUAGE plpgsql
+                SET search_path = public, pg_temp;
             ");
 
             // Attach trigger to assessment_records table
