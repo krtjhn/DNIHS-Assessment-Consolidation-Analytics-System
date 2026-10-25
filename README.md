@@ -9,7 +9,7 @@ An enterprise-grade academic evaluation platform, statistical computation engine
 - **Backend Framework**: Laravel 11.x (PHP 8.3+)
 - **Database Engine**: PostgreSQL 17.11 on Supabase Cloud (`aws-0-ap-northeast-1.pooler.supabase.com:5432`)
 - **Capstone Database Rubric**: **100% (70/70 Perfect Score)**
-- **Automated Test Suite**: **42 Tests, 175 Assertions (100% Passing)**
+- **Automated Test Suite**: **42 Tests, 176 Assertions (100% Passing)**
 - **Database Security**: Row-Level Security (RLS) across all 20 public tables & Dual-Tier PostgreSQL Roles
 - **Execution Performance**: Sub-millisecond queries via B-Tree and Partial Indexes (**-78.9% and -90.2% cost reduction**)
 
@@ -71,6 +71,7 @@ For in-depth architectural proofs, benchmarks, and disaster recovery procedures,
 | Document | File Path | Focus Area |
 | :--- | :--- | :--- |
 | **Master Web Dev & Code Reviewer** | [`docs/WEB_DEV_REVIEWER.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/WEB_DEV_REVIEWER.md) | Complete line-by-line code walkthrough, design trade-offs, and live "What If" coding scenarios for the group |
+| **Master DBA & SQL Reviewer** | [`docs/DBA_REVIEWER.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/DBA_REVIEWER.md) | Complete line-by-line SQL, migration, PL/pgSQL trigger, `EXPLAIN ANALYZE`, and live DBA "What If" reviewer |
 | **Master Architecture & Defense Guide** | [`docs/DATABASE_ARCHITECTURE_AND_DEFENSE.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/DATABASE_ARCHITECTURE_AND_DEFENSE.md) | Mermaid ERD, Data Dictionary, 3NF Proof, and 12-Question Panel Defense Cheat Sheet |
 | **EXPLAIN ANALYZE Performance Report** | [`docs/EXPLAIN_ANALYZE_REPORT.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/EXPLAIN_ANALYZE_REPORT.md) | PostgreSQL query execution plans, cost models, and index verification evidence |
 | **Disaster Recovery & Backup Guide** | [`docs/BACKUP_AND_RESTORE_GUIDE.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/BACKUP_AND_RESTORE_GUIDE.md) | Backup storage layout, SHA-256 verification, and Windows Task Scheduler setup |
@@ -549,22 +550,22 @@ During the capstone defense or technical evaluation, execute tests using the dir
 # 7. Verify authentication tokens and RBAC role gates
 .\vendor\bin\phpunit.bat tests\Feature\AuthAndRoleTest.php
 
-# 8. Run the entire comprehensive test suite (42 tests, 175 assertions)
+# 8. Run the entire comprehensive test suite (42 tests, 176 assertions)
 .\vendor\bin\phpunit.bat
 ```
 
-### 10.2 Comprehensive Test Coverage Breakdown (42 Tests, 175 Assertions)
+### 10.2 Comprehensive Test Coverage Breakdown (42 Tests, 176 Assertions)
 
 | Test Suite Class | Tests | Assertions | Core Functionalities Verified |
 | :--- | :---: | :---: | :--- |
-| [`DatabaseConnectionTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/DatabaseConnectionTest.php) | 5 | 20 | SSL connection mode (`require`), search path isolation (`public, pg_temp`), RLS enabled on all 20 tables, custom PostgreSQL roles (`dnihs_admin_role`, `dnihs_teacher_staff`), and forensic audit log trigger validation. |
+| [`DatabaseConnectionTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/DatabaseConnectionTest.php) | 5 | 21 | SSL connection mode (`require`), search path isolation (`public, pg_temp`), RLS enabled on all 20 tables, custom PostgreSQL roles (`dnihs_admin_role`, `dnihs_teacher_staff`), and forensic audit log trigger validation. |
 | [`TeacherAccountTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/TeacherAccountTest.php) | 9 | 51 | Self-registration approval pipeline (`pending` $\to$ `approved` / `rejected`), direct admin provisioning, deactivation with historical score retention, token revocation, and reactivation. |
 | [`AssessmentAndSectionTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/AssessmentAndSectionTest.php) | 6 | 25 | Descriptive statistics calculation accuracy (Mean, MPS, SD, Extremes, Mastery), score bounds enforcement ($0 \le x \le total$), grade alignment checks, and referential deletion guards. |
 | [`AssessmentOwnershipTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/AssessmentOwnershipTest.php) | 6 | 18 | Teacher record scoping (teachers can only see own scores), cross-teacher overwrite rejection, admin override privileges, and multi-section pooled variance aggregation. |
 | [`TeacherAssignmentTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/TeacherAssignmentTest.php) | 5 | 18 | Teaching workload allocation, conflict prevention, partial unique index verification for mid-year substitute teachers, and batch workload synchronization (`syncTeacher`). |
 | [`SchoolYearAndTermTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/SchoolYearAndTermTest.php) | 5 | 18 | Automatic 3-term generation upon academic year creation, active school year singularity, sequential term status transitions, and period locking. |
 | [`AuthAndRoleTest`](file:///c:/Users/acer/Documents/BSIT/m_capstone/tests/Feature/AuthAndRoleTest.php) | 6 | 25 | Sanctum token issuance and revocation, role attachment (`system_admin` vs `teacher`), and access denial for unapproved faculty accounts. |
-| **Total Test Suite** | **42** | **175** | **100% Passing — Complete Functional & Architectural Verification** |
+| **Total Test Suite** | **42** | **176** | **100% Passing — Complete Functional & Architectural Verification** |
 
 ---
 

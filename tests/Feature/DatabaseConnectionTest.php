@@ -106,8 +106,9 @@ class DatabaseConnectionTest extends TestCase
         try {
             DB::transaction(function () use ($initialCount) {
                 DB::table('school_years')->insert([
-                    'year_start' => 2098,
-                    'year_end' => 2099,
+                    'name' => '2098-2099',
+                    'start_date' => '2098-06-01',
+                    'end_date' => '2099-03-31',
                     'is_active' => false,
                     'created_at' => now(),
                     'updated_at' => now(),

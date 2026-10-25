@@ -38,7 +38,7 @@ runExplain(
         "SET LOCAL enable_indexscan = off",
         "SET LOCAL enable_bitmapscan = off"
     ],
-    "SELECT id, school_year_id, term_id, grade_level_id, section_id, subject_id, type, mean, mps, sd FROM assessment_records WHERE school_year_id = 1 AND term_id = 1 AND type = 'Quarterly' AND grade_level_id = 1 AND deleted_at IS NULL"
+    "SELECT id, school_year_id, term_id, grade_level_id, section_id, subject_id, type, mean, mps, sd FROM assessment_records WHERE school_year_id = 1 AND term_id = 1 AND type = 'term_exam' AND grade_level_id = 1 AND deleted_at IS NULL"
 );
 
 // 1B. Assessment Consolidation Query - Index Scan (Composite Index: assess_records_consolidation_idx)
@@ -48,7 +48,7 @@ runExplain(
         "SET LOCAL enable_indexscan = on",
         "SET LOCAL enable_bitmapscan = on"
     ],
-    "SELECT id, school_year_id, term_id, grade_level_id, section_id, subject_id, type, mean, mps, sd FROM assessment_records WHERE school_year_id = 1 AND term_id = 1 AND type = 'Quarterly' AND grade_level_id = 1 AND deleted_at IS NULL"
+    "SELECT id, school_year_id, term_id, grade_level_id, section_id, subject_id, type, mean, mps, sd FROM assessment_records WHERE school_year_id = 1 AND term_id = 1 AND type = 'term_exam' AND grade_level_id = 1 AND deleted_at IS NULL"
 );
 
 // 2A. Teaching Assignment Query - Sequential Scan
