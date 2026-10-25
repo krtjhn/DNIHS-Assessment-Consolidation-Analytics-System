@@ -25,7 +25,7 @@ class AssessmentAndSectionTest extends TestCase
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first()
             ?? Term::first();
         $section = Section::where('name', 'Pilot A')->first() ?? Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->where('code', 'ESP-7')->first() ?? Subject::where('grade_level_id', $section->grade_level_id)->first();
 
         // Ensure active teaching assignment exists
         TeachingAssignment::firstOrCreate([
@@ -75,7 +75,7 @@ class AssessmentAndSectionTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->where('code', 'ESP-7')->first() ?? Subject::where('grade_level_id', $section->grade_level_id)->first();
 
         TeachingAssignment::where([
             'school_year_id' => $sy->id,
@@ -114,7 +114,7 @@ class AssessmentAndSectionTest extends TestCase
         $sy = SchoolYear::active()->first() ?? SchoolYear::first();
         $term = Term::where('school_year_id', $sy->id)->where('status', 'active')->first() ?? Term::first();
         $section = Section::where('school_year_id', $sy->id)->first() ?? Section::first();
-        $subject = Subject::where('grade_level_id', $section->grade_level_id)->first() ?? Subject::first();
+        $subject = Subject::where('grade_level_id', $section->grade_level_id)->where('code', 'ESP-7')->first() ?? Subject::where('grade_level_id', $section->grade_level_id)->first();
 
         // Ensure teacher is NOT assigned to this section/subject
         TeachingAssignment::where([

@@ -99,7 +99,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MATH',
                 'target_mean' => 43.8,
                 'spread' => 3.2,
-                'competency' => 'Translating verbal phrases into mathematical expressions and equations',
+                'competency' => 'Algebraic expressions',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -108,7 +108,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'SCI',
                 'target_mean' => 41.5,
                 'spread' => 3.8,
-                'competency' => 'Differentiating mixtures from substances based on a set of properties',
+                'competency' => 'Mixtures vs substances',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -117,7 +117,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MATH',
                 'target_mean' => 37.2,
                 'spread' => 4.5,
-                'competency' => 'Applying properties of operations on integers and rational numbers',
+                'competency' => 'Operations on integers',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -126,7 +126,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'SCI',
                 'target_mean' => 36.4,
                 'spread' => 4.2,
-                'competency' => 'Investigating properties of acidic and basic solutions using litmus indicators',
+                'competency' => 'Acids and bases',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -135,7 +135,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MATH',
                 'target_mean' => 45.6,
                 'spread' => 2.8,
-                'competency' => 'Factoring completely different types of polynomials (common monomial factor, difference of two squares)',
+                'competency' => 'Factoring polynomials',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -144,7 +144,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'SCI',
                 'target_mean' => 43.2,
                 'spread' => 3.4,
-                'competency' => 'Investigating Newton’s Laws of Motion: Law of Acceleration and Mass Interaction',
+                'competency' => "Newton's laws of motion",
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -153,7 +153,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MATH',
                 'target_mean' => 35.8,
                 'spread' => 4.6,
-                'competency' => 'Illustrating rational algebraic expressions and finding their simplest form',
+                'competency' => 'Rational expressions',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -162,7 +162,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'SCI',
                 'target_mean' => 38.0,
                 'spread' => 4.0,
-                'competency' => 'Relating work and energy to potential and kinetic mechanical states',
+                'competency' => 'Work and kinetic energy',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -171,7 +171,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MATH',
                 'target_mean' => 48.2,
                 'spread' => 1.8,
-                'competency' => 'Solving quadratic equations by extracting square roots and quadratic formula',
+                'competency' => 'Quadratic equations',
             ],
             [
                 'teacher' => 'Kurt John P. Caraig',
@@ -180,10 +180,11 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MATH',
                 'target_mean' => 44.5,
                 'spread' => 3.1,
-                'competency' => 'Generating patterns and determining the nth term of arithmetic and geometric sequences',
+                'competency' => 'Arithmetic sequences',
             ],
 
             // Norwin L. Austria (English & Filipino)
+            // (Note: Grade 7 Pilot A FIL is reserved for Maria Santos automated test isolation)
             [
                 'teacher' => 'Norwin L. Austria',
                 'level' => 7,
@@ -191,16 +192,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'ENG',
                 'target_mean' => 43.5,
                 'spread' => 3.3,
-                'competency' => 'Employing appropriate styles of reading (skimming, scanning, intensive) for purpose',
-            ],
-            [
-                'teacher' => 'Norwin L. Austria',
-                'level' => 7,
-                'section' => 'Pilot A',
-                'prefix' => 'FIL',
-                'target_mean' => 46.2,
-                'spread' => 2.5,
-                'competency' => 'Paghahambing ng mga katangian ng tula/awiting panudyo, tugmang de gulong at palaisipan',
+                'competency' => 'Reading styles (skimming & scanning)',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -209,7 +201,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'ENG',
                 'target_mean' => 38.2,
                 'spread' => 4.2,
-                'competency' => 'Identifying the genre and features of diverse viewing materials',
+                'competency' => 'Genres of viewing materials',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -218,7 +210,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'FIL',
                 'target_mean' => 40.5,
                 'spread' => 3.6,
-                'competency' => 'Pagsusuri ng mga elemento ng kuwentong-bayan sa binasang akda',
+                'competency' => 'Elemento ng kuwentong-bayan',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -227,7 +219,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'ENG',
                 'target_mean' => 44.8,
                 'spread' => 3.0,
-                'competency' => 'Determining the meaning of idiomatic expressions by noting context clues and collocations',
+                'competency' => 'Idiomatic expressions',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -236,7 +228,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'FIL',
                 'target_mean' => 47.0,
                 'spread' => 2.2,
-                'competency' => 'Pagpapaliwanag sa kahalagahan ng paggamit ng angkop na gramatika at retorika sa panitikang Pilipino',
+                'competency' => 'Gramatika at retorika',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -245,7 +237,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'ENG',
                 'target_mean' => 36.5,
                 'spread' => 4.4,
-                'competency' => 'Using appropriate cohesive devices in composing informative paragraphs',
+                'competency' => 'Cohesive devices in writing',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -254,7 +246,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'FIL',
                 'target_mean' => 39.2,
                 'spread' => 3.8,
-                'competency' => 'Pagbibigay kahulugan sa mga talinghaga at eupemistikong pahayag sa akda',
+                'competency' => 'Talinghaga at eupemistikong pahayag',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -263,7 +255,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'ENG',
                 'target_mean' => 45.4,
                 'spread' => 2.9,
-                'competency' => 'Expressing permission, obligation, and prohibition using modal verbs in writing',
+                'competency' => 'Modal verbs in writing',
             ],
             [
                 'teacher' => 'Norwin L. Austria',
@@ -272,7 +264,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'ENG',
                 'target_mean' => 44.0,
                 'spread' => 3.2,
-                'competency' => 'Determining the effect of textual aids like advanced organizers and diagrams on comprehension',
+                'competency' => 'Textual aids and graphic organizers',
             ],
 
             // Daisuke Reggie C. Bati (MAPEH, TLE & Araling Panlipunan)
@@ -283,7 +275,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MAPEH',
                 'target_mean' => 45.0,
                 'spread' => 2.9,
-                'competency' => 'Executing fundamental skills and rhythmic movements in traditional folk dances',
+                'competency' => 'Traditional folk dance steps',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -292,7 +284,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'TLE',
                 'target_mean' => 42.8,
                 'spread' => 3.5,
-                'competency' => 'Applying occupational health and safety (OHS) procedures in exploratory technical trades',
+                'competency' => 'Occupational health & safety (OHS)',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -301,7 +293,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'AP',
                 'target_mean' => 41.0,
                 'spread' => 3.9,
-                'competency' => 'Naipapaliwanag ang konsepto ng Asya tungo sa paghahating heograpiko (Silangang Asya, Timog-Silangang Asya)',
+                'competency' => 'Heograpiya ng Asya',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -310,7 +302,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MAPEH',
                 'target_mean' => 46.5,
                 'spread' => 2.4,
-                'competency' => 'Executing the basic skills and offensive/defensive tactics in team sports (basketball/volleyball)',
+                'competency' => 'Team sports skills & tactics',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -319,7 +311,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'TLE',
                 'target_mean' => 43.5,
                 'spread' => 3.2,
-                'competency' => 'Interpreting technical drawings, diagrams, and electrical schematic symbols accurately',
+                'competency' => 'Technical drawings & schematics',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -328,7 +320,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'AP',
                 'target_mean' => 39.8,
                 'spread' => 4.1,
-                'competency' => 'Pagsusuri sa yugto ng pag-unlad ng kultura sa panahong prehistoriko sa daigdig',
+                'competency' => 'Kulturang prehistoriko sa daigdig',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -337,7 +329,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MAPEH',
                 'target_mean' => 48.5,
                 'spread' => 1.5,
-                'competency' => 'Performing social and ballroom dances to maintain active community lifestyle and physical fitness',
+                'competency' => 'Social and ballroom dances',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -346,7 +338,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'AP',
                 'target_mean' => 43.2,
                 'spread' => 3.3,
-                'competency' => 'Natataya ang kahalagahan ng ekonomiks sa matalinong pagpapasya sa pang-araw-araw na pamumuhay',
+                'competency' => 'Kahalagahan ng ekonomiks',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -355,7 +347,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'MAPEH',
                 'target_mean' => 46.0,
                 'spread' => 2.6,
-                'competency' => 'Applying consumer health concepts in selecting trustworthy health information and healthcare products',
+                'competency' => 'Consumer health products',
             ],
             [
                 'teacher' => 'Daisuke Reggie C. Bati',
@@ -364,7 +356,7 @@ class DemoFrontendSeeder extends Seeder
                 'prefix' => 'TLE',
                 'target_mean' => 44.2,
                 'spread' => 3.0,
-                'competency' => 'Configuring computer systems and local area networks adhering to structured cabling standards',
+                'competency' => 'LAN cabling & network config',
             ],
         ];
 
