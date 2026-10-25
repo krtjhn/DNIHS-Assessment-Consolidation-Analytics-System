@@ -61,10 +61,14 @@ Create migration `2026_10_22_000001_create_assessment_metrics_trigger_and_audit.
 2. Stored Function `fn_calculate_assessment_metrics()`:
    - Validates `total_items > 0` and `mean <= total_items`.
    - Computes `NEW.mps = ROUND((NEW.mean / NEW.total_items) * 100.0, 2)`.
-   - Auto-computes `NEW.remarks` if null:
-     - MPS >= 75.00: `'Mastered'`
-     - MPS >= 50.00: `'Nearly Mastered'`
-     - MPS < 50.00: `'Low Mastery'`
+   - Auto-computes `NEW.remarks` if null, placeholder, or previous descriptor to official DepEd 7-bracket verbal descriptors:
+     - MPS >= 96.00: `'Mastered'`
+     - MPS >= 86.00: `'Closely Approximating Mastery'`
+     - MPS >= 66.00: `'Moving Towards Mastery'`
+     - MPS >= 35.00: `'Average'`
+     - MPS >= 15.00: `'Low'`
+     - MPS >= 5.00: `'Very Low'`
+     - MPS < 5.00: `'Absolutely No Mastery'`
 3. Trigger `trg_assessment_records_before_insert_or_update`:
    - `BEFORE INSERT OR UPDATE ON assessment_records FOR EACH ROW EXECUTE FUNCTION fn_calculate_assessment_metrics();`
 4. Stored Function & Trigger for audit logging:

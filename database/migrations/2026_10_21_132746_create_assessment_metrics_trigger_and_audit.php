@@ -54,14 +54,35 @@ return new class extends Migration
                     -- Automatically calculate accurate MPS
                     NEW.mps := ROUND((NEW.mean / NEW.total_items::numeric) * 100.0, 2);
 
-                    -- Automatically assign DepEd mastery remarks if unassigned
-                    IF NEW.remarks IS NULL OR TRIM(NEW.remarks) = '' OR NEW.remarks = 'Complete' THEN
-                        IF NEW.mps >= 75.00 THEN
+                    -- Automatically assign official DepEd 7-bracket mastery remarks if unassigned, placeholder, or previous descriptor
+                    IF NEW.remarks IS NULL 
+                       OR TRIM(NEW.remarks) = '' 
+                       OR NEW.remarks = 'Complete' 
+                       OR NEW.remarks IN (
+                           'Mastered', 
+                           'Closely Approximating Mastery', 
+                           'Moving Towards Mastery', 
+                           'Average', 
+                           'Low', 
+                           'Very Low', 
+                           'Absolutely No Mastery',
+                           'Nearly Mastered', 
+                           'Low Mastery'
+                       ) THEN
+                        IF NEW.mps >= 96.00 THEN
                             NEW.remarks := 'Mastered';
-                        ELSIF NEW.mps >= 50.00 THEN
-                            NEW.remarks := 'Nearly Mastered';
+                        ELSIF NEW.mps >= 86.00 THEN
+                            NEW.remarks := 'Closely Approximating Mastery';
+                        ELSIF NEW.mps >= 66.00 THEN
+                            NEW.remarks := 'Moving Towards Mastery';
+                        ELSIF NEW.mps >= 35.00 THEN
+                            NEW.remarks := 'Average';
+                        ELSIF NEW.mps >= 15.00 THEN
+                            NEW.remarks := 'Low';
+                        ELSIF NEW.mps >= 5.00 THEN
+                            NEW.remarks := 'Very Low';
                         ELSE
-                            NEW.remarks := 'Low Mastery';
+                            NEW.remarks := 'Absolutely No Mastery';
                         END IF;
                     END IF;
 
@@ -71,13 +92,13 @@ return new class extends Migration
             ");
 
             // Attach trigger to assessment_records table
-            DB::unprepared("
+            DB::unprepared('
                 DROP TRIGGER IF EXISTS trg_assessment_records_before_insert_or_update ON assessment_records;
                 CREATE TRIGGER trg_assessment_records_before_insert_or_update
                 BEFORE INSERT OR UPDATE ON assessment_records
                 FOR EACH ROW
                 EXECUTE FUNCTION fn_calculate_assessment_metrics();
-            ");
+            ');
 
             // Function to log updates and deletions with full statistical snapshot
             DB::unprepared("
@@ -147,13 +168,13 @@ return new class extends Migration
             ");
 
             // Attach audit trigger to assessment_records table
-            DB::unprepared("
+            DB::unprepared('
                 DROP TRIGGER IF EXISTS trg_assessment_audit_logger ON assessment_records;
                 CREATE TRIGGER trg_assessment_audit_logger
                 AFTER UPDATE OR DELETE ON assessment_records
                 FOR EACH ROW
                 EXECUTE FUNCTION fn_audit_assessment_records();
-            ");
+            ');
         }
     }
 
@@ -161,12 +182,12 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::getDriverName() === 'pgsql') {
-            DB::unprepared("
+            DB::unprepared('
                 DROP TRIGGER IF EXISTS trg_assessment_audit_logger ON assessment_records;
                 DROP FUNCTION IF EXISTS fn_audit_assessment_records();
                 DROP TRIGGER IF EXISTS trg_assessment_records_before_insert_or_update ON assessment_records;
                 DROP FUNCTION IF EXISTS fn_calculate_assessment_metrics();
-            ");
+            ');
         }
 
         Schema::dropIfExists('assessment_audit_logs');

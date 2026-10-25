@@ -169,7 +169,7 @@ Execution Time: 0.068 ms
   - **Lines 46–48**: `IF NEW.total_items IS NULL OR NEW.total_items <= 0 THEN RAISE EXCEPTION 'total_items must be greater than zero'; END IF;`
   - **Lines 50–52**: `IF NEW.mean > NEW.total_items THEN RAISE EXCEPTION 'mean score cannot exceed total_items'; END IF;`
   - **Line 55**: `NEW.mps := ROUND((NEW.mean / NEW.total_items::numeric) * 100.0, 2);` — Casts `total_items` to `numeric` to prevent integer division truncation, computes MPS, and rounds to 2 decimal places.
-  - **Lines 58–66**: Automatically classifies `NEW.remarks` if empty (`>= 75.00` Mastered, `>= 50.00` Nearly Mastered, `< 50.00` Low Mastery).
+  - **Lines 58–87**: Automatically classifies `NEW.remarks` if empty or placeholder to official DepEd 7-bracket verbal descriptors (`>= 96.00` Mastered, `>= 86.00` Closely Approximating Mastery, `>= 66.00` Moving Towards Mastery, `>= 35.00` Average, `>= 15.00` Low, `>= 5.00` Very Low, `< 5.00` Absolutely No Mastery).
   - **Line 68**: `RETURN NEW;` hands the modified record to PostgreSQL to be written.
 - **Lines 74–80 (`trg_assessment_records_before_insert_or_update`)**:
   - Must be a **`BEFORE`** trigger (`BEFORE INSERT OR UPDATE ... FOR EACH ROW`) because it modifies `NEW.mps` and `NEW.remarks` *before* the tuple is written to the table heap.

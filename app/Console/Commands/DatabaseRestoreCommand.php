@@ -27,6 +27,7 @@ class DatabaseRestoreCommand extends Command
 
         if ($this->option('verify-only')) {
             $this->info('[MODE] Verification-only check requested.');
+
             return $this->runVerificationAssertions();
         }
 
@@ -38,6 +39,7 @@ class DatabaseRestoreCommand extends Command
             $files = glob("{$backupDir}/*.sql");
             if (empty($files)) {
                 $this->error("[FAIL] No backup files found in: {$backupDir}");
+
                 return 1;
             }
             usort($files, fn ($a, $b) => filemtime($b) - filemtime($a));
@@ -46,13 +48,14 @@ class DatabaseRestoreCommand extends Command
 
         if (! file_exists($filePath)) {
             $this->error("[FAIL] Specified backup file does not exist: {$filePath}");
+
             return 1;
         }
 
         $filename = basename($filePath);
         $this->line("Target File: {$filename}");
         $this->line("Full Path:   {$filePath}");
-        $this->line('File Size:   ' . round(filesize($filePath) / 1024, 2) . ' KB');
+        $this->line('File Size:   '.round(filesize($filePath) / 1024, 2).' KB');
 
         // Check SHA-256 integrity hash if checksum file exists
         $checksumFile = "{$filePath}.sha256";
@@ -60,9 +63,10 @@ class DatabaseRestoreCommand extends Command
             $expectedChecksum = trim(explode(' ', file_get_contents($checksumFile))[0]);
             $actualChecksum = hash_file('sha256', $filePath);
             if ($expectedChecksum === $actualChecksum) {
-                $this->info('[OK] SHA-256 Integrity Verified: ' . substr($actualChecksum, 0, 16) . '...');
+                $this->info('[OK] SHA-256 Integrity Verified: '.substr($actualChecksum, 0, 16).'...');
             } else {
                 $this->error('[FAIL] SHA-256 Checksum Mismatch! File may be corrupted or tampered.');
+
                 return 1;
             }
         }
@@ -81,11 +85,11 @@ class DatabaseRestoreCommand extends Command
             $this->info("[1/2] Restoring database using native psql utility: {$psqlPath}");
             $cmd = [
                 $psqlPath,
-                '--host=' . $host,
-                '--port=' . $port,
-                '--username=' . $username,
-                '--dbname=' . $database,
-                '--file=' . $filePath,
+                '--host='.$host,
+                '--port='.$port,
+                '--username='.$username,
+                '--dbname='.$database,
+                '--file='.$filePath,
             ];
 
             $process = new Process($cmd, null, ['PGPASSWORD' => $password]);
@@ -96,7 +100,7 @@ class DatabaseRestoreCommand extends Command
                 $restored = true;
                 $this->info('[OK] psql restore completed successfully.');
             } else {
-                $this->warn('[WARN] psql completed with notice: ' . $process->getErrorOutput());
+                $this->warn('[WARN] psql completed with notice: '.$process->getErrorOutput());
                 $restored = true; // Often returns 0 with notices on DROP IF EXISTS
             }
         }
@@ -110,6 +114,7 @@ class DatabaseRestoreCommand extends Command
 
         // 2. Run Proven Restoration Assertions
         $this->info('[2/2] Running automated data verification assertions (Rubric Requirement)...');
+
         return $this->runVerificationAssertions();
     }
 
@@ -117,15 +122,15 @@ class DatabaseRestoreCommand extends Command
     protected function runVerificationAssertions(): int
     {
         $tables = [
-            'users'                 => 'Users / Accounts',
-            'roles'                 => 'User Roles',
-            'grade_levels'          => 'Grade Levels',
-            'school_years'          => 'School Years',
-            'terms'                 => 'Academic Terms',
-            'subjects'              => 'DepEd Curriculum Subjects',
-            'sections'              => 'Classroom Sections',
-            'teaching_assignments'  => 'Teaching Assignments',
-            'assessment_records'    => 'Assessment Records',
+            'users' => 'Users / Accounts',
+            'roles' => 'User Roles',
+            'grade_levels' => 'Grade Levels',
+            'school_years' => 'School Years',
+            'terms' => 'Academic Terms',
+            'subjects' => 'DepEd Curriculum Subjects',
+            'sections' => 'Classroom Sections',
+            'teaching_assignments' => 'Teaching Assignments',
+            'assessment_records' => 'Assessment Records',
             'assessment_audit_logs' => 'Assessment Audit Trail',
         ];
 
@@ -151,10 +156,12 @@ class DatabaseRestoreCommand extends Command
             $this->info('   - Active School Year: VERIFIED (2025-2026)');
             $this->info("   - DepEd Curriculum: VERIFIED ({$subjectsCount} Subjects)");
             $this->info('============================================================');
+
             return 0;
         }
 
         $this->error('[FAIL] Data verification assertions failed.');
+
         return 1;
     }
 

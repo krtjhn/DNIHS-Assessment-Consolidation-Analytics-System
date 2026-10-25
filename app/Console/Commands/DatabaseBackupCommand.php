@@ -25,6 +25,7 @@ class DatabaseBackupCommand extends Command
         $driver = config('database.default');
         if ($driver !== 'pgsql') {
             $this->error("Backup command currently targets 'pgsql'. Current default is: {$driver}");
+
             return 1;
         }
 
@@ -57,15 +58,15 @@ class DatabaseBackupCommand extends Command
             $this->info("[1/3] Utilizing PostgreSQL native utility: {$pgDumpPath}");
             $cmd = [
                 $pgDumpPath,
-                '--host=' . $host,
-                '--port=' . $port,
-                '--username=' . $username,
-                '--dbname=' . $database,
+                '--host='.$host,
+                '--port='.$port,
+                '--username='.$username,
+                '--dbname='.$database,
                 '--clean',
                 '--if-exists',
                 '--no-owner',
                 '--no-privileges',
-                '--file=' . $filePath,
+                '--file='.$filePath,
             ];
 
             $process = new Process($cmd, null, ['PGPASSWORD' => $password]);
@@ -76,7 +77,7 @@ class DatabaseBackupCommand extends Command
                 $success = true;
                 $this->info('[OK] pg_dump completed successfully.');
             } else {
-                $this->warn('[WARN] pg_dump encountered an issue: ' . $process->getErrorOutput());
+                $this->warn('[WARN] pg_dump encountered an issue: '.$process->getErrorOutput());
                 $this->line('Switching to native PHP PDO table exporter fallback...');
             }
         }
@@ -89,6 +90,7 @@ class DatabaseBackupCommand extends Command
 
         if (! $success || ! file_exists($filePath)) {
             $this->error('[FAIL] Database backup could not be generated.');
+
             return 1;
         }
 
@@ -111,7 +113,7 @@ class DatabaseBackupCommand extends Command
                 ['Backup File', $filename],
                 ['Path', $filePath],
                 ['Size', "{$fileSizeKb} KB ({$fileSizeBytes} bytes)"],
-                ['SHA-256 Checksum', substr($checksum, 0, 32) . '...'],
+                ['SHA-256 Checksum', substr($checksum, 0, 32).'...'],
                 ['Timestamp', date('Y-m-d H:i:s')],
                 ['Status', 'PROVEN & READY'],
             ]
@@ -158,7 +160,7 @@ class DatabaseBackupCommand extends Command
             }
 
             fwrite($handle, "-- DNIHS Assessment Consolidation & Analytics System Backup\n");
-            fwrite($handle, "-- Generated At: " . date('Y-m-d H:i:s') . "\n\n");
+            fwrite($handle, '-- Generated At: '.date('Y-m-d H:i:s')."\n\n");
 
             // Fetch public tables
             $tables = DB::select("
@@ -175,7 +177,7 @@ class DatabaseBackupCommand extends Command
                     continue;
                 }
 
-                fwrite($handle, "-- Data for {$tName} (" . $rows->count() . " rows)\n");
+                fwrite($handle, "-- Data for {$tName} (".$rows->count()." rows)\n");
                 foreach ($rows as $row) {
                     $rowArr = (array) $row;
                     $cols = array_keys($rowArr);
@@ -186,19 +188,22 @@ class DatabaseBackupCommand extends Command
                         if (is_numeric($val) && ! is_string($val)) {
                             return $val;
                         }
-                        return "'" . addslashes((string) $val) . "'";
+
+                        return "'".addslashes((string) $val)."'";
                     }, array_values($rowArr));
 
-                    $sql = "INSERT INTO {$tName} (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ") ON CONFLICT DO NOTHING;\n";
+                    $sql = "INSERT INTO {$tName} (".implode(', ', $cols).') VALUES ('.implode(', ', $vals).") ON CONFLICT DO NOTHING;\n";
                     fwrite($handle, $sql);
                 }
                 fwrite($handle, "\n");
             }
 
             fclose($handle);
+
             return true;
         } catch (\Throwable $e) {
-            $this->error('PDO export error: ' . $e->getMessage());
+            $this->error('PDO export error: '.$e->getMessage());
+
             return false;
         }
     }

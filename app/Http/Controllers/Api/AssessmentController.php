@@ -7,6 +7,7 @@ use App\Http\Requests\Assessments\StoreAssessmentRequest;
 use App\Http\Requests\Assessments\UpdateAssessmentRequest;
 use App\Http\Resources\AssessmentRecordResource;
 use App\Models\AssessmentRecord;
+use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
@@ -29,7 +30,7 @@ class AssessmentController extends Controller
     {
         $schoolYearId = $request->input('school_year_id'); // Optional school year filter
         if (! $schoolYearId) {
-            $activeSY = \App\Models\SchoolYear::active()->first(); // Resolve active school year
+            $activeSY = SchoolYear::active()->first(); // Resolve active school year
             $schoolYearId = $activeSY?->id; // Fallback to active year id
         }
 
@@ -167,7 +168,9 @@ class AssessmentController extends Controller
                     'highest_score' => $stats['highest_score'], // Highest score
                     'lowest_score' => $stats['lowest_score'], // Lowest score
                     'least_learned_competency' => $leastLearned, // Weak competency
-                    'remarks' => $validated['remarks'] ?? 'Complete', // Status remark
+                    'remarks' => (! empty($validated['remarks']) && $validated['remarks'] !== 'Complete')
+                        ? $validated['remarks']
+                        : $stats['mastery_level'], // DepEd 7-bracket mastery level or teacher note
                 ]
             );
         });
@@ -235,7 +238,9 @@ class AssessmentController extends Controller
                 'highest_score' => $stats['highest_score'], // High score
                 'lowest_score' => $stats['lowest_score'], // Low score
                 'least_learned_competency' => $leastLearned, // Weak competency
-                'remarks' => $validated['remarks'] ?? 'Complete', // Status remark
+                'remarks' => (! empty($validated['remarks']) && $validated['remarks'] !== 'Complete')
+                    ? $validated['remarks']
+                    : $stats['mastery_level'], // DepEd 7-bracket mastery level or teacher note
             ]);
 
             return $assessment; // Return updated model

@@ -25,13 +25,13 @@ return new class extends Migration
             ");
 
             // 2. Fix mutable search_path warnings on functions (CVE defense)
-            DB::unprepared("
+            DB::unprepared('
                 ALTER FUNCTION fn_calculate_assessment_metrics() SET search_path = public, pg_temp;
                 ALTER FUNCTION fn_audit_assessment_records() SET search_path = public, pg_temp;
-            ");
+            ');
 
             // 3. Grant schema usage and assign role privileges
-            DB::unprepared("
+            DB::unprepared('
                 GRANT USAGE ON SCHEMA public TO dnihs_admin_role, dnihs_teacher_staff;
                 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO dnihs_admin_role;
                 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO dnihs_admin_role;
@@ -40,7 +40,7 @@ return new class extends Migration
                 GRANT SELECT ON grade_levels, school_years, terms, sections, subjects, users, teaching_assignments TO dnihs_teacher_staff;
                 GRANT SELECT, INSERT, UPDATE ON assessment_records TO dnihs_teacher_staff;
                 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO dnihs_teacher_staff;
-            ");
+            ');
 
             // 4. List of all public tables to enforce Row-Level Security (RLS)
             $tables = [
@@ -74,7 +74,7 @@ return new class extends Migration
             }
 
             // 6. Define strict, role-aligned RLS policies for assessment_records (Eliminates rls_policy_always_true warning)
-            DB::unprepared("
+            DB::unprepared('
                 -- Drop previous overly permissive policy if existing
                 DROP POLICY IF EXISTS p_assessment_app_service ON assessment_records;
                 DROP POLICY IF EXISTS p_assessment_admin_all ON assessment_records;
@@ -111,7 +111,7 @@ return new class extends Migration
                 TO dnihs_teacher_staff 
                 USING (deleted_at IS NULL) 
                 WITH CHECK (deleted_at IS NULL);
-            ");
+            ');
         }
     }
 
@@ -119,12 +119,12 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::getDriverName() === 'pgsql') {
-            DB::unprepared("
+            DB::unprepared('
                 DROP POLICY IF EXISTS p_assessment_teacher_update ON assessment_records;
                 DROP POLICY IF EXISTS p_assessment_teacher_insert ON assessment_records;
                 DROP POLICY IF EXISTS p_assessment_teacher_select ON assessment_records;
                 DROP POLICY IF EXISTS p_assessment_admin_all ON assessment_records;
-            ");
+            ');
 
             $tables = [
                 'users', 'roles', 'role_user', 'grade_levels', 'school_years',
@@ -140,13 +140,13 @@ return new class extends Migration
                 }
             }
 
-            DB::unprepared("
+            DB::unprepared('
                 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM dnihs_admin_role, dnihs_teacher_staff;
                 REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM dnihs_admin_role, dnihs_teacher_staff;
                 REVOKE USAGE ON SCHEMA public FROM dnihs_admin_role, dnihs_teacher_staff;
                 DROP ROLE IF EXISTS dnihs_teacher_staff;
                 DROP ROLE IF EXISTS dnihs_admin_role;
-            ");
+            ');
         }
     }
 };

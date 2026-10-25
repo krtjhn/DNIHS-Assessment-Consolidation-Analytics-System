@@ -133,17 +133,17 @@ class StatsCalculatorService
         } else {
             // Method 2: Use mathematically sound pooled weighted mean, variance, and MPS in a single pass
             $sumWeightedMean = 0.0; // Weighted mean accumulator
-            $sumWeightedMps  = 0.0; // Weighted MPS accumulator
+            $sumWeightedMps = 0.0; // Weighted MPS accumulator
             foreach ($records as $r) {
                 $n = (int) ($r->no_of_entries ?? 0); // Student count
                 $weight = $n > 0 ? $n : 1; // Section weighting factor
                 $sumWeightedMean += (float) ($r->mean ?? 0.0) * $weight; // Weighted mean contribution
-                $sumWeightedMps  += (float) ($r->mps  ?? 0.0) * $weight; // Weighted MPS contribution
+                $sumWeightedMps += (float) ($r->mps ?? 0.0) * $weight; // Weighted MPS contribution
             }
 
             // Weighted Mean = Sum(mean_i * n_i) / Total Students
             $overallMean = $totalExaminees > 0 ? ($sumWeightedMean / $totalExaminees) : 0.0; // Weighted average score
-            $overallMps  = $totalExaminees > 0 ? ($sumWeightedMps  / $totalExaminees) : 0.0; // Weighted average percentage
+            $overallMps = $totalExaminees > 0 ? ($sumWeightedMps / $totalExaminees) : 0.0; // Weighted average percentage
 
             // Pooled Variance accounts for within-section variance and between-section difference
             // Formula: (1 / N) * Sum( n_i * (sd_i^2 + (mean_i - overallMean)^2) )
@@ -151,8 +151,8 @@ class StatsCalculatorService
             foreach ($records as $r) {
                 $n = (int) ($r->no_of_entries ?? 0); // Student count
                 $meanVal = (float) ($r->mean ?? 0.0); // Section mean
-                $sdVal   = (float) ($r->sd   ?? 0.0); // Section SD
-                $weight  = $n > 0 ? $n : 1; // Section weight
+                $sdVal = (float) ($r->sd ?? 0.0); // Section SD
+                $weight = $n > 0 ? $n : 1; // Section weight
 
                 $varianceI = $sdVal ** 2; // Within-group variance
                 $betweenGroupI = ($meanVal - $overallMean) ** 2; // Between-group variance difference
@@ -166,11 +166,11 @@ class StatsCalculatorService
 
         return [
             'total_sections_encoded' => $count, // Number of sections included
-            'total_examinees'        => $totalExaminees, // Total students evaluated
-            'overall_mean'           => round($overallMean, 2), // Overall mean to 2 decimals
-            'overall_mps'            => round($overallMps, 2), // Overall MPS to 2 decimals
-            'overall_sd'             => round($overallSd, 2), // Overall SD to 2 decimals
-            'overall_mastery'        => $this->classifyMasteryLevel($overallMps), // Consolidated mastery descriptor
+            'total_examinees' => $totalExaminees, // Total students evaluated
+            'overall_mean' => round($overallMean, 2), // Overall mean to 2 decimals
+            'overall_mps' => round($overallMps, 2), // Overall MPS to 2 decimals
+            'overall_sd' => round($overallSd, 2), // Overall SD to 2 decimals
+            'overall_mastery' => $this->classifyMasteryLevel($overallMps), // Consolidated mastery descriptor
         ];
     }
 }

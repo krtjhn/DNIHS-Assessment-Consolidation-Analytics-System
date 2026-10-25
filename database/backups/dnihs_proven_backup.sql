@@ -1249,14 +1249,35 @@ CREATE FUNCTION public.fn_calculate_assessment_metrics() RETURNS trigger
                     -- Automatically calculate accurate MPS
                     NEW.mps := ROUND((NEW.mean / NEW.total_items::numeric) * 100.0, 2);
 
-                    -- Automatically assign DepEd mastery remarks if unassigned
-                    IF NEW.remarks IS NULL OR TRIM(NEW.remarks) = '' OR NEW.remarks = 'Complete' THEN
-                        IF NEW.mps >= 75.00 THEN
+                    -- Automatically assign official DepEd 7-bracket mastery remarks if unassigned, placeholder, or previous descriptor
+                    IF NEW.remarks IS NULL 
+                       OR TRIM(NEW.remarks) = '' 
+                       OR NEW.remarks = 'Complete' 
+                       OR NEW.remarks IN (
+                           'Mastered', 
+                           'Closely Approximating Mastery', 
+                           'Moving Towards Mastery', 
+                           'Average', 
+                           'Low', 
+                           'Very Low', 
+                           'Absolutely No Mastery',
+                           'Nearly Mastered', 
+                           'Low Mastery'
+                       ) THEN
+                        IF NEW.mps >= 96.00 THEN
                             NEW.remarks := 'Mastered';
-                        ELSIF NEW.mps >= 50.00 THEN
-                            NEW.remarks := 'Nearly Mastered';
+                        ELSIF NEW.mps >= 86.00 THEN
+                            NEW.remarks := 'Closely Approximating Mastery';
+                        ELSIF NEW.mps >= 66.00 THEN
+                            NEW.remarks := 'Moving Towards Mastery';
+                        ELSIF NEW.mps >= 35.00 THEN
+                            NEW.remarks := 'Average';
+                        ELSIF NEW.mps >= 15.00 THEN
+                            NEW.remarks := 'Low';
+                        ELSIF NEW.mps >= 5.00 THEN
+                            NEW.remarks := 'Very Low';
                         ELSE
-                            NEW.remarks := 'Low Mastery';
+                            NEW.remarks := 'Absolutely No Mastery';
                         END IF;
                     END IF;
 

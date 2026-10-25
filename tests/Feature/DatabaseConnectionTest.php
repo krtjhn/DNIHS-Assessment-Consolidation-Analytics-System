@@ -84,7 +84,7 @@ class DatabaseConnectionTest extends TestCase
         $triggers = DB::select(
             "SELECT tgname FROM pg_trigger WHERE tgname IN ('trg_assessment_records_before_insert_or_update', 'trg_assessment_audit_logger')"
         );
-        $triggerNames = array_map(fn($t) => $t->tgname, $triggers);
+        $triggerNames = array_map(fn ($t) => $t->tgname, $triggers);
 
         $this->assertContains(
             'trg_assessment_records_before_insert_or_update',

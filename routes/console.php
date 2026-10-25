@@ -346,4 +346,3 @@ Schedule::command('db:backup')
     ->dailyAt('02:00')
     ->withoutOverlapping()
     ->runInBackground();
-

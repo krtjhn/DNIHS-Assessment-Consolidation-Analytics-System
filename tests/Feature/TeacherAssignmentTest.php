@@ -58,7 +58,7 @@ class TeacherAssignmentTest extends TestCase
         $section = Section::where('name', 'Pilot A')->first() ?? Section::create([
             'school_year_id' => $sy->id,
             'grade_level_id' => $subject->grade_level_id,
-            'name' => 'TestSec_' . uniqid(),
+            'name' => 'TestSec_'.uniqid(),
             'is_active' => true,
         ]);
 

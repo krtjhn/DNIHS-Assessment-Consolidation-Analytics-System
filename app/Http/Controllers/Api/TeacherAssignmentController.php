@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TeachingAssignments\StoreTeachingAssignmentRequest;
 use App\Http\Requests\TeachingAssignments\SyncTeachingAssignmentRequest;
 use App\Http\Resources\TeachingAssignmentResource;
-use App\Models\SchoolYear;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
