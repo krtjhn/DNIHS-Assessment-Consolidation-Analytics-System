@@ -1,19 +1,19 @@
-# DNIHS Capstone Defense — Final Audit & Line-by-Line Code Reviewer for Individual Questioning
+# DNIHS Capstone — Master Web Development & Line-by-Line Code Reviewer
 
-This master guide is engineered specifically to achieve **100% (Excellent: 90–100%)** on both the **Group Output Rubric (70%)** and the **Individual Questioning Rubric (30%)** for the Digos National High School (DNIHS) Assessment Consolidation, Analytics & Decision Support System.
+This unified group reviewer is engineered to help the entire team achieve **100% (Excellent: 90–100%)** on both the **Group Output Rubric (70%)** and the **Individual Questioning Rubric (30%)** for the Digos National High School (DNIHS) Assessment Consolidation, Analytics & Decision Support System.
 
 ---
 
 ## Table of Contents
 1. [Part 1: Final Audit vs. Group Output Rubric (70%) & 5 Core Evaluation Topics](#part-1-final-audit-vs-group-output-rubric-70--5-core-evaluation-topics)
-2. [Part 2: 4-Member Defense Assignment & Shared Core Strategy](#part-2-4-member-defense-assignment--shared-core-strategy)
+2. [Part 2: Complete End-to-End MVC Request Flow Overview](#part-2-complete-end-to-end-mvc-request-flow-overview)
 3. [Part 3: Complete Line-by-Line Code Reviewer & Tracing Guide (35% Weight)](#part-3-complete-line-by-line-code-reviewer--tracing-guide-35-weight)
-   - [3.1 Shared Core: Bootstrap & API Routing (`bootstrap/app.php` & `routes/api.php`)](#31-shared-core-bootstrap--api-routing-bootstrapappphp--routesapiphp)
-   - [3.2 Shared Core: RBAC Role Middleware (`EnsureUserHasRole.php`)](#32-shared-core-rbac-role-middleware-ensureuserhasrolephp)
-   - [3.3 Module A: Authentication & Faculty Lifecycle (`AuthController.php` & `TeacherController.php`)](#33-module-a-authentication--faculty-lifecycle-authcontrollerphp--teachercontrollerphp)
-   - [3.4 Module B: Academic Calendar, Sections & Workload Sync (`SchoolYearController`, `TermController`, `SectionController`, `TeacherAssignmentController`)](#34-module-b-academic-calendar-sections--workload-sync)
-   - [3.5 Module C: Assessment Validation, CRUD & Statistical Engine (`StoreAssessmentRequest`, `AssessmentController`, `StatsCalculatorService`, `AssessmentRecordResource`)](#35-module-c-assessment-validation-crud--statistical-engine)
-   - [3.6 Module D: Eloquent Models, Migrations, PL/pgSQL Triggers & Seeders](#36-module-d-eloquent-models-migrations-plpgsql-triggers--seeders)
+   - [3.1 Bootstrap & API Routing (`bootstrap/app.php` & `routes/api.php`)](#31-bootstrap--api-routing-bootstrapappphp--routesapiphp)
+   - [3.2 RBAC Role Middleware (`EnsureUserHasRole.php`)](#32-rbac-role-middleware-ensureuserhasrolephp)
+   - [3.3 Authentication & Faculty Account Lifecycle (`AuthController.php` & `TeacherController.php`)](#33-authentication--faculty-account-lifecycle-authcontrollerphp--teachercontrollerphp)
+   - [3.4 Academic Calendar, Sections & Workload Sync (`SchoolYearController`, `TermController`, `SectionController`, `TeacherAssignmentController`)](#34-academic-calendar-sections--workload-sync)
+   - [3.5 Assessment Validation, CRUD & Statistical Engine (`StoreAssessmentRequest`, `AssessmentController`, `StatsCalculatorService`, `AssessmentRecordResource`)](#35-assessment-validation-crud--statistical-engine)
+   - [3.6 Eloquent Models, Migrations, PL/pgSQL Triggers & Seeders](#36-eloquent-models-migrations-plpgsql-triggers--seeders)
 4. [Part 4: "Understanding of Design Decisions" — Why, Trade-Offs & Alternatives (35% Weight)](#part-4-understanding-of-design-decisions--why-trade-offs--alternatives-35-weight)
 5. [Part 5: Applied "What If" or Live Change Scenarios (15% Weight)](#part-5-applied-what-if-or-live-change-scenarios-15-weight)
 6. [Part 6: Clarity of Communication Rules (15% Weight)](#part-6-clarity-of-communication-rules-15-weight)
@@ -38,30 +38,19 @@ This master guide is engineered specifically to achieve **100% (Excellent: 90–
 2. **Database Design & Integration — PostgreSQL (20%)**: Live Supabase PostgreSQL 17.11 integration with TLS (`DB_SSLMODE=require`), B-Tree composite and partial indexes, PL/pgSQL triggers (`fn_calculate_assessment_metrics`, `fn_audit_assessment_records`), and Row-Level Security (RLS).
 3. **Code Quality & Best Practices (20%)**: Strict PSR-12 / Laravel 11 conventions, thin controllers, fat service layer (`StatsCalculatorService`), dedicated FormRequests, and API Resources.
 4. **Documentation & Presentation (10%)**: Every PHP file contains clear single-line `//` inline comments explaining intent, paired with comprehensive root `README.md` and defense docs.
-5. **Timeliness & Compliance with Instructions (10%)**: Clean Git commit history (`phase 1` through `phase 55`), zero dead code, zero unused test files, and exact naming conventions.
+5. **Timeliness & Compliance with Instructions (10%)**: Clean Git commit history (`phase 1` through `phase 56`), zero dead code, zero unused test files, and exact naming conventions.
 
 ---
 
-## Part 2: 4-Member Defense Assignment & Shared Core Strategy
+## Part 2: Complete End-to-End MVC Request Flow Overview
 
 To score **90–100% (Excellent)** on **Code Tracing (35%)**, the rubric states:
 > *"Traces their own part and the shared core correctly, without reading line by line."*
 
-### What Every Member MUST Know ("The Shared Core")
-Every single member (Members 1, 2, 3, and 4) must be able to trace:
+### Core Architecture Flow (What Every Group Member Should Master)
 1. **How a request enters the API**: [`bootstrap/app.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/bootstrap/app.php) registers [`routes/api.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/routes/api.php) and binds the `'role'` middleware alias to [`EnsureUserHasRole`](file:///c:/Users/acer/Documents/BSIT/m_capstone/app/Http/Middleware/EnsureUserHasRole.php).
 2. **How authentication & roles work**: `auth:sanctum` checks the `Authorization: Bearer <token>` header against `personal_access_tokens`, populates `$request->user()`, and then `EnsureUserHasRole` checks `$user->hasRole(...)`.
 3. **How the core score encoding flow works**: `StoreAssessmentRequest` validates inputs $\to$ `AssessmentController@store` verifies open term, grade alignment, teacher assignment, and ownership $\to$ `StatsCalculatorService@calculate` computes Mean, MPS, SD, and 7-bracket Mastery $\to$ `AssessmentRecord::updateOrCreate` persists to PostgreSQL inside `DB::transaction` $\to$ `AssessmentRecordResource` formats the JSON response.
-
-### Recommended 4-Member Individual Specialization Split
-- **Member 1 (Auth, Security & Faculty Account Lifecycle)**:
-  - Owns: `AuthController`, `TeacherController`, `EnsureUserHasRole`, `LoginRequest`, `RegisterRequest`, `StoreTeacherRequest`, `User` model, `Role` model.
-- **Member 2 (Academic Structure, Sections & Workload Synchronization)**:
-  - Owns: `SchoolYearController`, `TermController`, `SectionController`, `TeacherAssignmentController`, `AcademicReferenceController`, `SchoolYear`, `Term`, `Section`, `TeachingAssignment` models.
-- **Member 3 (Assessment Encoding, Validation & Statistical Calculation Engine)**:
-  - Owns: `AssessmentController`, `StatsCalculatorService`, `StoreAssessmentRequest`, `UpdateAssessmentRequest`, `AssessmentRecordResource`, `AssessmentRecord` model.
-- **Member 4 (PostgreSQL Schema, Normalization, PL/pgSQL Triggers, Audit Logs & Disaster Recovery)**:
-  - Owns: All 20 Migrations in `database/migrations/`, `DatabaseSeeder`, PL/pgSQL functions/triggers (`fn_calculate_assessment_metrics`, `fn_audit_assessment_records`), RLS & roles, `DatabaseBackupCommand`, `DatabaseRestoreCommand`.
 
 ---
 
@@ -74,7 +63,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ---
 
-### 3.1 Shared Core: Bootstrap & API Routing (`bootstrap/app.php` & `routes/api.php`)
+### 3.1 Bootstrap & API Routing (`bootstrap/app.php` & `routes/api.php`)
 
 #### A. [`bootstrap/app.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/bootstrap/app.php#L1-L29)
 - **Lines 9–16 (`withRouting`)**: Initializes the Laravel 11 application and registers `routes/api.php` (automatically prefixed with `/api`), `routes/web.php`, `routes/console.php`, and the `/up` health endpoint.
@@ -102,7 +91,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ---
 
-### 3.2 Shared Core: RBAC Role Middleware (`EnsureUserHasRole.php`)
+### 3.2 RBAC Role Middleware (`EnsureUserHasRole.php`)
 
 **File**: [`app/Http/Middleware/EnsureUserHasRole.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/app/Http/Middleware/EnsureUserHasRole.php#L1-L56)
 
@@ -120,7 +109,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ---
 
-### 3.3 Module A: Authentication & Faculty Lifecycle (`AuthController.php` & `TeacherController.php`)
+### 3.3 Authentication & Faculty Account Lifecycle (`AuthController.php` & `TeacherController.php`)
 
 #### A. [`app/Http/Controllers/Api/AuthController.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/app/Http/Controllers/Api/AuthController.php#L1-L113)
 
@@ -160,7 +149,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ---
 
-### 3.4 Module B: Academic Calendar, Sections & Workload Sync
+### 3.4 Academic Calendar, Sections & Workload Sync
 
 #### A. [`app/Http/Controllers/Api/SchoolYearController.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/app/Http/Controllers/Api/SchoolYearController.php#L1-L120)
 - **`store(StoreSchoolYearRequest $request)` (Lines 30–58)**:
@@ -194,7 +183,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ---
 
-### 3.5 Module C: Assessment Validation, CRUD & Statistical Engine
+### 3.5 Assessment Validation, CRUD & Statistical Engine
 
 #### A. [`app/Http/Requests/Assessments/StoreAssessmentRequest.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/app/Http/Requests/Assessments/StoreAssessmentRequest.php#L1-L50)
 - **Line 14 (`authorize()`)**: Verifies the user holds `'teacher'` or `'system_admin'`.
@@ -255,7 +244,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ---
 
-### 3.6 Module D: Eloquent Models, Migrations, PL/pgSQL Triggers & Seeders
+### 3.6 Eloquent Models, Migrations, PL/pgSQL Triggers & Seeders
 
 #### A. Eloquent Models Overview (`app/Models/`)
 1. **[`User.php`](file:///c:/Users/acer/Documents/BSIT/m_capstone/app/Models/User.php)**: Uses `HasApiTokens` (Sanctum), `SoftDeletes`. Hides `password` and `remember_token`. Defines `roles()` (`BelongsToMany` with `withPivot('created_at')`), `teachingAssignments()` (`HasMany`), `assessmentRecords()` (`HasMany` via `'teacher_id'`), and helper `hasRole(string $roleName): bool`.
@@ -279,7 +268,7 @@ Every single member (Members 1, 2, 3, and 4) must be able to trace:
 
 ## Part 4: "Understanding of Design Decisions" — Why, Trade-Offs & Alternatives (35% Weight)
 
-To get **100% (Excellent)** in the first row of the Individual Questioning Rubric, your answer MUST follow this 3-step formula:
+To get **100% (Excellent)** in the first row of the Questioning Rubric, your answer MUST follow this 3-step formula:
 1. **State What We Did**
 2. **Explain Why**
 3. **Name the Alternative & Trade-Off**
@@ -332,7 +321,7 @@ Memorize these **8 High-Probability Design Decision Answers**:
 
 ## Part 5: Applied "What If" or Live Change Scenarios (15% Weight)
 
-During individual questioning, the panel will test **Applied "What If" or Live Change (15%)** by asking: *"What if we want to change X right now? Where in the code would you go, and what would you write?"*
+During questioning, the panel will test **Applied "What If" or Live Change (15%)** by asking: *"What if we want to change X right now? Where in the code would you go, and what would you write?"*
 
 Here are **8 Ready-to-Use Live Change Scenarios** with exact file paths, line numbers, and code snippets:
 

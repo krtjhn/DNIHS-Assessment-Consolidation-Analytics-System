@@ -70,7 +70,7 @@ For in-depth architectural proofs, benchmarks, and disaster recovery procedures,
 
 | Document | File Path | Focus Area |
 | :--- | :--- | :--- |
-| **Individual Questioning & Line-by-Line Code Reviewer** | [`docs/INDIVIDUAL_QUESTIONING_AND_LINE_BY_LINE_CODE_REVIEWER.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/INDIVIDUAL_QUESTIONING_AND_LINE_BY_LINE_CODE_REVIEWER.md) | Complete line-by-line code walkthrough, design trade-offs, live "What If" coding scenarios, and 4-member defense guide |
+| **Master Web Dev & Code Reviewer** | [`docs/WEB_DEV_REVIEWER.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/WEB_DEV_REVIEWER.md) | Complete line-by-line code walkthrough, design trade-offs, and live "What If" coding scenarios for the group |
 | **Master Architecture & Defense Guide** | [`docs/DATABASE_ARCHITECTURE_AND_DEFENSE.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/DATABASE_ARCHITECTURE_AND_DEFENSE.md) | Mermaid ERD, Data Dictionary, 3NF Proof, and 12-Question Panel Defense Cheat Sheet |
 | **EXPLAIN ANALYZE Performance Report** | [`docs/EXPLAIN_ANALYZE_REPORT.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/EXPLAIN_ANALYZE_REPORT.md) | PostgreSQL query execution plans, cost models, and index verification evidence |
 | **Disaster Recovery & Backup Guide** | [`docs/BACKUP_AND_RESTORE_GUIDE.md`](file:///c:/Users/acer/Documents/BSIT/m_capstone/docs/BACKUP_AND_RESTORE_GUIDE.md) | Backup storage layout, SHA-256 verification, and Windows Task Scheduler setup |
