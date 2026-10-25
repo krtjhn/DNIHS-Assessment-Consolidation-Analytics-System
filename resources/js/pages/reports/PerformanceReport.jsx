@@ -1013,7 +1013,7 @@ export default function PerformanceReport() {
                                         {bracket}
                                     </span>
                                 </div>
-                                <div className={`mt-1 text-xl font-extrabold truncate ${colorClass}`} title={label}>
+                                <div className={`mt-1 text-lg font-extrabold leading-snug break-words ${colorClass}`} title={label}>
                                     {label}
                                 </div>
                                 <div className="mt-0.5 text-[10px] text-slate-400 font-medium">

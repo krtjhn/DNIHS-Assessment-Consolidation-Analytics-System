@@ -184,7 +184,6 @@ class DemoFrontendSeeder extends Seeder
             ],
 
             // Norwin L. Austria (English & Filipino)
-            // (Note: Grade 7 Pilot A FIL is reserved for Maria Santos automated test isolation)
             [
                 'teacher' => 'Norwin L. Austria',
                 'level' => 7,
