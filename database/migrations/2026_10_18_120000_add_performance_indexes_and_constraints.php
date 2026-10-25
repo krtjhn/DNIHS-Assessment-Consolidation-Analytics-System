@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -44,24 +45,47 @@ return new class extends Migration
     // Reverse the migrations
     public function down(): void
     {
-        Schema::table('assessment_records', function (Blueprint $table): void {
-            $table->dropIndex('assess_records_consolidation_idx');
-        });
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('DROP INDEX IF EXISTS assess_records_consolidation_idx;');
+            DB::statement('ALTER TABLE teaching_assignments DROP CONSTRAINT IF EXISTS teaching_assignments_sy_sec_subj_user_unique;');
+            DB::statement('DROP INDEX IF EXISTS sections_grade_level_id_idx;');
+            DB::statement('DROP INDEX IF EXISTS school_years_is_active_idx;');
+            DB::statement('DROP INDEX IF EXISTS users_approval_status_idx;');
+        } else {
+            Schema::table('assessment_records', function (Blueprint $table): void {
+                try {
+                    $table->dropIndex('assess_records_consolidation_idx');
+                } catch (Throwable $e) {
+                }
+            });
 
-        Schema::table('teaching_assignments', function (Blueprint $table): void {
-            $table->dropUnique('teaching_assignments_sy_sec_subj_user_unique');
-        });
+            Schema::table('teaching_assignments', function (Blueprint $table): void {
+                try {
+                    $table->dropUnique('teaching_assignments_sy_sec_subj_user_unique');
+                } catch (Throwable $e) {
+                }
+            });
 
-        Schema::table('sections', function (Blueprint $table): void {
-            $table->dropIndex('sections_grade_level_id_idx');
-        });
+            Schema::table('sections', function (Blueprint $table): void {
+                try {
+                    $table->dropIndex('sections_grade_level_id_idx');
+                } catch (Throwable $e) {
+                }
+            });
 
-        Schema::table('school_years', function (Blueprint $table): void {
-            $table->dropIndex('school_years_is_active_idx');
-        });
+            Schema::table('school_years', function (Blueprint $table): void {
+                try {
+                    $table->dropIndex('school_years_is_active_idx');
+                } catch (Throwable $e) {
+                }
+            });
 
-        Schema::table('users', function (Blueprint $table): void {
-            $table->dropIndex('users_approval_status_idx');
-        });
+            Schema::table('users', function (Blueprint $table): void {
+                try {
+                    $table->dropIndex('users_approval_status_idx');
+                } catch (Throwable $e) {
+                }
+            });
+        }
     }
 };

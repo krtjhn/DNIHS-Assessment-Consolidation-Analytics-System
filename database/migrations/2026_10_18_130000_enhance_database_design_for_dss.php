@@ -75,11 +75,13 @@ return new class extends Migration
         // Drops old non-partial constraints if they exist
         try {
             DB::statement('ALTER TABLE teaching_assignments DROP CONSTRAINT IF EXISTS teaching_assignments_sy_sec_subj_unique;');
-        } catch (\Throwable $e) {}
+        } catch (Throwable $e) {
+        }
 
         try {
             DB::statement('ALTER TABLE teaching_assignments DROP CONSTRAINT IF EXISTS teaching_assignments_sy_sec_subj_user_unique;');
-        } catch (\Throwable $e) {}
+        } catch (Throwable $e) {
+        }
 
         DB::statement('DROP INDEX IF EXISTS teaching_assignments_sy_sec_subj_active_unique;');
         DB::statement('CREATE UNIQUE INDEX teaching_assignments_sy_sec_subj_active_unique ON teaching_assignments (school_year_id, section_id, subject_id) WHERE effective_until IS NULL;');
@@ -93,7 +95,8 @@ return new class extends Migration
                     ->on('users')
                     ->restrictOnDelete();
             });
-        } catch (\Throwable $e) {}
+        } catch (Throwable $e) {
+        }
     }
 
     // Reverse the migrations
@@ -109,10 +112,15 @@ return new class extends Migration
                     ->cascadeOnDelete();
                 $table->dropSoftDeletes();
             });
-        } catch (\Throwable $e) {}
+        } catch (Throwable $e) {
+        }
 
         // 3. Revert teaching_assignments unique index
         DB::statement('DROP INDEX IF EXISTS teaching_assignments_sy_sec_subj_active_unique;');
+        try {
+            DB::statement('ALTER TABLE teaching_assignments ADD CONSTRAINT teaching_assignments_sy_sec_subj_user_unique UNIQUE (school_year_id, section_id, subject_id, user_id);');
+        } catch (Throwable $e) {
+        }
 
         // 2. Drop SoftDeletes
         Schema::table('school_years', function (Blueprint $table): void {

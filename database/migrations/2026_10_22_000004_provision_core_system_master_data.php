@@ -40,25 +40,35 @@ return new class extends Migration
         $admin = DB::table('users')->where('email', 'admin@gmail.com')->first();
 
         if (! $admin) {
-            $adminId = DB::table('users')->insertGetId([
+            $adminData = [
                 'name' => 'System Administrator',
                 'email' => 'admin@gmail.com',
-                'email_verified_at' => $now,
                 'password' => Hash::make('Admin@2024!'),
                 'is_active' => true,
                 'approval_status' => 'approved',
                 'approved_at' => $now,
                 'created_at' => $now,
                 'updated_at' => $now,
-            ]);
+            ];
+
+            if (Schema::hasColumn('users', 'email_verified_at')) {
+                $adminData['email_verified_at'] = $now;
+            }
+
+            $adminId = DB::table('users')->insertGetId($adminData);
 
             if ($adminRole) {
-                DB::table('role_user')->insert([
+                $roleUserData = [
                     'user_id' => $adminId,
                     'role_id' => $adminRole->id,
                     'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
+                ];
+
+                if (Schema::hasColumn('role_user', 'updated_at')) {
+                    $roleUserData['updated_at'] = $now;
+                }
+
+                DB::table('role_user')->insert($roleUserData);
             }
         }
 
