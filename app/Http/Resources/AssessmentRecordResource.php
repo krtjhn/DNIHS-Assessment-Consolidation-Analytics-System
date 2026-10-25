@@ -35,6 +35,7 @@ class AssessmentRecordResource extends JsonResource
             'subject' => $this->whenLoaded('subject'), // Subject relation when loaded
             'grade_level' => $this->whenLoaded('gradeLevel'), // Grade level relation when loaded
             'term' => $this->whenLoaded('term'), // Term relation when loaded
+            'school_year' => $this->whenLoaded('schoolYear'), // School year relation when loaded
             'created_at' => $this->created_at?->toDateTimeString(), // Record creation timestamp
             'updated_at' => $this->updated_at?->toDateTimeString(), // Record last updated timestamp
         ];

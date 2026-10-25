@@ -80,6 +80,15 @@ export default function RecordEntry({ user }) {
         );
     }, [refData.active_sy, refData.school_years]);
 
+    // Format school year label with S.Y. prefix (e.g. S.Y. 2025-2026)
+    const formatSyLabel = (sy) => {
+        const raw = sy?.name || sy?.year || '';
+        if (!raw) return 'S.Y. 2025-2026';
+        return raw.toUpperCase().startsWith('S.Y.') || raw.toUpperCase().startsWith('SY')
+            ? raw
+            : `S.Y. ${raw}`;
+    };
+
     // Active Term in Academic Calendar
     const activeTerm = useMemo(() => {
         return (
@@ -125,7 +134,7 @@ export default function RecordEntry({ user }) {
                     type: 'diagnostic',
                     classTitle,
                     assessmentTitle: 'Diagnostic Test',
-                    termSubtitle: activeTerm.name,
+                    termSubtitle: `${activeTerm.name} • ${formatSyLabel(activeSY)}`,
                 });
             }
 
@@ -139,13 +148,13 @@ export default function RecordEntry({ user }) {
                     type: 'term_exam',
                     classTitle,
                     assessmentTitle: 'Term Exam',
-                    termSubtitle: activeTerm.name,
+                    termSubtitle: `${activeTerm.name} • ${formatSyLabel(activeSY)}`,
                 });
             }
         }
 
         return tasks;
-    }, [teacherAssignments, activeTerm, recordsMap]);
+    }, [teacherAssignments, activeTerm, recordsMap, activeSY]);
 
     // 2. Missing Tasks (Past closed terms with unrecorded assessments: Diagnostic Test & Term Exam)
     const missingTasks = useMemo(() => {
@@ -173,7 +182,7 @@ export default function RecordEntry({ user }) {
                         type: 'diagnostic',
                         classTitle,
                         assessmentTitle: 'Diagnostic Test',
-                        termSubtitle: pt.name || `${pt.term_number ?? 1} Term`,
+                        termSubtitle: `${pt.name || `${pt.term_number ?? 1} Term`} • ${formatSyLabel(activeSY)}`,
                         isLocked: pt.status !== 'active',
                     });
                 }
@@ -188,7 +197,7 @@ export default function RecordEntry({ user }) {
                         type: 'term_exam',
                         classTitle,
                         assessmentTitle: 'Term Exam',
-                        termSubtitle: pt.name || `${pt.term_number ?? 1} Term`,
+                        termSubtitle: `${pt.name || `${pt.term_number ?? 1} Term`} • ${formatSyLabel(activeSY)}`,
                         isLocked: pt.status !== 'active',
                     });
                 }
@@ -196,7 +205,7 @@ export default function RecordEntry({ user }) {
         }
 
         return tasks;
-    }, [teacherAssignments, refData.terms, activeTermNum, recordsMap]);
+    }, [teacherAssignments, refData.terms, activeTermNum, recordsMap, activeSY]);
 
     // 3. Done Tasks (Completed student assessment records)
     const doneTasks = useMemo(() => {
@@ -214,7 +223,11 @@ export default function RecordEntry({ user }) {
                 r.type === 'diagnostic'
                     ? 'Diagnostic Test'
                     : 'Term Exam';
-            const studentCount = r.no_of_entries || r.raw_scores?.length || 0;
+            const foundSy =
+                r.school_year ||
+                refData.school_years?.find((s) => s.id === r.school_year_id) ||
+                activeSY;
+            const syLabel = formatSyLabel(foundSy);
 
             return {
                 id: `done-${r.id}`,
@@ -223,10 +236,10 @@ export default function RecordEntry({ user }) {
                 type: r.type,
                 classTitle,
                 assessmentTitle,
-                termSubtitle: `${foundTerm?.name || 'Term'} • ${studentCount} Students`,
+                termSubtitle: `${foundTerm?.name || 'Term'} • ${syLabel}`,
             };
         });
-    }, [existingRecords, refData.terms]);
+    }, [existingRecords, refData.terms, refData.school_years, activeSY]);
 
     // Open score sheet on row tap
     function handleOpenTask(item) {
