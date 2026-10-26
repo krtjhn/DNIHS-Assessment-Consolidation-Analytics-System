@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict xA7ROyy9hnZ76J1XYKep2NeWeqSaO0U5q95WZ8IEZ2OChvqnI6UuyYOcZxDh5Sn
+\restrict 8WPIXI6Gz4Qqfc6Eel1BlhDhFkcF2FE1erogBdAgLQi5VAoPvgafvVmDLo6Pq1S
 
 -- Dumped from database version 17.11
 -- Dumped by pg_dump version 18.6
@@ -5283,8 +5283,7 @@ ALTER SEQUENCE public.personal_access_tokens_id_seq OWNED BY public.personal_acc
 CREATE TABLE public.role_user (
     user_id bigint NOT NULL,
     role_id bigint NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    created_at timestamp(0) without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 
@@ -5517,7 +5516,6 @@ CREATE TABLE public.users (
     id bigint NOT NULL,
     name character varying(255) NOT NULL,
     email character varying(255) NOT NULL,
-    email_verified_at timestamp(0) without time zone,
     password character varying(255) NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     remember_token character varying(100),
@@ -6178,7 +6176,8 @@ COPY auth.webauthn_credentials (id, user_id, credential_id, public_key, attestat
 --
 
 COPY public.assessment_audit_logs (id, assessment_id, action, old_mean, new_mean, old_mps, new_mps, old_sd, new_sd, old_highest_score, new_highest_score, old_lowest_score, new_lowest_score, old_no_of_entries, new_no_of_entries, old_remarks, new_remarks, teacher_id, created_at) FROM stdin;
-3	29	DELETE	41.50	\N	83.00	\N	2.92	\N	46.00	\N	37.00	\N	10	\N	Mastered	\N	\N	2026-10-21 14:13:57
+1	1	UPDATE	5.60	5.60	56.00	56.00	3.50	3.50	10.00	10.00	0.00	0.00	10	10	Average	Average	2	2026-10-26 05:41:00
+2	1	UPDATE	5.60	5.60	56.00	56.00	3.50	3.50	10.00	10.00	0.00	0.00	10	10	Average	Average	2	2026-10-26 05:42:52
 \.
 
 
@@ -6187,6 +6186,7 @@ COPY public.assessment_audit_logs (id, assessment_id, action, old_mean, new_mean
 --
 
 COPY public.assessment_records (id, school_year_id, term_id, grade_level_id, section_id, subject_id, teacher_id, type, total_items, raw_scores, no_of_entries, mean, mps, sd, highest_score, lowest_score, least_learned_competency, remarks, created_at, updated_at, deleted_at) FROM stdin;
+1	1	1	1	1	5	2	diagnostic	10	[9,8,9,10,5,2,1,0,4,8]	10	5.60	56.00	3.50	10.00	0.00	Test access revoked	Average	2026-10-26 05:39:49	2026-10-26 05:42:51	\N
 \.
 
 
@@ -6219,10 +6219,10 @@ COPY public.failed_jobs (id, uuid, connection, queue, payload, exception, failed
 --
 
 COPY public.grade_levels (id, level, display_name, created_at, updated_at) FROM stdin;
-1	7	Grade 7	2026-10-19 08:54:20	2026-10-19 08:54:20
-2	8	Grade 8	2026-10-19 08:54:20	2026-10-19 08:54:20
-3	9	Grade 9	2026-10-19 08:54:20	2026-10-19 08:54:20
-4	10	Grade 10	2026-10-19 08:54:20	2026-10-19 08:54:20
+1	7	Grade 7	2026-10-26 02:15:19	2026-10-26 02:15:19
+2	8	Grade 8	2026-10-26 02:15:19	2026-10-26 02:15:19
+3	9	Grade 9	2026-10-26 02:15:19	2026-10-26 02:15:19
+4	10	Grade 10	2026-10-26 02:15:19	2026-10-26 02:15:19
 \.
 
 
@@ -6247,27 +6247,26 @@ COPY public.jobs (id, queue, payload, attempts, reserved_at, available_at, creat
 --
 
 COPY public.migrations (id, migration, batch) FROM stdin;
-1	0001_01_01_000000_create_users_table	1
-2	0001_01_01_000001_create_cache_table	1
-3	0001_01_01_000002_create_jobs_table	1
-4	2026_10_07_080953_create_personal_access_tokens_table	1
-5	2026_10_07_081228_create_roles_table	1
-6	2026_10_07_081229_create_role_user_table	1
-7	2026_10_07_081230_create_grade_levels_table	1
-8	2026_10_07_081231_create_school_years_table	1
-9	2026_10_07_081232_create_terms_table	1
-10	2026_10_07_081233_create_sections_table	1
-11	2026_10_07_081234_create_subjects_table	1
-12	2026_10_07_081235_create_teaching_assignments_table	1
-13	2026_10_07_081236_create_assessment_records_table	1
-14	2026_10_07_211500_add_approval_status_to_users_table	1
-15	2026_10_18_105500_migrate_legacy_emails_to_gmail	1
-16	2026_10_18_120000_add_performance_indexes_and_constraints	1
-17	2026_10_18_130000_enhance_database_design_for_dss	1
-19	2026_10_21_132746_create_assessment_metrics_trigger_and_audit	2
-20	2026_10_21_134554_configure_database_roles_and_rls	3
-21	2026_10_22_000003_configure_database_roles_and_rls	4
-22	2026_10_22_000004_provision_core_system_master_data	5
+110	0001_01_01_000000_create_users_table	1
+111	0001_01_01_000001_create_cache_table	1
+112	0001_01_01_000002_create_jobs_table	1
+113	2026_10_07_080953_create_personal_access_tokens_table	1
+114	2026_10_07_081228_create_roles_table	1
+115	2026_10_07_081229_create_role_user_table	1
+116	2026_10_07_081230_create_grade_levels_table	1
+117	2026_10_07_081231_create_school_years_table	1
+118	2026_10_07_081232_create_terms_table	1
+119	2026_10_07_081233_create_sections_table	1
+120	2026_10_07_081234_create_subjects_table	1
+121	2026_10_07_081235_create_teaching_assignments_table	1
+122	2026_10_07_081236_create_assessment_records_table	1
+123	2026_10_07_211500_add_approval_status_to_users_table	1
+124	2026_10_18_120000_add_performance_indexes_and_constraints	1
+125	2026_10_18_130000_enhance_database_design_for_dss	1
+126	2026_10_21_132746_create_assessment_metrics_trigger_and_audit	1
+127	2026_10_22_000003_configure_database_roles_and_rls	1
+128	2026_10_22_000004_provision_core_system_master_data	1
+129	2026_10_23_220000_streamline_schema_drop_unneeded_columns	1
 \.
 
 
@@ -6284,32 +6283,11 @@ COPY public.password_reset_tokens (email, token, created_at) FROM stdin;
 --
 
 COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, token, abilities, last_used_at, expires_at, created_at, updated_at) FROM stdin;
-32	App\\Models\\User	1	auth_token	0956b1991f094319ee4968eb7219ab0f29b472624c2806cf627919bae63fc869	["*"]	2026-10-20 13:51:59	\N	2026-10-20 13:29:23	2026-10-20 13:51:59
-30	App\\Models\\User	1	auth_token	5a159ce8cb27b8b462a5aedcf8c53837f5dc913ae8087a0069798447eaa7aaf6	["*"]	2026-10-20 13:10:13	\N	2026-10-20 13:10:05	2026-10-20 13:10:13
-22	App\\Models\\User	1	auth_token	c365a5ae93ae7c3f92cbca976e3db85f72a18ce430039aead4168eb17e73a8fc	["*"]	2026-10-19 13:36:16	\N	2026-10-19 13:35:59	2026-10-19 13:36:16
-33	App\\Models\\User	1	auth_token	4aa6b00e9e708b44e9ccdf32a3d7ca750c60bb5d48484586a71ec6888e7ceb32	["*"]	2026-10-21 02:17:55	\N	2026-10-20 13:52:02	2026-10-21 02:17:55
-23	App\\Models\\User	1	auth_token	543f0c72f7484e461f183e25c8270f6528f386736e52bd14cfb056e42957343f	["*"]	2026-10-19 13:43:23	\N	2026-10-19 13:43:13	2026-10-19 13:43:23
-24	App\\Models\\User	1	auth_token	2e1cfbdbfcb7bc3a511e11d720fb5dc8f103290bdc84ab253bb00d1ab6674443	["*"]	2026-10-19 14:01:55	\N	2026-10-19 14:01:48	2026-10-19 14:01:55
-36	App\\Models\\User	1	auth_token	b8804c04cd156ec3d5d83c92dda25344a7ee462785a35515149586f9ced9b025	["*"]	2026-10-21 02:27:18	\N	2026-10-21 02:19:52	2026-10-21 02:27:18
-34	App\\Models\\User	1	auth_token	c4da9c9cb45af247eaa3d122121530dca2744cb03b863f5979ea7563ca535f09	["*"]	2026-10-21 02:18:17	\N	2026-10-21 02:18:11	2026-10-21 02:18:17
-27	App\\Models\\User	1	auth_token	a56aa8dca5135edbbe7e4304ce1bac767c393eb827f901d4c339ebde9c5e0f1e	["*"]	2026-10-20 10:01:56	\N	2026-10-20 09:33:04	2026-10-20 10:01:56
-25	App\\Models\\User	1	auth_token	a2504c6446bf5cd81965aedfed567574f02066f0c1e510e46ce01b0335ea3210	["*"]	2026-10-20 07:38:59	\N	2026-10-20 07:37:48	2026-10-20 07:38:59
-40	App\\Models\\User	1	auth_token	569a8973d66f4347ad3ceb889582e1a5d31728c4e543e3077ac359d8f24fd5bd	["*"]	2026-10-21 02:37:06	\N	2026-10-21 02:37:01	2026-10-21 02:37:06
-35	App\\Models\\User	1	auth_token	756552752c7fce51f97764c465365bc2a9b9019e14138b65c9c45e455cf14d1a	["*"]	2026-10-21 02:18:40	\N	2026-10-21 02:18:36	2026-10-21 02:18:40
-43	App\\Models\\User	1	auth_token	5a4e92bede0c7a9b8493ce2fa264ca63333622883a64941409e264c0777c5b72	["*"]	2026-10-21 13:10:53	\N	2026-10-21 03:02:52	2026-10-21 13:10:53
-28	App\\Models\\User	1	auth_token	3dd0b3231e630d2a48b319f7737d5144457722abbd0cad510d9ce99d4d53f69a	["*"]	2026-10-20 10:44:40	\N	2026-10-20 10:43:59	2026-10-20 10:44:40
-21	App\\Models\\User	1	auth_token	d90bbbdd07ae18e02cfe66d617e3e33fd5b4e713e62d70137ce55ed65c15d212	["*"]	2026-10-19 13:31:48	\N	2026-10-19 13:31:33	2026-10-19 13:31:48
-41	App\\Models\\User	1	auth_token	743f1c9095c0e29d228c2a91a4a150dd1bda838dc3745b090ba16bad20866307	["*"]	2026-10-21 02:42:15	\N	2026-10-21 02:42:07	2026-10-21 02:42:15
-26	App\\Models\\User	1	auth_token	41052b824ea0be35d6dafd1d6108eeb89c05b03a510c813a4d769dc91400846e	["*"]	2026-10-20 07:55:40	\N	2026-10-20 07:46:09	2026-10-20 07:55:40
-42	App\\Models\\User	1	auth_token	97212b636fa482362af49a1cc694f2afc8cefdfcf4f01e22a2d1213acf79f55b	["*"]	2026-10-21 03:02:45	\N	2026-10-21 03:02:39	2026-10-21 03:02:45
-44	App\\Models\\User	1	auth_token	51798f3b0f0c539f5cf21861e4a6f8acdc4ea5c58162217a06a5eb50cdb9b96f	["*"]	2026-10-21 13:11:03	\N	2026-10-21 13:10:58	2026-10-21 13:11:03
-31	App\\Models\\User	1	auth_token	64fa0a18512fefbcc1fc7d97ebc9b34a517cc0fae363286221d8ca51af60ed03	["*"]	2026-10-20 13:29:08	\N	2026-10-20 13:12:08	2026-10-20 13:29:08
-37	App\\Models\\User	1	auth_token	70c34af23a68595695940359e9344c523d64f37c4e21273df0e7c88ca2d15f06	["*"]	2026-10-21 02:30:39	\N	2026-10-21 02:28:25	2026-10-21 02:30:39
-29	App\\Models\\User	1	auth_token	795f4b81010a614a0fdbf8259247b048f43dd655f54d21d160121e8c29afd1cc	["*"]	2026-10-20 12:45:25	\N	2026-10-20 12:36:53	2026-10-20 12:45:25
-46	App\\Models\\User	1	auth_token	229e12b7492f41fdb51fc7109c86da82d5d55a129076111dc9215a08714d8055	["*"]	2026-10-21 14:23:30	\N	2026-10-21 14:22:56	2026-10-21 14:23:30
-38	App\\Models\\User	1	auth_token	c7fa256d6a81121abe7a3388ee1ca406b4a9f122eac284642039d4ac3a410e84	["*"]	2026-10-21 02:34:25	\N	2026-10-21 02:31:41	2026-10-21 02:34:25
-45	App\\Models\\User	1	auth_token	410c503c4459ee60e6e0c876035aba13f935748a992f27e136f05219be840aa0	["*"]	2026-10-21 14:18:13	\N	2026-10-21 13:11:07	2026-10-21 14:18:13
-39	App\\Models\\User	1	auth_token	6803a9106cad46b3a979943ad459d25dbc9ef39c8ec6e1bdaf88707a28c89e3d	["*"]	2026-10-21 02:35:49	\N	2026-10-21 02:35:44	2026-10-21 02:35:49
+1	App\\Models\\User	1	auth_token	d01eb3d2ffaf6b614d5b407f39af4076f2964f914f85f7a65db6bde6b5f9d488	["*"]	2026-10-26 02:18:39	\N	2026-10-26 02:18:25	2026-10-26 02:18:39
+7	App\\Models\\User	1	auth_token	f752251c1767ac358d4b9aee91e143c645e7f018b8092162660ff0dac21ed9e1	["*"]	2026-10-26 09:54:23	\N	2026-10-26 07:56:38	2026-10-26 09:54:23
+5	App\\Models\\User	1	auth_token	028195215e1dca154b48eca0750c775eefe29a106409bafde904d6f525304c83	["*"]	2026-10-26 06:39:24	\N	2026-10-26 06:12:58	2026-10-26 06:39:24
+6	App\\Models\\User	1	auth_token	aec1460980cf63b358e2c60847c33d0be3289e2586af83b3b838226710754da3	["*"]	2026-10-26 07:55:59	\N	2026-10-26 07:55:52	2026-10-26 07:55:59
+2	App\\Models\\User	1	auth_token	bce826b903263ac6abf3d4447a6e562d7af1202e9df8578fda8d237ef5fb0fec	["*"]	2026-10-26 05:47:03	\N	2026-10-26 05:34:15	2026-10-26 05:47:03
 \.
 
 
@@ -6317,8 +6295,9 @@ COPY public.personal_access_tokens (id, tokenable_type, tokenable_id, name, toke
 -- Data for Name: role_user; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.role_user (user_id, role_id, created_at, updated_at) FROM stdin;
-1	1	2026-10-19 08:54:17	2026-10-19 08:54:17
+COPY public.role_user (user_id, role_id, created_at) FROM stdin;
+1	1	2026-10-26 02:15:19
+2	2	2026-10-26 05:35:28
 \.
 
 
@@ -6327,8 +6306,8 @@ COPY public.role_user (user_id, role_id, created_at, updated_at) FROM stdin;
 --
 
 COPY public.roles (id, name, display_name, created_at, updated_at) FROM stdin;
-1	system_admin	System Administrator	2026-10-21 14:06:15	2026-10-21 14:06:15
-2	teacher	Teacher	2026-10-21 14:06:15	2026-10-21 14:06:15
+1	system_admin	System Administrator	2026-10-26 02:15:19	2026-10-26 02:15:19
+2	teacher	Teacher	2026-10-26 02:15:19	2026-10-26 02:15:19
 \.
 
 
@@ -6337,7 +6316,8 @@ COPY public.roles (id, name, display_name, created_at, updated_at) FROM stdin;
 --
 
 COPY public.school_years (id, name, start_date, end_date, is_active, created_at, updated_at, deleted_at) FROM stdin;
-1	2025-2026	2025-06-16	2026-03-31	t	2026-10-19 08:54:20	2026-10-19 08:54:20	\N
+1	2025-2026	2025-06-16	2026-03-31	f	2026-10-26 02:15:19	2026-10-26 08:51:18	\N
+2	2026-2027	2026-10-26	2027-01-01	t	2026-10-26 08:50:39	2026-10-26 08:51:18	\N
 \.
 
 
@@ -6346,6 +6326,7 @@ COPY public.school_years (id, name, start_date, end_date, is_active, created_at,
 --
 
 COPY public.sections (id, school_year_id, grade_level_id, name, is_active, created_at, updated_at, deleted_at) FROM stdin;
+1	1	1	Pilot A	t	2026-10-26 05:36:58	2026-10-26 05:36:58	\N
 \.
 
 
@@ -6354,36 +6335,10 @@ COPY public.sections (id, school_year_id, grade_level_id, name, is_active, creat
 --
 
 COPY public.sessions (id, user_id, ip_address, user_agent, payload, last_activity) FROM stdin;
-h8zlPDaUXXo0UZkOO3PjG1dTSuFkM5qZi9rTg4jo	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJncFhWM0ZrNTAzZWMyeTA2OWpUS3FBVWZZSk14VlJjVHNVaXBYeW9kIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792501797
-Ykj7vu7KTSPP3QF38ZBkMZX794cZD7jmnnbaOjoN	\N	35.230.16.64	Go-http-client/2.0	eyJfdG9rZW4iOiJLbU9BNEc4T2piZ3poWXZYTXJEUVJNa1hHM3F0b0xiYWJwbWpub0FIIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6VkJCeVp4ZW54bjdncGZ2MiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792501811
-8EBFJrFp6vMzWKIMHnMR0FfUfTtRZwSxDuMdTFLW	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJzdFVSTk1aSUltRkN3ekY3RUFhdUhKMDRuZ2pMMTVkb1BQT2p1dmVrIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792502683
-DKxSGUgyBq8PAgv9cEgRw16xGvCi4i3xNmVuMwiv	\N	34.83.18.152	Go-http-client/2.0	eyJfdG9rZW4iOiJ0dE0zbjhPYVJrWXBXQXdzWmFqaDFUaEM0SjdaNDVFVEVFRkM2TnlwIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6akI1aVNOM1BYUFpFVW9xZyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792502690
-m3CzFiNFiLf3D4RJP5Pdqa64Y30e6BlviAV3fYdg	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJ5VnVtZjRSZ0VscXBEaWs2TGl2ZURHWVNxUXk5T1pzMmlwYlVUYlpqIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792503043
-yqg3J5Sah86zyAQvrvJS5xsGUsQNUOVJ0BFm1byO	\N	34.83.18.152	Go-http-client/2.0	eyJfdG9rZW4iOiJuSjNmVUx0ZzRpamp1alJBcGtPSXV5THJvSnd4bzVTVE1Mckhpb09GIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6dGxXNEJ0S1RKdXl6dVBaZiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792503049
-sC1JOKHs9yziKhS6JYUkPdQFBQ6aumHpjvTwlamK	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJMSnhTd1ZOVlZXZk9LNTVSSmJrTkdpVUdjUGY0Q042NG93bXlKMjNIIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792503233
-QAX2gRnR7Rg0xy1srFmlZAHxewF6F0whGhgce9HD	\N	35.227.183.65	Go-http-client/2.0	eyJfdG9rZW4iOiI2d2NWcFhaa0ZoajNQNGtDSEc5NkMxOFFYbXV5M2JGaHdWM3k0MTEzIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6cXdnZ2FkQ1RWQTN0cFpHdyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792503242
-hHZNf1k9aLRXhxNolmh5JQE5vPC9mHQkRyOqPSow	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJYcHN0MHpUYW1hSlZHU2FIdnJPWFRZVVl0Z3l3ZDZMTE9ydGZ0R0M0IiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792503522
-ydH5cX9aAC8zBDOpWcoEgtgNq9I2CtYII2cZJwWC	\N	35.199.162.116	Go-http-client/2.0	eyJfdG9rZW4iOiJ1M2l5cVN3TTNRRWp3a29NTlhZeG5xelFaWXdNT3V0b3E3Vkl4U05yIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6aVN0REZZUnpzMjV2MURTdyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792503536
-Zl7GEmmi9QQXLhqZJPEKHRYJf9aAAFOxWUcx0vSj	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJRVVJBVkMzUUVwTEdHR3FHUUxHQThJNDJQZ2d4dVRHeHFQd3JqTnE2IiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792503801
-Igd7jtKnYLYLg6rNZzPVpIdvG7q9gHaqiXZ8Bild	\N	35.230.28.204	Go-http-client/2.0	eyJfdG9rZW4iOiJnUkh2RDFMMEJRQVhnV1JKQUxUZUxvakpwcXNoVlhKS2oxZU01WW1yIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6VFo2dVVzVWZocFZkSE5EdyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792503807
-ic6yPfWdfvnicuhFete7fCzVG4pBVqTdO3ZAuJp1	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJ4NWJKbmpVTWVsYTgwTmJtV2l1ZjNWbzRKSGdZVUpkNVc3Qjcydk5iIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792504017
-HoCVU1Lw2sN6fZ674ac6aoHakEqL2akN9gHjaBNk	\N	35.199.162.116	Go-http-client/2.0	eyJfdG9rZW4iOiJWVlN5SHBZNndNS3lqSGFqN2prdkliaXlzMkhzSXRhb2x4WGptRHdHIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6Qml1VnY4TGlEUmJkbFRVMiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792504026
-l4NPVKdeXHz7cSMGhA2TJicwfqwnljmIssnEIFko	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJybU85WW4xc3J2a3BWd25COEN4UkZXN2VuY1JSMnVGeDVDQ3FNVnlaIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792504259
-xdZtpMxgs30IO4Uu4uFYoCMr49kasI58QvXKz0RB	\N	35.197.38.255	Go-http-client/2.0	eyJfdG9rZW4iOiJCamNZbVJNR1ZVZUllaWpCQTZRbjE2ZnpVSmdiRmZZU2pDRzQ4SGlsIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6Qkxsd0xPWU1KSzE2SFllVSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792504266
-PRmtDnjPJJfN0Mx8W8OomSgzoBTlyWdGSwbINMPe	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJPRkdrM2djSjMzOUN2NHZKNk9hbEo0ME5SNUhUWUNDSzVGMTNYS2dsIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792548971
-ExC6JjVxsANyFKGa0AoQsaC5yfg2g7aWL2TyQs16	\N	35.197.36.229	Go-http-client/2.0	eyJfdG9rZW4iOiJnTllNRUJFTExTcUJwMWE1U2lSZmhCdktOYjk3VUhaVDRiVTZ2bHRuIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6Y1p0QUdhNjRRV3pGYnpDQSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792548977
-jWkvc83ZuPh35BDqNc5I2yQOezMuaU17UI6lUXe9	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJ6cHI0NlF3WEl5c0daSmg0Z0lNbGdIMEJzc2cwbTlYVjlrQW9HamNrIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792549231
-ZNgMu7GyQvfkgt5zny9zhh91y1bvJKdBT5dMMqbZ	\N	34.168.108.203	Go-http-client/2.0	eyJfdG9rZW4iOiJPck9adVdIRWZNQkV2cnNOdnNHdm1qTVJMSVBCT2NRRjdab1hwRGZjIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6SG9hQkFiZFppNEtrQkd4ZiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792549239
-L4BZ1ohhvFj7oaIK9NxiBAF5FBjEmwIfSvY5R2qR	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJuemk5cmI5T3ZCRUNjejBGZkNoY1hNR1F3Y0djZzYwUGJGN2tWdzJLIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792549608
-G4FgJaLSPPFLeNu17RBJ1RuT1REHZyqZRbSP6qVJ	\N	34.168.108.203	Go-http-client/2.0	eyJfdG9rZW4iOiJ4VEpJZXU2N2t3OUlpTEt4WlNZMEFjYUdudjFHd0ttQ1R4YXRjU0tmIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6M2lJTUZSeDFvenVBYkNkNiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792549614
-8AY11JPQfaz7kDyFHxxGJ6JzoUCkxLVgn9LwlKiT	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJWdVVKZHN3NWcwUEpQOXpaZWJySUNHMHU3cmhVcHBReHVXYmE5UXpxIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792549801
-reFSp0XKWoDzc6EkuiHuMLUwjmtMUk25oh5Yu2qk	\N	35.197.96.157	Go-http-client/2.0	eyJfdG9rZW4iOiJUa3lJZklWeUUzdVBMSjE1Qm1mWWpzb1Z6cXJPVnppNDk1amdwZGNLIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6MDhTdjNRdzZna2JwZ1A5ZSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792549808
-njazC0mfvso0Ipp6eMGose06Cy1zOQ7TMS6GUigE	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJKNHJ5Qk40TTJEV0JnQlJXOWRBVGdxZHh4WkM1ZGY1Ukk1bjdxMXdDIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792549994
-DMxWGk8AYoMo2XXhaPIcg1570aLTesZUvrfjADqn	\N	34.168.108.203	Go-http-client/2.0	eyJfdG9rZW4iOiJOM3ZSbTR4TlAzUkR2ZU9PZGdoV3ZCYUp4Z2RxRmszbElud0R5TkRXIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6ZXViSU1sZ0N3QVpySlpFVyJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792549998
-rlIlWFfDPkfS0IzuBhHIH9glNCGNQyInnGIzn58l	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJ3OUxrT0xmeVpDZXBSWndvSnR6VHU4eDNJN1FORVpDUzNjUDI3YTNyIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792550691
-Er9nIOwehvQn8Ax2Zr5xD69tQrwwyxGPRRvuBSir	\N	34.168.108.203	Go-http-client/2.0	eyJfdG9rZW4iOiJiWHNIeE93djVQakZYZXlrd09GcFhsTTVaaURLaXNSeGhsZ0xsUmhQIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6M2R0N1ZPR0t0dWZqOXA5QiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792550697
-xNuuyMEquXxHyoJg3LVz1tXEUSDV39ozvgzP4Zj1	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJxeG9hQlN2YVBQdjB2QVhQM1JEMG9rMzRHUmFZaFN2RFBqcHdYRmlWIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792551440
-WgVUujKWgNQaE2F2doC19qsIgQ3ZsFou9GQBnWOR	\N	34.82.226.193	Go-http-client/2.0	eyJfdG9rZW4iOiI0YUpDRmFFQklBN1NTUmVwNE1BRzFkRFRNRTVTbTM5OEVyRVpjTlBFIiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6ODVZRXFxY0RYZHZJSUVqRiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792551446
+utXTRDBFtUlQlfi6ggdtuWoDNjsefMQONnKpti3k	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJ5U1plTmJtQzk4a25McEIzSXNtZ1hPc2laYTUwblZXY0NxQVY0ZVJyIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1792993880
+pjkFAOf6kgw6a5vbLqXmK1NBXmxdXmLbbVjnlQYS	\N	35.230.106.76	Go-http-client/2.0	eyJfdG9rZW4iOiJtSlhsN0NoRDNUeVQ2cnR0YjhaR29GcW4yTnlON0NueE5kUFNid0t4IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6N3VTb1FvWVIwMzlvR1l0cSJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1792993887
+Y2cq0cQn2QBfmt2WjWwmCOOgidlQ5K6I2R5j5FOh	\N	127.0.0.1	Go-http-client/1.1	eyJfdG9rZW4iOiJoc1FXRW45MHRNZzZmbFNnQWRyMWZPbnpoTHRpekxOMzhsc3Z0dTBBIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119fQ==	1793003240
+fyAO57aepPkOKabHBsY5tQq4tsfUD9JkvUff0jNN	\N	35.197.36.229	Go-http-client/2.0	eyJfdG9rZW4iOiJGODVLc2tMQVFyQmszdXRLVUdHeDZIYXdZeWQ4cnVmZUpwUXFFQ1o1IiwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHBzOlwvXC9kbmlocy5vbnJlbmRlci5jb20iLCJyb3V0ZSI6ImdlbmVyYXRlZDo6Zm1tUVlLVTliczhKTW5veiJ9LCJfZmxhc2giOnsib2xkIjpbXSwibmV3IjpbXX19	1793003248
 \.
 
 
@@ -6392,38 +6347,38 @@ WgVUujKWgNQaE2F2doC19qsIgQ3ZsFou9GQBnWOR	\N	34.82.226.193	Go-http-client/2.0	eyJ
 --
 
 COPY public.subjects (id, name, grade_level_id, is_active, created_at, updated_at, code) FROM stdin;
-1	Filipino	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	FIL-7
-2	English	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ENG-7
-3	Mathematics	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MATH-7
-4	Science	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	SCI-7
-5	Araling Panlipunan	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	AP-7
-6	TLE	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	TLE-7
-7	MAPEH	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MAPEH-7
-8	Values Education	1	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ESP-7
-9	Filipino	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	FIL-8
-10	English	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ENG-8
-11	Mathematics	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MATH-8
-12	Science	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	SCI-8
-13	Araling Panlipunan	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	AP-8
-14	TLE	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	TLE-8
-15	MAPEH	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MAPEH-8
-16	Values Education	2	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ESP-8
-17	Filipino	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	FIL-9
-18	English	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ENG-9
-19	Mathematics	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MATH-9
-20	Science	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	SCI-9
-21	Araling Panlipunan	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	AP-9
-22	TLE	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	TLE-9
-23	MAPEH	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MAPEH-9
-24	Values Education	3	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ESP-9
-25	Filipino	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	FIL-10
-26	English	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ENG-10
-27	Mathematics	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MATH-10
-28	Science	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	SCI-10
-29	Araling Panlipunan	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	AP-10
-30	TLE	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	TLE-10
-31	MAPEH	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	MAPEH-10
-32	Values Education	4	t	2026-10-19 08:54:20	2026-10-21 14:14:58	ESP-10
+1	Filipino	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	FIL-7
+2	English	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ENG-7
+3	Mathematics	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MATH-7
+4	Science	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	SCI-7
+5	Araling Panlipunan	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	AP-7
+6	TLE	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	TLE-7
+7	MAPEH	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MAPEH-7
+8	Values Education	1	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ESP-7
+9	Filipino	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	FIL-8
+10	English	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ENG-8
+11	Mathematics	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MATH-8
+12	Science	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	SCI-8
+13	Araling Panlipunan	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	AP-8
+14	TLE	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	TLE-8
+15	MAPEH	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MAPEH-8
+16	Values Education	2	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ESP-8
+17	Filipino	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	FIL-9
+18	English	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ENG-9
+19	Mathematics	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MATH-9
+20	Science	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	SCI-9
+21	Araling Panlipunan	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	AP-9
+22	TLE	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	TLE-9
+23	MAPEH	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MAPEH-9
+24	Values Education	3	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ESP-9
+25	Filipino	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	FIL-10
+26	English	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ENG-10
+27	Mathematics	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MATH-10
+28	Science	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	SCI-10
+29	Araling Panlipunan	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	AP-10
+30	TLE	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	TLE-10
+31	MAPEH	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	MAPEH-10
+32	Values Education	4	t	2026-10-26 02:15:19	2026-10-26 02:15:19	ESP-10
 \.
 
 
@@ -6432,6 +6387,7 @@ COPY public.subjects (id, name, grade_level_id, is_active, created_at, updated_a
 --
 
 COPY public.teaching_assignments (id, user_id, school_year_id, section_id, subject_id, effective_from, effective_until, assigned_by, created_at, updated_at) FROM stdin;
+1	2	1	1	5	2026-10-26	2026-10-26	1	2026-10-26 05:37:53	2026-10-26 05:41:48
 \.
 
 
@@ -6440,9 +6396,12 @@ COPY public.teaching_assignments (id, user_id, school_year_id, section_id, subje
 --
 
 COPY public.terms (id, school_year_id, term_number, name, status, created_at, updated_at) FROM stdin;
-3	1	3	3rd Term	pending	2026-10-19 08:54:20	2026-10-19 08:54:20
-1	1	1	1st Term	active	2026-10-19 08:54:20	2026-10-21 02:34:14
-2	1	2	2nd Term	pending	2026-10-19 08:54:20	2026-10-21 02:34:21
+1	1	1	1st Term	active	2026-10-26 02:15:19	2026-10-26 02:15:19
+2	1	2	2nd Term	pending	2026-10-26 02:15:19	2026-10-26 02:15:19
+3	1	3	3rd Term	pending	2026-10-26 02:15:19	2026-10-26 02:15:19
+5	2	2	2nd Term	pending	2026-10-26 08:50:39	2026-10-26 08:50:39
+6	2	3	3rd Term	pending	2026-10-26 08:50:39	2026-10-26 08:50:39
+4	2	1	1st Term	active	2026-10-26 08:50:39	2026-10-26 08:55:16
 \.
 
 
@@ -6450,8 +6409,9 @@ COPY public.terms (id, school_year_id, term_number, name, status, created_at, up
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.users (id, name, email, email_verified_at, password, is_active, remember_token, created_at, updated_at, approval_status, approved_at, deleted_at) FROM stdin;
-1	System Administrator	admin@gmail.com	2026-10-19 08:54:17	$2y$12$hD1pGhP5GMtpFnJE.ihml.4mMukTj4YWgQgmvZ1oipqphClxr6wla	t	\N	2026-10-19 08:54:17	2026-10-19 13:59:57	approved	2026-10-19 08:54:17	\N
+COPY public.users (id, name, email, password, is_active, remember_token, created_at, updated_at, approval_status, approved_at, deleted_at) FROM stdin;
+1	System Administrator	admin@gmail.com	$2y$12$593CGpeic8sU3MdsQC4CLuW60DAUGYHZSCJ4VG.OgFISUcGgzPLJ.	t	\N	2026-10-26 02:15:19	2026-10-26 02:15:19	approved	2026-10-26 02:15:19	\N
+2	Daisuke Reggie C. Bati	daisuke@gmail.com	$2y$12$zW/2cDjS1qCrJ9MuokFVk.MHJK8b75D4n763GN0AJIwMPIAjDjs9e	t	\N	2026-10-26 05:35:27	2026-10-26 08:57:42	approved	2026-10-26 05:36:22	\N
 \.
 
 
@@ -6719,14 +6679,14 @@ SELECT pg_catalog.setval('auth.refresh_tokens_id_seq', 1, false);
 -- Name: assessment_audit_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.assessment_audit_logs_id_seq', 3, true);
+SELECT pg_catalog.setval('public.assessment_audit_logs_id_seq', 2, true);
 
 
 --
 -- Name: assessment_records_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.assessment_records_id_seq', 29, true);
+SELECT pg_catalog.setval('public.assessment_records_id_seq', 1, true);
 
 
 --
@@ -6754,14 +6714,14 @@ SELECT pg_catalog.setval('public.jobs_id_seq', 1, false);
 -- Name: migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.migrations_id_seq', 22, true);
+SELECT pg_catalog.setval('public.migrations_id_seq', 129, true);
 
 
 --
 -- Name: personal_access_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 46, true);
+SELECT pg_catalog.setval('public.personal_access_tokens_id_seq', 7, true);
 
 
 --
@@ -6775,14 +6735,14 @@ SELECT pg_catalog.setval('public.roles_id_seq', 2, true);
 -- Name: school_years_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.school_years_id_seq', 7, true);
+SELECT pg_catalog.setval('public.school_years_id_seq', 2, true);
 
 
 --
 -- Name: sections_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.sections_id_seq', 278, true);
+SELECT pg_catalog.setval('public.sections_id_seq', 1, true);
 
 
 --
@@ -6796,21 +6756,21 @@ SELECT pg_catalog.setval('public.subjects_id_seq', 32, true);
 -- Name: teaching_assignments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.teaching_assignments_id_seq', 28, true);
+SELECT pg_catalog.setval('public.teaching_assignments_id_seq', 1, true);
 
 
 --
 -- Name: terms_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.terms_id_seq', 15, true);
+SELECT pg_catalog.setval('public.terms_id_seq', 6, true);
 
 
 --
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 290, true);
+SELECT pg_catalog.setval('public.users_id_seq', 2, true);
 
 
 --
@@ -8990,5 +8950,5 @@ CREATE EVENT TRIGGER pgrst_drop_watch ON sql_drop
 -- PostgreSQL database dump complete
 --
 
-\unrestrict xA7ROyy9hnZ76J1XYKep2NeWeqSaO0U5q95WZ8IEZ2OChvqnI6UuyYOcZxDh5Sn
+\unrestrict 8WPIXI6Gz4Qqfc6Eel1BlhDhFkcF2FE1erogBdAgLQi5VAoPvgafvVmDLo6Pq1S
 
