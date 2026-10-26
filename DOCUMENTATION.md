@@ -9,7 +9,7 @@ The DNIHS Assessment Consolidation and Analytics System is a web application bui
 ## Screens
 
 ### Front-End Overview
-The front-end is a Single Page Application (SPA) built with React 19, Vite, Tailwind CSS v4, Lucide React icons, and Motion for page transitions. On desktop screens, the layout uses a collapsible left sidebar, a top header bar showing the logged-in user, and full-width tables for reports and class management. On mobile screens, the sidebar turns into a slide-out menu drawer and tables scroll horizontally so forms and reports remain easy to use on phones.
+The front-end is developed as a Single Page Application (SPA) built with React 19 and bundled using Vite. It utilizes Tailwind CSS v4 for modern utility-first styling, Lucide React for UI iconography, and Motion for component animations and page transitions.
 
 ### Screen Descriptions
 
@@ -73,23 +73,23 @@ The project is structured as a Laravel REST API backend (PHP 8.3) connected to a
 m_capstone/
 ├── app/
 │   ├── Console/Commands/
-│   │   ├── DatabaseBackupCommand.php               # CLI command to back up the PostgreSQL database
-│   │   └── DatabaseRestoreCommand.php              # CLI command to restore and verify database backups
+│   │   ├── DatabaseBackupCommand.php       # Database backup command
+│   │   └── DatabaseRestoreCommand.php      # Database restore verification
 │   ├── Http/
 │   │   ├── Controllers/Api/
-│   │   │   ├── AcademicReferenceController.php     # Returns grade levels, subjects, and active school year
-│   │   │   ├── AssessmentController.php            # Handles score encoding, updates, and consolidated reports
-│   │   │   ├── AuthController.php                  # Handles login, registration, logout, and user session
-│   │   │   ├── SchoolYearController.php            # Creates and updates school years and their 3 terms
-│   │   │   ├── SectionController.php               # Creates, updates, archives, and deletes sections
-│   │   │   ├── TeacherAssignmentController.php     # Assigns and removes teacher subject loads
-│   │   │   ├── TeacherController.php               # Manages teacher account approval and deactivation
-│   │   │   └── TermController.php                  # Updates term status (pending, active, completed)
+│   │   │   ├── AcademicReferenceController.php  # Grade levels & subjects API
+│   │   │   ├── AssessmentController.php    # Score encoding & reports
+│   │   │   ├── AuthController.php          # Auth & user session API
+│   │   │   ├── SchoolYearController.php    # School year & term management
+│   │   │   ├── SectionController.php       # Class section management
+│   │   │   ├── TeacherAssignmentController.php  # Teacher load assignments
+│   │   │   ├── TeacherController.php       # Teacher accounts & approval
+│   │   │   └── TermController.php          # Term status management
 │   │   ├── Middleware/
-│   │   │   └── EnsureUserHasRole.php               # Checks if the logged-in user is system_admin or teacher
-│   │   ├── Requests/                               # FormRequest classes for server-side input validation
-│   │   └── Resources/                              # Formats model data into clean JSON responses
-│   ├── Models/                                     # Eloquent models for the database tables
+│   │   │   └── EnsureUserHasRole.php       # Role access authorization
+│   │   ├── Requests/                       # Form validation classes
+│   │   └── Resources/                      # JSON API resource transformers
+│   ├── Models/                             # Eloquent database models
 │   │   ├── AssessmentRecord.php
 │   │   ├── GradeLevel.php
 │   │   ├── Role.php
@@ -100,22 +100,26 @@ m_capstone/
 │   │   ├── Term.php
 │   │   └── User.php
 │   └── Services/
-│       └── StatsCalculatorService.php              # Computes Mean, SD, MPS, Mastery Level, and Pooled Variance
+│       └── StatsCalculatorService.php      # Mean, SD, MPS calculator
+├── bootstrap/
+│   └── app.php                             # Application bootloader
+├── config/                                 # App & database configuration
 ├── database/
-│   ├── migrations/                                 # Database tables, foreign keys, indexes, and triggers
-│   └── seeders/                                    # Initial roles, admin account, grades, and subjects
+│   └── migrations/                         # PostgreSQL table schemas
+├── public/                                 # Web server entry & assets
 ├── resources/
-│   ├── css/app.css                                 # Tailwind CSS v4 stylesheet
+│   ├── css/
+│   │   └── app.css                         # Tailwind CSS stylesheet
 │   └── js/
-│       ├── api.js                                  # Helper for API requests with Sanctum Bearer tokens
-│       ├── App.jsx                                 # Main React component handling login state and page tabs
-│       ├── main.jsx                                # React entry point
-│       ├── components/                             # Shared UI components (Sidebar, TopBar, ScoreSheet, Modal)
-│       └── pages/                                  # Page views for Login, Admin modules, and Teacher encoding
+│       ├── api.js                          # Axios API client helper
+│       ├── App.jsx                         # Root React SPA component
+│       ├── main.jsx                        # React entry point
+│       ├── components/                     # Reusable UI components
+│       └── pages/                          # React page views & modules
 └── routes/
-    ├── api.php                                     # All backend API endpoints
-    ├── console.php                                 # Scheduled daily backup command
-    └── web.php                                     # Serves the React app
+    ├── api.php                             # REST API endpoints
+    ├── console.php                         # Scheduled CLI commands
+    └── web.php                             # SPA route entry point
 ```
 
 ### Functions Made
@@ -133,18 +137,21 @@ m_capstone/
 
 | Table Name | Purpose |
 | :--- | :--- |
-| `users` | Stores admin and teacher accounts, hashed passwords, active status (`is_active`), approval status (`pending`, `approved`, `rejected`), and soft-delete timestamps. |
-| `roles` | Stores the user roles (`system_admin` and `teacher`). |
+| `users` | Stores administrator and teacher accounts, hashed passwords, active status (`is_active`), approval status (`pending`, `approved`, `rejected`), and timestamps. |
+| `roles` | Defines authorization roles (`system_admin` and `teacher`). |
 | `role_user` | Pivot table that links `users` to their assigned `roles`. |
-| `school_years` | Stores school years (such as `2025-2026`), start and end dates, and which school year is currently active. |
-| `terms` | Stores the 3 terms (`1st Term`, `2nd Term`, `3rd Term`) under each school year and whether encoding is `pending`, `active`, or `completed`. |
-| `grade_levels` | Reference table for `Grade 7`, `Grade 8`, `Grade 9`, and `Grade 10`. |
-| `sections` | Stores class sections (such as `Pilot A` and `Pilot B`) under a specific grade level and school year. |
-| `subjects` | Stores the DepEd subjects per grade level along with their subject codes. |
-| `teaching_assignments` | Links a teacher (`user_id`) to a specific section and subject for a school year, including start and end dates (`effective_from`, `effective_until`). |
-| `assessment_records` | Stores the encoded array of student `raw_scores` (JSONB), `total_items`, computed statistics (`no_of_entries`, `mean`, `mps`, `sd`, `highest_score`, `lowest_score`), `least_learned_competency`, and mastery `remarks`. |
-| `assessment_audit_logs` | Stores a history of old and new statistical values whenever an assessment record is updated or deleted. |
-| `personal_access_tokens` | Stores Laravel Sanctum authentication tokens for logged-in users. |
+| `school_years` | Stores academic school years (such as `2025-2026`), start and end dates, and active school year status (`is_active`). |
+| `terms` | Stores the 3 grading terms (`1st Term`, `2nd Term`, `3rd Term`) per school year and encoding status (`pending`, `active`, `completed`). |
+| `grade_levels` | Reference table for junior high school levels (`Grade 7`, `Grade 8`, `Grade 9`, and `Grade 10`). |
+| `sections` | Stores class sections under a specific grade level and school year. |
+| `subjects` | Stores the DepEd curriculum learning areas per grade level along with their subject codes. |
+| `teaching_assignments` | Links a teacher (`user_id`) to a specific section and subject for a school year, including tenure dates (`effective_from`, `effective_until`). |
+| `assessment_records` | Stores examination records with raw score arrays (`raw_scores` JSON), total items, computed statistics (`no_of_entries`, `mean`, `mps`, `sd`, highest/lowest score), least learned competencies, and DepEd mastery remarks. |
+| `assessment_audit_logs` | Audit trail logging previous and updated statistical values whenever an assessment record is modified or deleted. |
+| `personal_access_tokens` | Stores hashed Laravel Sanctum Bearer tokens for authenticated API sessions. |
+| `password_reset_tokens` | Stores temporary security tokens for user password reset requests. |
+| `sessions` | Stores web user session state, IP addresses, user agents, and last activity timestamps. |
+| `failed_jobs` | Logs details of any background queued jobs that failed execution. |
 
 ---
 
@@ -156,16 +163,18 @@ m_capstone/
 
 ## Challenges and Solutions
 
-### 1. Computing Consolidated Standard Deviation Across Multiple Sections
-- **Problem**: In the old spreadsheet setup, the overall standard deviation for a grade level was computed by simply averaging the standard deviations of each section. During development, we found that this gives an inaccurate result when sections have different numbers of students or different class means.
-- **Solution**: We updated `StatsCalculatorService::consolidate()` to use the pooled population variance formula:
-  $$\sigma^2_{\text{pooled}} = \frac{1}{N} \sum_{i=1}^{k} n_i \left( \sigma_i^2 + (\mu_i - \bar{\mu})^2 \right), \quad \sigma_{\text{pooled}} = \sqrt{\sigma^2_{\text{pooled}}}$$
-  This properly weights each section by its student count and accounts for differences between section means.
+### 1.
+- **Problem**: Each section has a different number of students (e.g., 35 in one section, 48 in another). Creating a separate database row for every single student's score made database queries slow and bloated the database with thousands of rows.
+- **Solution**: We stored the list of raw student scores in a native PostgreSQL `JSON` column inside `assessment_records` and used Laravel Eloquent's array casting (`$casts = ['raw_scores' => 'array']`), allowing the backend to save and retrieve scores directly as a standard PHP array.
 
-### 2. Reassigning Classes to Substitute Teachers Mid-Year
-- **Problem**: Putting a normal unique constraint on `(school_year_id, section_id, subject_id)` in the `teaching_assignments` table prevented us from assigning a substitute teacher if the original teacher went on leave, unless we deleted the original teacher's assignment record.
-- **Solution**: We used a PostgreSQL partial unique index (`WHERE effective_until IS NULL`). When a teacher leaves a class, we set their `effective_until` date instead of deleting the row. This allows a new teacher to be assigned to the same class while keeping the previous teacher's history intact.
+### 2.
+- **Problem**: Relying only on browser validation was risky because modified or corrupted requests could submit scores that were negative, non-numeric, or higher than the test's total number of items.
+- **Solution**: We created a dedicated Laravel `StoreAssessmentRequest` validation class that verifies every item in the submitted array (`raw_scores.* => 'required|numeric|min:0|lte:total_items'`) before allowing the data to reach the database.
 
-### 3. Preventing Invalid Scores and Formula Errors
-- **Problem**: In shared spreadsheets, teachers could accidentally type a score higher than the total number of test items or overwrite the cells containing the Mean, SD, and MPS formulas.
-- **Solution**: We moved all calculations to the backend and database. The React score sheet blocks scores below `0` or above `total_items`, Laravel's `StoreAssessmentRequest` validates the submitted array on the server, and `StatsCalculatorService` along with a PostgreSQL trigger computes the Mean, SD, MPS, and Mastery Level automatically upon saving.
+### 3.
+- **Problem**: If a teacher submitted scores for the same section, subject, and term more than once, the database could create duplicate records, which corrupted the school-wide consolidated report totals.
+- **Solution**: We created a composite unique index in PostgreSQL covering `(school_year_id, term_id, section_id, subject_id, type)` and programmed the controller to check for existing entries so it updates the current record instead of inserting a duplicate.
+
+### 4.
+- **Problem**: Writing statistical formulas (Mean, MPS, Standard Deviation, and Mastery Level) directly inside multiple controllers created duplicated code and risked slight differences in how numbers were calculated across reports.
+- **Solution**: We isolated all statistical logic into a standalone `StatsCalculatorService` class, ensuring that single-class submissions and consolidated multi-section reports use the exact same calculation methods.
