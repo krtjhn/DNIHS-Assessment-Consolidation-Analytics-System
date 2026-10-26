@@ -1,373 +1,171 @@
-# POLYTECHNIC UNIVERSITY OF THE PHILIPPINES
-## Calauan Campus
-### COMP 016 and COMP 018 Midterm Project
-
----
-
-## DEVELOPMENT OF A CENTRALIZED ASSESSMENT CONSOLIDATION AND ANALYTICS SYSTEM FOR DAYAP NATIONAL INTEGRATED HIGH SCHOOL
-
-**Members:**
-1. Caraig, Kurt John P. sig. _________
-2. Austria, Norwin L. sig. _________
-3. Bati, Daisuke Reggie C. sig. _________
-
----
+# Project Documentation
 
 ## Project Overview
 
-The **Centralized Assessment Consolidation and Analytics System for Dayap National Integrated High School (DNIHS)** is a web-based educational data management platform and Decision Support System (DSS). Developed under Republic Act No. 10533 (Enhanced Basic Education Act of 2013) and strictly aligned with DepEd Order No. 015, s. 2026 (Revised Guidelines on Classroom Assessment) and DepEd Order No. 009, s. 2026 (Implementation of the Three-Term School Calendar), the platform modernizes periodic examination recording and institutional reporting.
-
-### Context of the Problem
-Across public secondary schools under the Schools Division Office (SDO) of Laguna, including Dayap National Integrated High School, assessment data is currently managed using **shared Google Sheets with universal edit permissions**. For each academic year, the school maintains **six (6) separate shared spreadsheet files** to cover baseline diagnostic tests and periodic term examinations across Junior High School (Grades 7 to 10):
-1. **Cell Collision & Overwrite Conflicts**: Multiple teachers simultaneously edit shared sheets with unrestricted access, causing teachers to accidentally overwrite, alter, or delete another teacher's encoded scores.
-2. **Formula Corruption**: Embedded spreadsheet formulas for Mean, Mean Percentage Score (MPS), and Standard Deviation in summary sheets are directly exposed to users. These formulas are frequently corrupted, deleted, or incorrectly dragged by concurrent encoders.
-3. **Absence of Role-Based Access Control (RBAC) & Validation**: Out-of-range scores bypass detection, while any user with the shared link possesses full authority over official school records.
-4. **Data Partitioning & Consolidation Bottlenecks**: Because examination datasets are fragmented across six separate spreadsheet files, compiling division-mandated summaries and tracking student mastery across terms requires tedious, error-prone manual copying and cross-sheet aggregation.
-5. **Delayed Academic Interventions**: Reporting delays prevent school heads and teachers from promptly identifying least learned competencies, delaying remedial instruction for struggling learners. Furthermore, manual consolidation frequently commits the mathematical fallacy of directly averaging standard deviations across sections of unequal sizes.
-
-### What does the system do?
-The centralized web application replaces vulnerable shared spreadsheets with a secured web platform connected to a centralized PostgreSQL database:
-- Automates descriptive statistics computation: Total Examinees ($N$), Mean ($\bar{x}$), Mean Percentage Score ($\text{MPS}$), and Population Standard Deviation ($\sigma$).
-- Implements the official DepEd 7-Bracket Verbal Mastery Scale (from "Mastered" down to "Absolutely No Mastery").
-- Consolidates assessment results across sections, grade levels, and the entire institution using mathematically sound **Pooled Population Variance** ($\sigma^2_{\text{pooled}}$).
-- Identifies least learned competencies to drive targeted instructional adjustments.
-- Enforces strict server-side Role-Based Access Control (RBAC) via Laravel Sanctum and score range validation ($0 \le \text{score} \le \text{total\_items}$).
-
-### Who benefits?
-- **Teachers**: Eliminates clerical calculation burdens in compliance with DepEd Order No. 002, s. 2024 (Removal of Administrative Tasks), automating statistics and protecting score sheets from cell collisions.
-- **School Administrators & Academic Coordinators**: Provides real-time visibility into submission progress, consolidated grade-level mastery, and longitudinal performance trends through interactive Decision Support System (DSS) analytics.
-- **SDO Laguna & DepEd Sub-Offices**: Delivers uniform, audit-ready reports that eliminate cross-file consolidation discrepancies.
+The DNIHS Assessment Consolidation and Analytics System is a web application built with Laravel (PHP 8.3), React 19, Tailwind CSS, and PostgreSQL for recording, computing, and consolidating periodic exam and diagnostic test scores for Grades 7 to 10 at Dayap National Integrated High School. Teachers log in to encode raw student scores and least learned competencies for their assigned classes, and the system automatically computes the class Mean, Standard Deviation, Mean Percentage Score (MPS), and DepEd Mastery Level. On the admin side, the system manages school years, terms, sections, teacher accounts, and class loads, and automatically combines all submitted class records into a single consolidated performance report. It solves the issues of using shared spreadsheets (such as accidental score overwrites, broken formulas, and slow manual consolidation), making score recording faster for teachers and giving school administrators a clear view of student performance across all grade levels and subjects.
 
 ---
 
 ## Screens
 
-### Frontend Technical Summary
-The user interface is engineered as an interactive Single Page Application (SPA):
-- **Core Framework**: React 19 bundled via Vite.
-- **Styling Architecture**: Tailwind CSS v4 structured according to Apple Human Interface Guidelines (clean neutral palettes, elevated translucent containers, high contrast typography, and accessible status indicators).
-- **Navigation & Motion**: Lucide React icons with Motion animations supporting stateful tab switching (0ms tab restore without remounting).
-- **Responsive Layout**: Desktop-first layout with collapsible side navigation and dedicated mobile navigation drawers.
+### Front-End Overview
+The front-end is a Single Page Application (SPA) built with React 19, Vite, Tailwind CSS v4, Lucide React icons, and Motion for page transitions. On desktop screens, the layout uses a collapsible left sidebar, a top header bar showing the logged-in user, and full-width tables for reports and class management. On mobile screens, the sidebar turns into a slide-out menu drawer and tables scroll horizontally so forms and reports remain easy to use on phones.
 
----
+### Screen Descriptions
 
-### Screen 1: Login & Authentication Screen
+#### 1. Login
+![Login](docs/screenshots/01-login.png)
 
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. Open the system in your browser: https://dnihs-assessment-consolidation-anal.vercel.app/             |
-| 2. Ensure you are logged out so the login screen appears.                                                |
-| 3. The card should clearly show the DepEd / DNIHS circular badge, "Sign in to DNIHS",                    |
-|    Email Address input, Password input with eye toggle icon, and blue "Sign In" button.                 |
-+---------------------------------------------------------------------------------------------------------+
-```
+Shows the DNIHS login card where teachers and administrators enter their email address and password to access the system. It includes a show/hide password button and a link at the bottom for new teachers who need to register an account.
 
-**Short Description**:
-The authentication portal for faculty and administrators. Protects school records by verifying user credentials, account activation status (`is_active`), and administrative approval status (`approval_status`). Displays informative alerts if an account is pending approval, deactivated, or rejected. Includes a toggle to access the self-registration form.
+#### 2. Create Faculty Account
+![Create Faculty Account](docs/screenshots/02-register.png)
 
----
+Allows new faculty members to register by entering their full name, email address, password, and password confirmation. Newly created teacher accounts are saved with a pending status until the System Administrator approves them.
 
-### Screen 2: Faculty Assessment Record Entry & Dynamic Score Sheet
+#### 3. Consolidated Reports
+![Consolidated Reports](docs/screenshots/03-consolidated-reports.png)
 
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. Log in with a teacher account (or admin account with a class assigned).                              |
-| 2. Navigate to the "Record Entry" tab in the sidebar.                                                   |
-| 3. Select a School Year, Term (e.g., 1st Term), Grade Level, Section, and Subject.                       |
-| 4. Enter a few sample raw scores (e.g., 45, 42, 38, 48, 50, 35) in the score sheet table.                |
-| 5. Capture the screen showing the dynamic score table, item count, and the real-time summary statistics  |
-|    (Total Examinees, Mean, MPS, SD, and DepEd Mastery Level badge) displayed above or beside the sheet. |
-+---------------------------------------------------------------------------------------------------------+
-```
+Displays the consolidated examination report table for the school, showing the number of cases, highest and lowest scores, mean, standard deviation, MPS, and the number of students under each of the 7 DepEd Mastery brackets per subject. Administrators can click the filter button on the upper right to filter results by assessment type (Term Exam or Diagnostic Test), school year, term, grade level, section, and subject.
 
-**Short Description**:
-Replaces vulnerable Google Sheet cells with an interactive spreadsheet-style score sheet. Validates input ranges ($0 \le \text{score} \le \text{total\_items}$) and computes Mean, SD, MPS, and DepEd Mastery Level in real time. Enforces RBAC so teachers only access their assigned classes, prevents overwriting another teacher's submission, and locks editing when the academic term is closed.
+#### 4. Section Management
+![Section Management](docs/screenshots/04-section-management.png)
 
----
+Lists all classroom sections for the selected school year along with their grade level and status. From this screen, the administrator can add new sections, archive existing ones, or delete sections that do not have encoded assessment records yet.
 
-### Screen 3: Administrative Decision Support & Consolidated Performance Report
+#### 5. Class Assignments
+![Class Assignments](docs/screenshots/05-class-assignments.png)
 
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. Log in as Administrator (admin@gmail.com).                                                           |
-| 2. Click "Consolidation Report" (or "Performance Report") in the navigation sidebar.                    |
-| 3. Select School Year: 2025-2026, Term: 1st Term, and Exam Type: Term Exam.                            |
-| 4. Capture the dashboard showing:                                                                       |
-|    - The summary statistic cards: Total Sections, Total Examinees, Overall Mean, Overall MPS,           |
-|      Overall SD (pooled variance), and Consolidated Mastery Badge.                                      |
-|    - The section breakdown table listing individual sections, subject codes, means, and MPS values.     |
-+---------------------------------------------------------------------------------------------------------+
-```
+Lets the administrator assign teaching loads to faculty members. Selecting a teacher from the list on the left displays their current schedule on the right, where the administrator can assign a new grade level, section, and subject or remove an existing class load.
 
-**Short Description**:
-The administrative Decision Support System (DSS) dashboard. Automatically consolidates assessment records across multiple sections, grade levels, or the entire school using pooled population variance. Eliminates cross-file spreadsheet copying and highlights least learned competencies to inform targeted remedial instruction.
+#### 6. School Calendar
+![School Calendar](docs/screenshots/06-school-calendar.png)
 
----
+Used by the administrator to manage school years and control when teachers can encode scores. The top panel shows the three terms of the selected school year and lets the admin set each term to Active (open for encoding) or Pending/Completed (locked), while the bottom table lists all school years and lets the admin add a new school year.
 
-### Screen 4: Classroom Sections Management Screen
+#### 7. Teacher Accounts
+![Teacher Accounts](docs/screenshots/07-teacher-accounts.png)
 
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. In the Admin sidebar, click on "Section List" (or "Sections").                                       |
-| 2. Select a Grade Level filter (e.g., "Grade 7" or "All Grades").                                      |
-| 3. Capture the page showing the section cards/table with Section Name, Grade Level badge,               |
-|    Active status indicator, and the "+ Add New Section" button.                                         |
-+---------------------------------------------------------------------------------------------------------+
-```
+Shows all registered faculty accounts with filters for All, Pending, Active, and Removed accounts. Administrators can search for teachers, add a new faculty account directly, approve or reject pending registrations, or remove a teacher's access without deleting their past class records.
 
-**Short Description**:
-Enables administrators to organize classroom sections across Grades 7 to 10 for each academic year. Enforces composite unique constraints to prevent duplicate section naming and applies referential deletion protection to block deleting any section tied to existing assessment records.
+#### 8. Teacher Record Entry
+![Teacher Record Entry](docs/screenshots/08-teacher-record-entry-list.png)
 
----
+The main screen for logged-in teachers. It lists all classes assigned to the teacher for the current school year and term, grouped under Assigned, Missing, and Done tabs so teachers can easily track which class exams still need to be encoded.
 
-### Screen 5: Faculty Workload Allocation & Sync Matrix Screen
+#### 9. Teacher Student Score Encoding - New Entry
+![Teacher Student Score Encoding New Entry](docs/screenshots/09-teacher-score-encoding-new.png)
 
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. In the Admin sidebar, navigate to "Teacher Assignment" (or "Faculty Loads").                         |
-| 2. Select a Faculty Member from the dropdown list.                                                      |
-| 3. Capture the workload matrix showing the sections and subjects assigned to that teacher,              |
-|    along with the "Sync Workload" button and active load counters.                                      |
-+---------------------------------------------------------------------------------------------------------+
-```
+Opens when a teacher selects a class that has no encoded scores yet. Teachers set the total number of test items, type each student's raw score into the table, enter the least learned competency on the right panel, and click Submit to save the record and automatically compute the class statistics.
 
-**Short Description**:
-Manages teaching loads by mapping teachers to section-subject pairs for the active school year. Features batch workload synchronization and leverages a PostgreSQL partial unique index to support mid-year substitute teachers without overwriting past assignment history.
+#### 10. Teacher Student Score Encoding - Update / Delete
+![Teacher Student Score Encoding Update](docs/screenshots/10-teacher-score-encoding-update.png)
 
----
-
-### Screen 6: School Calendar & Term Lifecycle Management Screen
-
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. In the Admin sidebar, click on "School Calendar" (or "Academic Calendar").                           |
-| 2. Capture the card showing the Active School Year (e.g., 2025-2026), its opening and closing dates,    |
-|    and the three DepEd terms (1st Term, 2nd Term, 3rd Term) with their respective status badges         |
-|    ("Active", "Pending", or "Completed") and status update controls.                                    |
-+---------------------------------------------------------------------------------------------------------+
-```
-
-**Short Description**:
-Controls the 3-term academic calendar under DepEd Order No. 009, s. 2026. Creating a school year automatically provisions the 3 terms (`1st Term`, `2nd Term`, `3rd Term`). Sequential term activation automatically concludes previous terms and locks historical score sheets to preserve audit integrity.
-
----
-
-### Screen 7: Faculty Accounts & Approval Pipeline Screen
-
-```
-+---------------------------------------------------------------------------------------------------------+
-| [PLACE SCREENSHOT HERE]                                                                                 |
-| Screenshot Instructions:                                                                                |
-| 1. In the Admin sidebar, click on "Teacher Accounts" (or "Faculty Management").                         |
-| 2. Capture the table displaying registered teachers, showing their Name, Email Address,                |
-|    Approval Status ("Approved", "Pending", or "Rejected"), and action buttons (Approve, Reject,         |
-|    Deactivate, or Provision Faculty).                                                                   |
-+---------------------------------------------------------------------------------------------------------+
-```
-
-**Short Description**:
-Supervises the teacher account lifecycle. Administrators review self-registered faculty applications, approve or reject them, provision pre-approved accounts, or deactivate departing faculty accounts while keeping all their historical examination score sheets intact.
+Opens when a teacher selects a class that already has saved scores. While the term is still open, the teacher can edit student scores, update the least learned competency, and click Update to recompute the results, or click Delete to remove the submission.
 
 ---
 
 ## Project Structure
 
-The project implements a decoupled architecture pairing a Laravel 11 RESTful API backend with a React 19 Single Page Application frontend.
+The project is structured as a Laravel REST API backend (PHP 8.3) connected to a React 19 frontend and a PostgreSQL database.
 
-```
+```text
 m_capstone/
-|-- app/                                      # Application Core (Laravel 11 Backend)
-|   |-- Http/
-|   |   |-- Controllers/Api/                  # RESTful API Controllers
-|   |   |   |-- AcademicReferenceController.php  # Serves cached grade, subject, & year reference data
-|   |   |   |-- AssessmentController.php         # Score sheet encoding, ownership, & consolidation
-|   |   |   |-- AuthController.php               # Login, registration, token issuance, & profiles
-|   |   |   |-- SchoolYearController.php         # Academic year lifecycle & 3-term generation
-|   |   |   |-- SectionController.php            # Classroom section CRUD & referential guards
-|   |   |   |-- TeacherAssignmentController.php  # Faculty load matrix & atomic workload sync
-|   |   |   |-- TeacherController.php            # Teacher directory, approval, & deactivation
-|   |   |   `-- TermController.php               # Term status transitions & calendar locking
-|   |   |-- Middleware/
-|   |   |   `-- EnsureUserHasRole.php            # Role-Based Access Control gate (sanctum tokens)
-|   |   |-- Requests/                            # Strict FormRequest Validation Classes
-|   |   |   |-- Assessments/StoreAssessmentRequest.php
-|   |   |   |-- Assessments/UpdateAssessmentRequest.php
-|   |   |   |-- SchoolYears/StoreSchoolYearRequest.php
-|   |   |   |-- Sections/StoreSectionRequest.php
-|   |   |   `-- TeachingAssignments/SyncTeachingAssignmentRequest.php
-|   |   `-- Resources/                           # API Resource Transformers (JSON formatting)
-|   |       |-- AssessmentRecordResource.php
-|   |       |-- SectionResource.php
-|   |       `-- TeachingAssignmentResource.php
-|   |-- Models/                               # Eloquent ORM Database Models
-|   |   |-- AssessmentRecord.php                 # Exam records with soft deletes & JSON scores
-|   |   |-- GradeLevel.php                       # Grades 7 to 10 catalog
-|   |   |-- Role.php                             # System admin and Teacher roles
-|   |   |-- SchoolYear.php                       # Academic year with active scopes
-|   |   |-- Section.php                          # Classroom section entity
-|   |   |-- Subject.php                          # DepEd learning areas with curriculum codes
-|   |   |-- TeachingAssignment.php               # Faculty load mapping with partial uniqueness
-|   |   |-- Term.php                             # DepEd terms (1st, 2nd, 3rd) with status
-|   |   `-- User.php                             # Authenticated user with approval statuses
-|   `-- Services/
-|       `-- StatsCalculatorService.php           # Pure mathematical engine (Mean, SD, MPS, Pooled Variance)
-|-- config/
-|   `-- cors.php                              # Cross-Origin Resource Sharing for Vercel SPA
-|-- database/
-|   |-- migrations/                           # Database Schema Definitions & Performance Indexes
-|   `-- seeders/                              # Initial Academic Reference & Administrative Seeders
-|-- resources/                                # React 19 SPA Frontend
-|   |-- css/
-|   |   `-- app.css                           # Tailwind CSS v4 design token architecture
-|   `-- js/
-|       |-- api.js                            # Axios instance with Bearer token injection
-|       |-- App.jsx                           # Application shell, auth state, & router tab pane
-|       |-- main.jsx                          # React 18/19 DOM root mount & CSS stylesheet import
-|       |-- components/
-|       |   |-- Sidebar.jsx                   # Collapsible Apple HIG navigation sidebar
-|       |   |-- TopBar.jsx                    # User header, current term badge, & logout
-|       |   |-- ScoreSheet.jsx                # Interactive spreadsheet score input table
-|       |   |-- Modal.jsx                     # Reusable animated modal dialogue
-|       |   `-- LoadingIndicator.jsx          # Accessible spinner and skeleton loaders
-|       `-- pages/
-|           |-- admin/
-|           |   |-- TeacherAssignment.jsx     # Workload allocation matrix
-|           |   `-- system/
-|           |       |-- SchoolCalendar.jsx    # Calendar & term management
-|           |       |-- SectionList.jsx       # Classroom sections management
-|           |       `-- TeacherAccounts.jsx   # Faculty approval pipeline
-|           |-- auth/
-|           |   `-- Login.jsx                 # Login and self-registration view
-|           |-- reports/
-|           |   `-- PerformanceReport.jsx     # Consolidated DSS performance reports
-|           `-- teacher/
-|               `-- RecordEntry.jsx           # Score sheet encoding workspace
-|-- routes/
-|   |-- api.php                               # RESTful API routing with Sanctum & RBAC gates
-|   `-- web.php                               # API health root endpoint & fallback handler
-|-- Dockerfile                                # Pure PHP 8.3 CLI backend container for Render
-|-- vercel.json                               # Standalone SPA routing & rewrite rules for Vercel
-`-- vite.config.js                            # Dual-mode build supporting standalone SPA and Laravel
+├── app/
+│   ├── Console/Commands/
+│   │   ├── DatabaseBackupCommand.php               # CLI command to back up the PostgreSQL database
+│   │   └── DatabaseRestoreCommand.php              # CLI command to restore and verify database backups
+│   ├── Http/
+│   │   ├── Controllers/Api/
+│   │   │   ├── AcademicReferenceController.php     # Returns grade levels, subjects, and active school year
+│   │   │   ├── AssessmentController.php            # Handles score encoding, updates, and consolidated reports
+│   │   │   ├── AuthController.php                  # Handles login, registration, logout, and user session
+│   │   │   ├── SchoolYearController.php            # Creates and updates school years and their 3 terms
+│   │   │   ├── SectionController.php               # Creates, updates, archives, and deletes sections
+│   │   │   ├── TeacherAssignmentController.php     # Assigns and removes teacher subject loads
+│   │   │   ├── TeacherController.php               # Manages teacher account approval and deactivation
+│   │   │   └── TermController.php                  # Updates term status (pending, active, completed)
+│   │   ├── Middleware/
+│   │   │   └── EnsureUserHasRole.php               # Checks if the logged-in user is system_admin or teacher
+│   │   ├── Requests/                               # FormRequest classes for server-side input validation
+│   │   └── Resources/                              # Formats model data into clean JSON responses
+│   ├── Models/                                     # Eloquent models for the database tables
+│   │   ├── AssessmentRecord.php
+│   │   ├── GradeLevel.php
+│   │   ├── Role.php
+│   │   ├── SchoolYear.php
+│   │   ├── Section.php
+│   │   ├── Subject.php
+│   │   ├── TeachingAssignment.php
+│   │   ├── Term.php
+│   │   └── User.php
+│   └── Services/
+│       └── StatsCalculatorService.php              # Computes Mean, SD, MPS, Mastery Level, and Pooled Variance
+├── database/
+│   ├── migrations/                                 # Database tables, foreign keys, indexes, and triggers
+│   └── seeders/                                    # Initial roles, admin account, grades, and subjects
+├── resources/
+│   ├── css/app.css                                 # Tailwind CSS v4 stylesheet
+│   └── js/
+│       ├── api.js                                  # Helper for API requests with Sanctum Bearer tokens
+│       ├── App.jsx                                 # Main React component handling login state and page tabs
+│       ├── main.jsx                                # React entry point
+│       ├── components/                             # Shared UI components (Sidebar, TopBar, ScoreSheet, Modal)
+│       └── pages/                                  # Page views for Login, Admin modules, and Teacher encoding
+└── routes/
+    ├── api.php                                     # All backend API endpoints
+    ├── console.php                                 # Scheduled daily backup command
+    └── web.php                                     # Serves the React app
 ```
+
+### Functions Made
+- `StatsCalculatorService::calculate($rawScores, $totalItems)`: Takes the array of student scores and total items, then computes the number of examinees, mean, population standard deviation, MPS, highest/lowest score, and the DepEd mastery description.
+- `StatsCalculatorService::consolidate($records)`: Combines assessment records across multiple sections or grade levels and computes the overall standard deviation using pooled population variance.
+- `StatsCalculatorService::getMasteryLevel($mps)`: Returns the matching DepEd mastery level bracket for a given MPS value.
+- `AssessmentController::store()`, `update()`, and `consolidation()`: Checks if the term is open and if the teacher is assigned to the class before saving scores, and queries filtered records for the admin's consolidated report.
+- `AuthController::login()`, `register()`, and `logout()`: Validates user login credentials, checks if a teacher account is approved and active, creates new teacher registrations, and manages Sanctum tokens.
+- `TeacherAssignmentController::syncTeacher()`: Updates a teacher's assigned classes for the school year inside a database transaction.
+- `fn_calculate_assessment_metrics()` and `fn_audit_assessment_records()`: PostgreSQL trigger functions that validate the mean against total items, compute MPS and mastery remarks in the database, and log any score changes or deletions into `assessment_audit_logs`.
 
 ---
 
 ## Database Structure
 
-The relational database is implemented in **PostgreSQL** (hosted on Supabase Cloud) to ensure ACID compliance, strict foreign key referential integrity, and native JSON indexing.
-
 | Table Name | Purpose |
 | :--- | :--- |
-| `users` | Stores user credentials, hashed passwords, active status, approval status (`pending`, `approved`, `rejected`), and verification timestamps. |
-| `roles` | Catalogs system authorization roles (`system_admin` and `teacher`). |
-| `role_user` | Normalized junction/pivot table linking users to their assigned roles in a Many-to-Many relationship. |
-| `school_years` | Manages academic years (e.g., "2025-2026"), calendar start and end dates, and the active year flag. Soft-deleted for multi-year retention. |
-| `terms` | Represents the 3 DepEd academic terms per school year (`1st Term`, `2nd Term`, `3rd Term`) with status tracking (`pending`, `active`, `completed`). |
-| `grade_levels` | Static reference catalog for Junior High School levels (Grades 7, 8, 9, and 10). |
-| `subjects` | Catalogs DepEd Junior High School learning areas (Mathematics, Science, English, etc.) with standardized curriculum codes (e.g., `MATH-7`, `SCI-8`). |
-| `sections` | Classroom cohorts organized by grade level and school year. Protected by composite uniqueness and referential deletion checks. |
-| `teaching_assignments` | Maps faculty members to section-subject pairs. Backed by a PostgreSQL partial unique index allowing mid-year substitute teacher reassignment. |
-| `assessment_records` | Stores raw examination scores in a native JSON array alongside precalculated descriptive statistics (Mean, SD, MPS, Mastery Level) and least learned competencies. Protected by `restrictOnDelete`. |
+| `users` | Stores admin and teacher accounts, hashed passwords, active status (`is_active`), approval status (`pending`, `approved`, `rejected`), and soft-delete timestamps. |
+| `roles` | Stores the user roles (`system_admin` and `teacher`). |
+| `role_user` | Pivot table that links `users` to their assigned `roles`. |
+| `school_years` | Stores school years (such as `2025-2026`), start and end dates, and which school year is currently active. |
+| `terms` | Stores the 3 terms (`1st Term`, `2nd Term`, `3rd Term`) under each school year and whether encoding is `pending`, `active`, or `completed`. |
+| `grade_levels` | Reference table for `Grade 7`, `Grade 8`, `Grade 9`, and `Grade 10`. |
+| `sections` | Stores class sections (such as `Pilot A` and `Pilot B`) under a specific grade level and school year. |
+| `subjects` | Stores the DepEd subjects per grade level along with their subject codes. |
+| `teaching_assignments` | Links a teacher (`user_id`) to a specific section and subject for a school year, including start and end dates (`effective_from`, `effective_until`). |
+| `assessment_records` | Stores the encoded array of student `raw_scores` (JSONB), `total_items`, computed statistics (`no_of_entries`, `mean`, `mps`, `sd`, `highest_score`, `lowest_score`), `least_learned_competency`, and mastery `remarks`. |
+| `assessment_audit_logs` | Stores a history of old and new statistical values whenever an assessment record is updated or deleted. |
+| `personal_access_tokens` | Stores Laravel Sanctum authentication tokens for logged-in users. |
 
 ---
 
 ## ERD Diagram
 
-```
-       +--------------------+
-       |    school_years    |
-       +--------------------+
-         | 1            | 1
-         |              |
-         | *            | *
-   +-----------+  +--------------+
-   |   terms   |  |   sections   |
-   +-----------+  +--------------+
-         | 1            | 1
-         |              |
-         | *            | *
-+------------------------------------+        +--------------------+
-|         assessment_records         |--------|    grade_levels    |
-+------------------------------------+ *    1 +--------------------+
-   | *                            | *                   | 1
-   |                              |                     |
-   | 1                            | 1                   | *
-+-------+             +-----------------------+   +--------------+
-| users |-------------|  teaching_assignments |---|   subjects   |
-+-------+ 1         * +-----------------------+ * +--------------+
-   | *
-   |
-   | *
-+-------+
-| roles | (via role_user pivot)
-+-------+
-```
-
-### Relational Cardinality Summary
-- **`school_years` to `terms`**: One-to-Many ($1:3$). Creating a school year automatically provisions 3 terms.
-- **`school_years` to `sections`**: One-to-Many ($1:N$). Sections belong to a specific school year.
-- **`grade_levels` to `sections`**: One-to-Many ($1:N$). Each section belongs to exactly one grade level.
-- **`grade_levels` to `subjects`**: One-to-Many ($1:8$). Each grade level has 8 standardized learning areas.
-- **`users` to `roles`**: Many-to-Many ($M:N$) via `role_user` pivot table.
-- **`teaching_assignments`**: Junction entity linking `users` (Teacher), `school_years`, `sections`, and `subjects`.
-- **`assessment_records`**: Central fact table referencing `school_years`, `terms`, `grade_levels`, `sections`, `subjects`, and `users` (Teacher).
+![Entity-Relationship Diagram](docs/screenshots/erd.png)
 
 ---
 
 ## Challenges and Solutions
 
-### Challenge 1: Resolving Division-Wide Google Sheet Cell Collisions & Formula Corruption
-- **Problem Encountered**: Under the existing SDO Laguna workflow, teachers shared six Google Sheet files with open edit permissions. Concurrent access routinely caused cell collisions where teachers accidentally overwrote each other's score entries. Furthermore, exposed spreadsheet formulas for Mean, SD, and MPS were frequently dragged over, broken, or deleted.
-- **Solution Implemented**: Built a centralized web architecture with server-side calculation and strict authorization:
-  1. Relational persistence in PostgreSQL ensures all writes are transactional and isolated.
-  2. Encapsulated all mathematical calculations in `StatsCalculatorService.php`, computing statistics on the server so formulas can never be exposed, modified, or corrupted by end-users.
-  3. Enforced client- and server-side range validation ($0 \le \text{score} \le \text{total\_items}$) via `StoreAssessmentRequest.php`.
+### 1. Computing Consolidated Standard Deviation Across Multiple Sections
+- **Problem**: In the old spreadsheet setup, the overall standard deviation for a grade level was computed by simply averaging the standard deviations of each section. During development, we found that this gives an inaccurate result when sections have different numbers of students or different class means.
+- **Solution**: We updated `StatsCalculatorService::consolidate()` to use the pooled population variance formula:
+  $$\sigma^2_{\text{pooled}} = \frac{1}{N} \sum_{i=1}^{k} n_i \left( \sigma_i^2 + (\mu_i - \bar{\mu})^2 \right), \quad \sigma_{\text{pooled}} = \sqrt{\sigma^2_{\text{pooled}}}$$
+  This properly weights each section by its student count and accounts for differences between section means.
 
----
+### 2. Reassigning Classes to Substitute Teachers Mid-Year
+- **Problem**: Putting a normal unique constraint on `(school_year_id, section_id, subject_id)` in the `teaching_assignments` table prevented us from assigning a substitute teacher if the original teacher went on leave, unless we deleted the original teacher's assignment record.
+- **Solution**: We used a PostgreSQL partial unique index (`WHERE effective_until IS NULL`). When a teacher leaves a class, we set their `effective_until` date instead of deleting the row. This allows a new teacher to be assigned to the same class while keeping the previous teacher's history intact.
 
-### Challenge 2: Statistically Flawed Consolidation (Averaging Standard Deviations)
-- **Problem Encountered**: In traditional school spreadsheets, overall standard deviation across multiple sections was calculated by taking the simple average of individual section standard deviations ($\frac{\sigma_1 + \sigma_2}{2}$). This is a well-known mathematical fallacy because standard deviation is non-linear and ignores differences in section sample sizes ($n_i$) and the spread between section means.
-- **Solution Implemented**: Implemented mathematically rigorous **Pooled Population Variance**:
-  $$\sigma^2_{\text{pooled}} = \frac{1}{N} \sum_{i=1}^{k} n_i \left( \sigma_i^2 + (\mu_i - \bar{\mu})^2 \right)$$
-  This accounts for both **within-group variance** and **between-group mean dispersion**, providing school administrators with 100% statistically accurate decision support metrics.
-
----
-
-### Challenge 3: Handling Mid-Year Substitute Teachers without Data Loss
-- **Problem Encountered**: When a teacher goes on leave or transfers mid-year, a standard database unique constraint on `(school_year_id, section_id, subject_id)` completely blocks assigning a substitute teacher unless the original assignment is deleted. Deleting the assignment would destroy historical audit trails and orphan past score sheets.
-- **Solution Implemented**: Replaced standard unique constraints with a **PostgreSQL Partial Unique Index**:
-  ```sql
-  CREATE UNIQUE INDEX teaching_assignments_sy_sec_subj_active_unique
-  ON teaching_assignments (school_year_id, section_id, subject_id)
-  WHERE effective_until IS NULL;
-  ```
-  When a teacher leaves, `effective_until` is updated to the current date. The index only enforces uniqueness on rows where `effective_until IS NULL`. This guarantees that only **one teacher is actively assigned** at any given moment, while preserving complete historical records for past teachers.
-
----
-
-### Challenge 4: Decoupled Multi-Cloud Deployment & Asset Bundling
-- **Problem Encountered**: When decoupling the monolithic Laravel Blade setup into a pure PHP backend on Render and a standalone React SPA on Vercel, the production frontend deployed with unstyled HTML (missing CSS) and failed API calls due to CORS pre-flight rejection.
-- **Solution Implemented**:
-  1. Configured Laravel's `config/cors.php` to allow wildcard Vercel deployment domains (`https://*.vercel.app`) with credentials and standard HTTP methods.
-  2. Implemented dual-mode building in `vite.config.js` to emit standalone production SPA assets to `dist/` when building on Vercel.
-  3. Added an explicit `import '../css/app.css';` in `resources/js/main.jsx` to ensure Tailwind CSS v4 compiles directly into the standalone bundle and injects the `<link rel="stylesheet">` into `dist/index.html`.
-
----
-
-## Project Source
-
-- **GitHub Repository**: [https://github.com/krtjhn/DNIHS-Assessment-Consolidation-Analytics-System](https://github.com/krtjhn/DNIHS-Assessment-Consolidation-Analytics-System)
-- **Backend API (Render)**: `https://dnihs-assessment-system-api.onrender.com`
-- **Frontend SPA (Vercel)**: `https://dnihs-assessment-consolidation-anal.vercel.app`
+### 3. Preventing Invalid Scores and Formula Errors
+- **Problem**: In shared spreadsheets, teachers could accidentally type a score higher than the total number of test items or overwrite the cells containing the Mean, SD, and MPS formulas.
+- **Solution**: We moved all calculations to the backend and database. The React score sheet blocks scores below `0` or above `total_items`, Laravel's `StoreAssessmentRequest` validates the submitted array on the server, and `StatsCalculatorService` along with a PostgreSQL trigger computes the Mean, SD, MPS, and Mastery Level automatically upon saving.
