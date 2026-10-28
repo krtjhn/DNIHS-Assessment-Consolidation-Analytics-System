@@ -35,15 +35,20 @@ yarn-error.log*
 /coverage
 /test-results
 /dist
-docs/BACKEND_API_ARCHITECTURE.md
-
-# Unused / Dummy seeders (Core master data is provisioned via migrations)
-/database/seeders/AcademicSeeder.php
-/database/seeders/UserSeeder.php
-/database/seeders/RoleSeeder.php
-
-# Database backup runtime dumps (Keep dnihs_proven_backup.sql as proven baseline)
+/tests/
+phpunit.xml
+phpunit.xml.dist
+/database/seeders/
+/database/factories/
+/scripts/
+/database/scripts/
+docs/*.md
+docs/plans/
+documentation_tracker.md
+database/README.md
+*.docx
+*.xlsx
+*.pptx
+/erd.png
 /database/backups/dnihs_backup_*.sql
 /database/backups/dnihs_backup_*.sql.sha256
-
-
