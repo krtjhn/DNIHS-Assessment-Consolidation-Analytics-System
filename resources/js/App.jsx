@@ -4,6 +4,7 @@ import { api } from './api';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import Login from './pages/auth/Login';
+import OverviewDashboard from './pages/admin/OverviewDashboard';
 import SectionList from './pages/admin/system/SectionList';
 import RecordEntry from './pages/teacher/RecordEntry';
 import PerformanceReport from './pages/reports/PerformanceReport';
@@ -29,11 +30,11 @@ function AnimatedTabPane({ isActive, children }) {
 
 // Resolve the authorized active tab according to user RBAC role
 function resolveAuthorizedTab(requestedTab, isAdmin) {
-    const adminTabs = ['consolidation', 'sections', 'assignments', 'calendar', 'teachers'];
+    const adminTabs = ['overview', 'consolidation', 'sections', 'assignments', 'calendar', 'teachers'];
     const teacherTabs = ['records'];
 
     if (isAdmin) {
-        return adminTabs.includes(requestedTab) ? requestedTab : 'consolidation';
+        return adminTabs.includes(requestedTab) ? requestedTab : 'overview';
     }
     // Teachers are strictly restricted to Record Entry
     return teacherTabs.includes(requestedTab) ? requestedTab : 'records';
@@ -274,6 +275,18 @@ export default function App() {
                     transition={{ type: 'spring', stiffness: 280, damping: 24, delay: 0.05 }}
                     className="flex-1 w-full px-3 sm:px-5 md:px-6 py-4"
                 >
+                    {
+                        // Admin Workspace: Executive Overview & Decision Support System (DSS)
+                    }
+                    {isAdmin && visitedTabs.has('overview') && (
+                        <AnimatedTabPane isActive={activeTab === 'overview'}>
+                            <OverviewDashboard
+                                onNavigateToConsolidation={() => setActiveTab('consolidation')}
+                                onNavigateToAssignments={() => setActiveTab('assignments')}
+                            />
+                        </AnimatedTabPane>
+                    )}
+
                     {
                         // Teacher Workspace: Assessment record entry and qualitative scoring
                     }

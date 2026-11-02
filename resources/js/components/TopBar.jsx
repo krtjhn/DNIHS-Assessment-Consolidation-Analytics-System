@@ -8,6 +8,7 @@ export default function TopBar({
     onOpenMobileSidebar,
 }) {
     const pageDetails = {
+        overview: { title: 'Executive Overview (DSS)' },
         records: { title: 'Record Entry' },
         consolidation: { title: 'Consolidated Reports' },
         sections: { title: 'Section Management' },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
+    LayoutDashboard,
     ClipboardList,
     BarChart3,
     Layers,
@@ -12,6 +13,7 @@ import {
 import schoolLogo from '../../logo.png';
 
 const iconMap = {
+    overview: LayoutDashboard,
     records: ClipboardList,
     consolidation: BarChart3,
     sections: Layers,
@@ -53,6 +55,7 @@ const teacherNavItems = [
 
 // Navigation routes for Administrator role
 const adminNavItems = [
+    { id: 'overview', label: 'Executive Overview', icon: 'overview' },
     { id: 'consolidation', label: 'Consolidated Reports', icon: 'consolidation' },
     { id: 'sections', label: 'Section Management', icon: 'sections' },
     { id: 'assignments', label: 'Class Assignments', icon: 'assignments' },

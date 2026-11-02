@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AcademicReferenceController;
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DssController;
 use App\Http\Controllers\Api\SchoolYearController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\TeacherAssignmentController;
@@ -51,6 +52,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin only routes
     Route::middleware('role:system_admin')->group(function () {
+        // Decision Support System (DSS) Overview Dashboard
+        Route::get('/dss/overview', [DssController::class, 'overview']); // Executive overview metrics and early warning intelligence
+
         // Consolidated statistical reports for assessments
         Route::get('/assessments/consolidation', [AssessmentController::class, 'consolidation']); // Get consolidated report for sections, grades, or school
 
